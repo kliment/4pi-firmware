@@ -42,10 +42,14 @@ void TC0_IrqHandler(void)
 */
     
 }
-
+int i=0;
 void SysTick_Handler(void)
 {
     timestamp++;
+    
+    if(timestamp%1000==0)
+        for(i=1;i<9;i++)
+            printf("Channel %u : %u mV\n", i,adc_read(i));
 }
 
 void usb_characterhandler(unsigned char c){
@@ -99,6 +103,8 @@ int main()
     //PIO_Clear(&EN);
     //PIO_Clear(&DIR);
     samserial_init();
+    initadc();
+    
     samserial_setcallback(&usb_characterhandler);
     
     
