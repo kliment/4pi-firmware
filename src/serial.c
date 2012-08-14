@@ -73,7 +73,7 @@ unsigned volatile char flag=0;
 static const Pin pinVbus = PIN_USB_VBUS;
 static void (*callback)(unsigned char)=0;
 
-void setcallback(void (*c)(unsigned char)){
+void samserial_setcallback(void (*c)(unsigned char)){
 	callback=c;
 }
 
@@ -154,9 +154,6 @@ void USBDCallbacks_Suspended(void)
     USBState = STATE_SUSPEND;
 }
 
-void ccprintf(const char* c){
-	printf(c);
-}
 //------------------------------------------------------------------------------
 /// Callback invoked when data has been received on the USB.
 //------------------------------------------------------------------------------
@@ -191,7 +188,7 @@ static void UsbDataReceived(unsigned int unused,
       //  TRACE_WARNING( "UsbDataReceived: Transfer error\n\r");
     }
 }
-void printf_impl(const char* c)
+void samserial_print(const char* c)
 {
 if(flag && isSerialConnected)        CDCDSerialDriver_Write((void *)c,strlen(c), 0, 0);
 }
