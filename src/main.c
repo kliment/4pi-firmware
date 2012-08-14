@@ -99,7 +99,7 @@ int main()
     //PIO_Clear(&EN);
     //PIO_Clear(&DIR);
     samserial_init();
-    sameserial_setcallback(&usb_characterhandler);
+    samserial_setcallback(&usb_characterhandler);
     
     
 while (1) {
