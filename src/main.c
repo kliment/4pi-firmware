@@ -8,6 +8,7 @@
 #include <utility/trace.h>
 #include <stdio.h>
 
+
 #ifndef AT91C_ID_TC0
     #define AT91C_ID_TC0 AT91C_ID_TC
 #endif
@@ -46,13 +47,18 @@ int i=0;
 void SysTick_Handler(void)
 {
     timestamp++;
-    
-    if(timestamp%1000==0)
+    //temp control goes in here
+    //temp0 = chan 5 = adc_read(5) etc (returns unsigned absolute millivolt value).
+    //temp1 = chan 3
+    //temp2 = chan 1
+    //temp3 = chan 2
+    if(timestamp%1000==0)//every 1 second
         for(i=1;i<9;i++)
             printf("Channel %u : %u mV\n", i,adc_read(i));
 }
 
 void usb_characterhandler(unsigned char c){
+    //every time the USB receives a new character, this function is called
     printf("%c\n",c);
 }
 
@@ -104,9 +110,8 @@ int main()
     //PIO_Clear(&DIR);
     samserial_init();
     initadc();
-    
     samserial_setcallback(&usb_characterhandler);
-    
+    motor_setup();
     
 while (1) {
 

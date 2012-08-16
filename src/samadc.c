@@ -84,7 +84,7 @@ static const Pin pinsADC[] = {PINS_ADC};
 #define ADC_NUM_6  ADC12_CHANNEL_6 //y+
 #define ADC_NUM_7  ADC12_CHANNEL_7 //z+
 #endif
-// 5, 3, ?, 2
+// 5, 3, 1, 2
 volatile unsigned int advalue[7];
 static unsigned int chns[] = {ADC_NUM_1, ADC_NUM_2, ADC_NUM_3, ADC_NUM_4, ADC_NUM_5, ADC_NUM_6, ADC_NUM_7};
 static volatile int enchan=(1<<ADC_NUM_3)|(1<<ADC_NUM_5)|(1<<ADC_NUM_1)|(1<<ADC_NUM_2);//|(1<<ADC_NUM_4);//|(1<<ADC_NUM_6)|(1<<ADC_NUM_7);

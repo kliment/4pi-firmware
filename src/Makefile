@@ -157,6 +157,7 @@ C_OBJECTS += USBSetConfigurationRequest.o
 C_OBJECTS += stdio.o
 C_OBJECTS += systick.o
 C_OBJECTS += serial.o
+C_OBJECTS += motoropts.o
 C_OBJECTS += tc.o
 C_OBJECTS += USBFeatureRequest.o
 C_OBJECTS += USBEndpointDescriptor.o
