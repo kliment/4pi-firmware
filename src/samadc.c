@@ -41,9 +41,7 @@
 
 #include <board.h>
 #include <pio/pio.h>
-//#include <dbgu/dbgu.h>
 #include <irq/irq.h>
-//#include <utility/trace.h>
 #include <adc/adc12.h>
 #include <stdio.h>
 
@@ -76,6 +74,7 @@ static const Pin pinsADC[] = {PINS_ADC};
 
 
 #if defined(at91sam3u4)
+#define ADC_NUM_0  ADC12_CHANNEL_0 //not available
 #define ADC_NUM_1  ADC12_CHANNEL_1 //temp2
 #define ADC_NUM_2  ADC12_CHANNEL_2 //temp3
 #define ADC_NUM_3  ADC12_CHANNEL_3 //temp1
@@ -91,9 +90,6 @@ static volatile int enchan=(1<<ADC_NUM_3)|(1<<ADC_NUM_5)|(1<<ADC_NUM_1)|(1<<ADC_
 unsigned int adc_read(unsigned char channel){
 	if(channel>7) return 0;	
 	if(channel==0) return 0;
-//	printf("Channel %u : %u mV\n\r", channel,advalue[4]);	
-	//return channel;
-	//return advalue[4];
 	return advalue[channel-1];
 }
 
@@ -122,68 +118,40 @@ static unsigned int ConvHex2mV( unsigned int valueToConvert )
     return( (ADC_VREF * valueToConvert)/mask);
 }
 
+
 //------------------------------------------------------------------------------
 /// Interrupt handler for the ADC. Signals that the conversion is finished by
 /// setting a flag variable.
 //------------------------------------------------------------------------------
 volatile int conversionDone=0;
 unsigned volatile int status, i;
-    
+volatile int autosample=0;
+
+void adc_sample(){
+    if(conversionDone == enchan){
+	    conversionDone=0;
+	    ADC12_StartConversion(AT91C_BASE_ADC);
+	}
+}
+
+
+
 void ADCC0_IrqHandler(void)
 {
     status = ADC12_GetStatus(AT91C_BASE_ADC);
     
     for(i=0;i<7;i++) {
-/*      
-    if (ADC12_IsChannelInterruptStatusSet(status, ADC_NUM_1)){
-	          advalue[1] = ConvHex2mV(ADC12_GetConvertedData(AT91C_BASE_ADC, ADC_NUM_1));
-  		  conversionDone |= 1<<ADC_NUM_5;
-	}
-	if (ADC12_IsChannelInterruptStatusSet(status, ADC_NUM_2)){
-	          advalue[2] = ConvHex2mV(ADC12_GetConvertedData(AT91C_BASE_ADC, ADC_NUM_2));
-  		  conversionDone |= 1<<ADC_NUM_2;
-        }
-    if (ADC12_IsChannelInterruptStatusSet(status, ADC_NUM_3)){
-	          advalue[3] = ConvHex2mV(ADC12_GetConvertedData(AT91C_BASE_ADC, ADC_NUM_3));
-  		  conversionDone |= 1<<ADC_NUM_3;
-	}
-	if (ADC12_IsChannelInterruptStatusSet(status, ADC_NUM_4)){
-	          advalue[4] = ConvHex2mV(ADC12_GetConvertedData(AT91C_BASE_ADC, ADC_NUM_4));
-  		  conversionDone |= 1<<ADC_NUM_4;
-	}
-    if (ADC12_IsChannelInterruptStatusSet(status, ADC_NUM_5)){
-	          advalue[5] = ConvHex2mV(ADC12_GetConvertedData(AT91C_BASE_ADC, ADC_NUM_5));
-  		  conversionDone |= 1<<ADC_NUM_5;
-	}
-	if (ADC12_IsChannelInterruptStatusSet(status, ADC_NUM_6)){
-	          advalue[6] = ConvHex2mV(ADC12_GetConvertedData(AT91C_BASE_ADC, ADC_NUM_6));
-  		  conversionDone |= 1<<ADC_NUM_6;
-        }
-    if (ADC12_IsChannelInterruptStatusSet(status, ADC_NUM_7)){
-	          advalue[7] = ConvHex2mV(ADC12_GetConvertedData(AT91C_BASE_ADC, ADC_NUM_7));
-  		  conversionDone |= 1<<ADC_NUM_7;
-	}
-	*/
+
       if ((enchan&(1<<chns[i]) )&&ADC12_IsChannelInterruptStatusSet(status, chns[i])) {
-		//ADC12_DisableIt(AT91C_BASE_ADC, 1<<chns[i]);
             advalue[i] = ConvHex2mV(ADC12_GetConvertedData(AT91C_BASE_ADC, chns[i]));
             conversionDone |= 1<<chns[i];
         }
+    }
+
+	if(autosample)
+        adc_sample();
 }
 
-	if(conversionDone == enchan){
-	    conversionDone=0;
-
-/*	ADC12_EnableIt(AT91C_BASE_ADC, 1<<ADC_NUM_5);
-	ADC12_EnableIt(AT91C_BASE_ADC, 1<<ADC_NUM_3);
-	ADC12_EnableIt(AT91C_BASE_ADC, 1<<ADC_NUM_1);
-	ADC12_EnableIt(AT91C_BASE_ADC, 1<<ADC_NUM_2);
-*/
-	
-	    ADC12_StartConversion(AT91C_BASE_ADC);
-	}
-  
-}
 
 //------------------------------------------------------------------------------
 //         Global functions
@@ -192,11 +160,13 @@ void ADCC0_IrqHandler(void)
 //------------------------------------------------------------------------------
 /// Performs measurements on ADC channel 0 and displays the result on the DBGU.
 //------------------------------------------------------------------------------
-void initadc()
+void initadc(int autos)
 {
    // printf("-- Basic ADC Project %s --\n\r", SOFTPACK_VERSION);
   //  printf("-- %s\n\r", BOARD_NAME);
   //  printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
+  if(autos)
+    autosample=1;
 #ifdef PINS_ADC
     PIO_Configure(pinsADC, PIO_LISTSIZE(pinsADC));
 #endif

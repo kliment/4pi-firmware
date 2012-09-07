@@ -71,11 +71,6 @@ unsigned volatile char flag=0;
 
 /// VBus pin instance.
 static const Pin pinVbus = PIN_USB_VBUS;
-static void (*callback)(unsigned char)=0;
-
-void samserial_setcallback(void (*c)(unsigned char)){
-	callback=c;
-}
 
 //------------------------------------------------------------------------------
 /// Handles interrupts coming from PIO controllers.
@@ -154,6 +149,12 @@ void USBDCallbacks_Suspended(void)
     USBState = STATE_SUSPEND;
 }
 
+static void (*callback)(unsigned char)=0;
+
+void samserial_setcallback(void (*c)(unsigned char)){
+	callback=c;
+}
+
 //------------------------------------------------------------------------------
 /// Callback invoked when data has been received on the USB.
 //------------------------------------------------------------------------------
@@ -167,7 +168,7 @@ static void UsbDataReceived(unsigned int unused,
     if (status == USBD_STATUS_SUCCESS) {
 
 	
-	if(received)
+	//if(received)
 		flag=1;
 	int i=0;
 	if(callback)
@@ -188,18 +189,26 @@ static void UsbDataReceived(unsigned int unused,
       //  TRACE_WARNING( "UsbDataReceived: Transfer error\n\r");
     }
 }
+//volatile int busyflag=0;
+//volatile char _samserial_buffer[128];
 void samserial_print(const char* c)
 {
-if(flag && isSerialConnected)        CDCDSerialDriver_Write((void *)c,strlen(c), 0, 0);
+    char _buf[128];
+    strncpy(_buf,c,128);
+    _buf[127]='\0';
+    
+    if(flag && isSerialConnected){
+        //flag=0;
+        printf(_buf);
+        printf("BUFLEN:%d\r\n",strlen(_buf));
+        if(CDCDSerialDriver_Write((void *)_buf,strlen(_buf), 0, 0)!= USBD_STATUS_SUCCESS)
+            printf("FAIL\r\n");
+        //CDCDSerialDriver_Write((void *)_buf,(strlen(_buf)%60), 0, 0);
+    }
+
 }
 
 
-
-
-//------------------------------------------------------------------------------
-//          Main
-//------------------------------------------------------------------------------
-    
 //------------------------------------------------------------------------------
 /// Initializes drivers and start the USB <-> Serial bridge.
 //------------------------------------------------------------------------------

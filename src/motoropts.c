@@ -1,5 +1,7 @@
 #include <board.h>
 #include <pio/pio.h>
+#include <stdio.h>
+
 const Pin MOSI={1 <<  14, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
 const Pin SCK={1 <<  15, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
 const Pin CS={1 <<  16, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_1, PIO_PULLUP};
@@ -33,28 +35,30 @@ const Pin E1DIR={1 <<  25, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_OUTPUT_0, PIO_PUL
 
 void AD5206_sendbit(unsigned char bit){
     volatile unsigned int uDummy;
-    for (uDummy=0; uDummy<10000; ++uDummy);
+    for (uDummy=0; uDummy<512; ++uDummy);
     PIO_Clear(&SCK);
-    if(bit>0)
+    if(bit)
         PIO_Set(&MOSI);
     else
         PIO_Clear(&MOSI);
-    for (uDummy=0; uDummy<10000; ++uDummy);
+    for (uDummy=0; uDummy<512; ++uDummy);
     PIO_Set(&SCK);
 }
     
 void AD5206_setchan(unsigned char chan, unsigned char value){
     
     PIO_Set(&CS);
+    volatile unsigned int uDummy;
+    for (uDummy=0; uDummy<10000; ++uDummy);
     PIO_Clear(&SCK);
     PIO_Set(&MOSI);
     int i;
     PIO_Clear(&CS); //Enable chip
     for(i=0;i<3;i++){
-        AD5206_sendbit(chan&(1<<(3-i)));
+        AD5206_sendbit((chan&(1<<(2-i)))>0);
     }
     for(i=0;i<8;i++){
-        AD5206_sendbit(value&(1<<(8-i)));
+        AD5206_sendbit((value&(1<<(7-i)))>0);
     }
     PIO_Clear(&SCK);
     PIO_Set(&CS);
@@ -67,10 +71,7 @@ void AD5206_setup(){
     PIO_Configure(SPIPINS,3);
     
     PIO_Set(&CS);
-    int i;
-    for(i=0;i<6;++i){
-        AD5206_setchan(i,128);
-    }
+    
 }
 
 void motor_setopts(unsigned char axis, unsigned char ustepbits, unsigned char current){
@@ -136,6 +137,7 @@ void motor_setup(){
     int i;
     for(i=0;i<5;i++)
         motor_setopts(i,3,128);
+    printf("done setting up motors\n");
 }
 
 void motor_enaxis(unsigned char axis, unsigned char en){
