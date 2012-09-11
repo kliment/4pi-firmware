@@ -38,6 +38,7 @@
 //#include <pmc/pmc.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 //------------------------------------------------------------------------------
 //      Definitions
@@ -206,6 +207,21 @@ void samserial_print(const char* c)
         //CDCDSerialDriver_Write((void *)_buf,(strlen(_buf)%60), 0, 0);
     }
 
+}
+
+void usb_printf (char * format, ...)
+{
+  char buffer[256];
+  unsigned int str_len = 0;
+  va_list args;
+  va_start (args, format);
+  str_len = vsprintf (buffer,format, args);
+  
+  if(flag && isSerialConnected)
+		if(CDCDSerialDriver_Write((void *)buffer,str_len, 0, 0)!= USBD_STATUS_SUCCESS)
+			printf("USB FAIL\r\n");
+  
+  va_end (args);
 }
 
 

@@ -175,6 +175,9 @@ C_OBJECTS += pmc.o
 C_OBJECTS += trace.o
 C_OBJECTS += board_memories.o
 C_OBJECTS += board_lowlevel.o
+C_OBJECTS += com_interpreter.o
+C_OBJECTS += heaters.o
+
 
 # Objects for different chips
 ifeq ($(CHIP_CORE), cortexm3)
