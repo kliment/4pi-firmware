@@ -27,51 +27,49 @@
  * ----------------------------------------------------------------------------
  */
 
-/**
- \unit
+//------------------------------------------------------------------------------
+/// \unit
+/// !Purpose
+/// 
+/// Mass storage %device driver implementation.
+/// 
+/// !Usage
+/// 
+/// -# Enable and setup USB related pins (see pio & board.h).
+/// -# Configure the memory interfaces used for Mass Storage LUNs
+///    (see memories, MSDLun.h).
+/// -# Configure the USB MSD %driver using MSDDriver_Initialize.
+/// -# Invoke MSDDriver_StateMachine in main loop to handle all Mass Storage
+///    operations.
+//------------------------------------------------------------------------------
 
- !!!Purpose
-
- Definition of the USB descriptors required by a CDC device serial
- driver.
-*/
-
-#ifndef CDCDSERIALDRIVERDESCRIPTORS_H
-#define CDCDSERIALDRIVERDESCRIPTORS_H
+#ifndef MSDDRIVER_H
+#define MSDDRIVER_H
 
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
 
-#include <usb/device/core/USBDDriverDescriptors.h>
+#include "MSD.h"
+#include "MSDLun.h"
+#include <utility/trace.h>
 
 //------------------------------------------------------------------------------
-//         Definitions
+//      Global functions
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-/// \page "CDC Serial Endpoints"
-/// This page lists the endpoints used in CDC Serial Device.
-///
-/// !Endpoints
-/// - CDCDSerialDriverDescriptors_DATAOUT
-/// - CDCDSerialDriverDescriptors_DATAIN
-/// - CDCDSerialDriverDescriptors_NOTIFICATION
+extern void MSDDriver_Initialize(MSDLun *luns, unsigned char numLuns);
 
-/// Data OUT endpoint number.
-#define CDCDSerialDriverDescriptors_DATAOUT             1
-/// Data IN endpoint number.
-#define CDCDSerialDriverDescriptors_DATAIN              2
-/// Notification endpoint number.
-#define CDCDSerialDriverDescriptors_NOTIFICATION        3
-//------------------------------------------------------------------------------
+extern void MSDDriver_RequestHandler(const USBGenericRequest *request);
 
-//------------------------------------------------------------------------------
-//         Exported variables
-//------------------------------------------------------------------------------
+extern void MSDDriver_StateMachine(void);
 
-/// List of descriptors for a CDC device serial driver.
-extern USBDDriverDescriptors cdcdSerialDriverDescriptors;
+extern void MSDDriver_RemoteWakeUp(void);
 
-#endif //#ifndef CDCDDRIVERDESCRIPTORS_H
+extern void MSDDriver_DataCallback(unsigned char isRead,
+                                   unsigned int dataLength,
+                                   unsigned int nullCnt,
+                                   unsigned int fullCnt);
+
+#endif // #ifndef MSDDRIVER_H
 

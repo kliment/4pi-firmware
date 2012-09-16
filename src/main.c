@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "usb.h"
 #include "serial.h"
 #include "samadc.h"
 #include "com_interpreter.h"
@@ -97,7 +98,7 @@ void SysTick_Handler(void)
     if(timestamp%2000==0)
     {
 	    //printf("Temp 0 / 1: %u mV / %u mV \n", adc_read(5), adc_read(3));
-
+		usb_handle_state();
     }
     
     if(timestamp%5==0) //every 5 ms
@@ -161,6 +162,9 @@ int main()
 
     //-------- Init UART --------------
 	samserial_init();
+	
+	//------- Init USB ----------------
+	usb_init();
 	
 	//-------- Init ADC without Autostart --------------
     initadc(0);

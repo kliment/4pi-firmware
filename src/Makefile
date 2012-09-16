@@ -82,12 +82,16 @@ SIZE = $(CROSS_COMPILE)size
 OBJCOPY = $(CROSS_COMPILE)objcopy
 
 # Flags
+INCLUDES += -I.
 INCLUDES += -I$(AT91LIB)/boards/$(BOARD)
 INCLUDES += -I$(AT91LIB)/peripherals
 INCLUDES += -I$(AT91LIB)/components
+INCLUDES += -I$(AT91LIB)/memories
+INCLUDES += -I$(AT91LIB)/drivers
 INCLUDES += -I$(AT91LIB)/usb/device
 INCLUDES += -I$(AT91LIB)
 INCLUDES += -I$(EXT_LIBS)
+INCLUDES += -I$(EXT_LIBS)/fat
 
 ifeq ($(CHIP_CORE), cortexm3)
 TARGET_OPTS = -mcpu=cortex-m3 -mthumb
@@ -110,17 +114,18 @@ USB = $(AT91LIB)/usb
 UTILITY = $(AT91LIB)/utility
 PERIPH = $(AT91LIB)/peripherals
 BOARDS = $(AT91LIB)/boards
+MEM = $(AT91LIB)/memories
+DRV = $(AT91LIB)/drivers
+FATFS = $(EXT_LIBS)/fat/fatfs
 
-VPATH += $(USB)/device/cdc-serial
-VPATH += $(USB)/device/core
-VPATH += $(USB)/common/core
-VPATH += $(USB)/common/cdc
 VPATH += $(UTILITY)
 VPATH += $(PERIPH)/dbgu
 VPATH += $(PERIPH)/irq
 VPATH += $(PERIPH)/usart
 VPATH += $(PERIPH)/adc
 VPATH += $(PERIPH)/tc
+VPATH += $(PERIPH)/mci
+VPATH += $(PERIPH)/dma
 #VPATH += $(PERIPH)/spi
 VPATH += $(PERIPH)/systick
 VPATH += $(PERIPH)/pio
@@ -129,15 +134,26 @@ VPATH += $(PERIPH)/cp15
 VPATH += $(BOARDS)/$(BOARD)
 VPATH += $(BOARDS)/$(BOARD)/$(CHIP)
 VPATH += $(EXT_LIBS)/cmsis
+VPATH += $(FATFS)/src
 VPATH += $(PERIPH)/systick
+VPATH += $(MEM)
+VPATH += $(MEM)/sdmmc/
+VPATH += $(DRV)/dmad
 
-# Objects built from C source files
-C_OBJECTS += main.o
-C_OBJECTS += syscalls.o
-C_OBJECTS += CDCDSerialDriver.o
-C_OBJECTS += CDCDSerialDriverDescriptors.o
-C_OBJECTS += CDCSetControlLineStateRequest.o
-C_OBJECTS += CDCLineCoding.o
+# at91lib/usb/common/core
+VPATH += $(USB)/common/core
+C_OBJECTS += USBConfigurationDescriptor.o
+C_OBJECTS += USBEndpointDescriptor.o
+C_OBJECTS += USBFeatureRequest.o
+C_OBJECTS += USBGenericDescriptor.o
+C_OBJECTS += USBGenericRequest.o
+C_OBJECTS += USBGetDescriptorRequest.o
+C_OBJECTS += USBInterfaceRequest.o
+C_OBJECTS += USBSetAddressRequest.o
+C_OBJECTS += USBSetConfigurationRequest.o
+
+# at91lib/usb/device/core
+VPATH += $(USB)/device/core
 C_OBJECTS += USBD_OTGHS.o
 C_OBJECTS += USBD_UDP.o
 C_OBJECTS += USBD_UDPHS.o
@@ -146,28 +162,43 @@ C_OBJECTS += USBDCallbacks_Initialized.o
 C_OBJECTS += USBDCallbacks_Reset.o
 #C_OBJECTS += USBDCallbacks_Resumed.o
 #C_OBJECTS += USBDCallbacks_Suspended.o
-C_OBJECTS += USBDDriverCb_CfgChanged.o
+#C_OBJECTS += USBDDriverCb_CfgChanged.o
 C_OBJECTS += USBDDriverCb_IfSettingChanged.o
-C_OBJECTS += USBSetAddressRequest.o
-C_OBJECTS += USBGenericDescriptor.o
-C_OBJECTS += USBInterfaceRequest.o
-C_OBJECTS += USBGenericRequest.o
-C_OBJECTS += USBGetDescriptorRequest.o
-C_OBJECTS += USBSetConfigurationRequest.o
+
+# at91lib/usb/device/massstorage
+VPATH += $(USB)/common/massstorage
+VPATH += $(USB)/device/massstorage
+C_OBJECTS += MSDDStateMachine.o
+C_OBJECTS += MSDLun.o
+C_OBJECTS += SBCMethods.o
+
+# at91lib/usb/common/cdc
+VPATH += $(USB)/common/cdc
+C_OBJECTS += CDCSetControlLineStateRequest.o
+C_OBJECTS += CDCLineCoding.o
+
+# at91lib/usb/device/composite
+VPATH += $(USB)/device/composite
+C_OBJECTS += CDCMSDDDriver.o
+C_OBJECTS += CDCMSDDDriverDescriptors.o
+C_OBJECTS += MSDDFunctionDriver.o
+C_OBJECTS += CDCDFunctionDriver.o
+
+# Objects built from C source files
+C_OBJECTS += main.o
+C_OBJECTS += syscalls.o
 C_OBJECTS += stdio.o
 C_OBJECTS += systick.o
 C_OBJECTS += serial.o
 C_OBJECTS += motoropts.o
 C_OBJECTS += tc.o
-C_OBJECTS += USBFeatureRequest.o
-C_OBJECTS += USBEndpointDescriptor.o
-C_OBJECTS += USBConfigurationDescriptor.o
 C_OBJECTS += led.o
 C_OBJECTS += adc12.o
 C_OBJECTS += samadc.o
 #C_OBJECTS += spi.o
 C_OBJECTS += string.o
 C_OBJECTS += dbgu.o
+C_OBJECTS += math.o
 C_OBJECTS += usart.o
 C_OBJECTS += pio.o
 C_OBJECTS += pio_it.o
@@ -177,7 +208,15 @@ C_OBJECTS += board_memories.o
 C_OBJECTS += board_lowlevel.o
 C_OBJECTS += com_interpreter.o
 C_OBJECTS += heaters.o
+C_OBJECTS += usb.o
 
+C_OBJECTS += Media.o
+C_OBJECTS += MEDSdcard.o
+C_OBJECTS += diskio.o
+C_OBJECTS += ff_util.o
+C_OBJECTS += tff.o
+C_OBJECTS += ff.o
+C_OBJECTS += sdmmc_mci.o
 
 # Objects for different chips
 ifeq ($(CHIP_CORE), cortexm3)
@@ -194,6 +233,14 @@ endif
 ifneq ($(CHIP_CORE), cortexm3)
 ASM_OBJECTS += board_cstartup.o
 ASM_OBJECTS += cp15_asm.o
+endif
+
+ifeq ($(CHIP_IP_MCI), MCI_DMA)
+C_OBJECTS += dmad.o
+C_OBJECTS += dma.o
+C_OBJECTS += mci_hs.o
+else
+C_OBJECTS += mci.o
 endif
 
 # Append OBJ and BIN directories to output filename

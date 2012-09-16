@@ -15,9 +15,21 @@ DefaultDestDir=12                                               ; Default instal
                                                                 ; AtmelMfg
 
 [AtmelMfg]                                                      ; Models section corresponding to ATMEL
-%USBtoSerialConverter%=USBtoSer.Install,USB\VID_03EB&PID_6119   ; Identifies a device with ATMEL Vendor ID (03EBh) and
-                                                                ; Product ID equal to 6119h. Corresponding Install section
-                                                                ; is named USBtoSer.Install
+%USBtoSerialConverter%=USBtoSer.Install,USB\VID_03EB&PID_6130&MI_00   ; Identifies a device with ATMEL Vendor ID (03EBh) and
+                                                                      ; Product ID equal to 6130h. Corresponding Install section
+                                                                      ; is named USBtoSer.Install ( CDCHID )
+%USBtoSerialConverter%=USBtoSer.Install,USB\VID_03EB&PID_6131&MI_00   ; Identifies a device with ATMEL Vendor ID (03EBh) and
+                                                                      ; Product ID equal to 6131h. Corresponding Install section
+                                                                      ; is named USBtoSer.Install ( CDCAUDIO )
+%USBtoSerialConverter%=USBtoSer.Install,USB\VID_03EB&PID_6132&MI_00   ; Identifies a device with ATMEL Vendor ID (03EBh) and
+                                                                      ; Product ID equal to 6132h. Corresponding Install section
+                                                                      ; is named USBtoSer.Install ( CDCMSD )
+%USBtoSerialConverter%=USBtoSer.Install,USB\VID_03EB&PID_6133&MI_00   ; Identifies a device with ATMEL Vendor ID (03EBh) and
+                                                                      ; Product ID equal to 6133h. Corresponding Install section
+                                                                      ; is named USBtoSer.Install ( CDCCDC )
+%USBtoSerialConverter%=USBtoSer.Install,USB\VID_03EB&PID_6133&MI_02   ; Identifies a device with ATMEL Vendor ID (03EBh) and
+                                                                      ; Product ID equal to 6133h. Corresponding Install section
+                                                                      ; is named USBtoSer.Install ( CDCCDC )
 
 [USBtoSer.Install]                                              ; Install section
 include=mdmcpq.inf
@@ -42,4 +54,4 @@ ServiceBinary=%12%\usbser.sys                                   ; Driver filenam
 [Strings]                                                       ; Strings section
 ATMEL="ATMEL Corp."                                             ; String value for the ATMEL symbol
 USBtoSerialConverter="AT91 USB to Serial Converter"             ; String value for the USBtoSerialConverter symbol
-USBSer="USB Serial Driver"                                      ; String value for the USBSer symbol
+USBSer="USB Composite Serial Driver"                            ; String value for the USBSer symbol
