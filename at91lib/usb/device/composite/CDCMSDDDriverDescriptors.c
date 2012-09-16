@@ -64,13 +64,13 @@
 //-----------------------------------------------------------------------------
 
 /// Device product ID.
-#define CDCMSDDDriverDescriptors_PRODUCTID       0x6132
+#define CDCMSDDDriverDescriptors_PRODUCTID       0x6019
 
 /// Device vendor ID (Atmel).
-#define CDCMSDDDriverDescriptors_VENDORID        0x03EB
+#define CDCMSDDDriverDescriptors_VENDORID        0x1d50
 
 /// Device release number.
-#define CDCMSDDDriverDescriptors_RELEASE         0x0003
+#define CDCMSDDDriverDescriptors_RELEASE         0x0001
 
 //-----------------------------------------------------------------------------
 //         Macros
