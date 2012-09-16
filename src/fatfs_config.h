@@ -151,10 +151,6 @@
 /* accesses drive number 0.                                              */
 
 #define DRV_MMC          0
-#define DRV_NAND         1
-#define DRV_SDRAM        2
-#define DRV_ATA          3
-#define DRV_USB          4
 
 #define SECTOR_SIZE_DEFAULT 512
 

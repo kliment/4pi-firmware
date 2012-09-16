@@ -209,6 +209,7 @@ C_OBJECTS += board_lowlevel.o
 C_OBJECTS += com_interpreter.o
 C_OBJECTS += heaters.o
 C_OBJECTS += usb.o
+C_OBJECTS += sdcard.o
 
 C_OBJECTS += Media.o
 C_OBJECTS += MEDSdcard.o

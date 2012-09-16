@@ -7,9 +7,14 @@
 #include <usb/device/composite/CDCMSDDDriver.h>
 
 #include <board_memories.h>
+#include <memories/MEDSdcard.h>
 #include <usb/device/massstorage/MSDDriver.h>
 #include <usb/device/massstorage/MSDLun.h>
 #include <pmc/pmc.h>
+
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
 
 #include "serial.h"
 #include "usb.h"
@@ -172,12 +177,48 @@ static void UsbDataReceived(unsigned int unused,
 	CDCDSerialDriver_Read(0,usbSerialBuffer,DATABUFFERSIZE,(TransferCallback)UsbDataReceived,0);
 }
 
+void usb_mount_sdcard()
+{
+	MEDSdusb_Initialize(&medias[DRV_DISK],0);
+	LUN_Init(&(luns[DRV_DISK]),
+             &(medias[DRV_DISK]),
+             msdBuffer, MSD_BUFFER_SIZE,
+             0, 0, 0, 0,
+             0);
+    
+}
+
+void usb_unmount_sdcard()
+{
+	LUN_Eject(&luns[DRV_DISK]);
+	
+}
+
+
+
+void usb_printf (char * format, ...)
+{
+  char buffer[256];
+  unsigned int str_len = 0;
+  va_list args;
+  va_start (args, format);
+  str_len = vsprintf (buffer,format, args);
+  va_end (args);
+
+  if (USBState == STATE_IDLE)
+	CDCDSerialDriver_Write(0,(void *)buffer,str_len, 0, 0);
+}
 
 
 void usb_init()
 {
+    // USB CDCMSD driver initialization
+    CDCMSDDDriver_Initialize(luns, numMedias);
+
 	VBUS_CONFIGURE();
 	USBD_Connect();
+
+
 
 	usb_handle_state();
 }

@@ -32,15 +32,7 @@ DSTATUS disk_initialize (
     DSTATUS stat = STA_NOINIT;
 
     switch (drv) {
-        case DRV_SDRAM :
-            stat = 0;
-            break;
-
         case DRV_MMC :
-            stat = 0;
-            break;
- 
-        case DRV_NAND:
             stat = 0;
             break;
     }
@@ -59,16 +51,9 @@ DSTATUS disk_status (
     DSTATUS stat=STA_NOINIT;
 
     switch (drv) {
-        case DRV_SDRAM :
-            stat = 0;  // ok
-            break;
-
         case DRV_MMC :
             stat = 0;  // ok
             break;  
-        case DRV_NAND:
-            stat = 0;
-            break;
     }
 
     return stat;
@@ -191,44 +176,6 @@ DRESULT disk_ioctl (
     DRESULT res=RES_PARERR;
    
     switch (drv) {
-        case DRV_SDRAM :
-        switch (ctrl) { 
-
-            case GET_BLOCK_SIZE:
-                *(WORD*)buff = 1;
-                res = RES_OK;
-                break;
-            
-            case GET_SECTOR_COUNT :   /* Get number of sectors on the disk (DWORD) */
-                //*(DWORD*)buff = (DWORD)(medias[DRV_SDRAM].size);
-                if (medias[DRV_SDRAM].blockSize < SECTOR_SIZE_DEFAULT)
-                    *(DWORD*)buff = (DWORD)(medias[DRV_SDRAM].size /
-                                            (SECTOR_SIZE_DEFAULT /
-                                            medias[DRV_SDRAM].blockSize));
-                else
-                    *(DWORD*)buff = (DWORD)(medias[DRV_SDRAM].size);
-
-                res = RES_OK;
-                break; 
-
-            case GET_SECTOR_SIZE :   /* Get sectors on the disk (WORD) */
-                //*(WORD*)buff = medias[DRV_SDRAM].blockSize;
-                if (medias[DRV_SDRAM].blockSize < SECTOR_SIZE_DEFAULT)
-                    *(WORD*)buff = SECTOR_SIZE_DEFAULT;
-                else
-                    *(WORD*)buff = medias[DRV_SDRAM].blockSize;
-                res = RES_OK;
-                break; 
-
-            case CTRL_SYNC :   /* Make sure that data has been written */ 
-                res = RES_OK; 
-                break; 
-
-            default: 
-                res = RES_PARERR; 
-        }
-        break;
-
         case DRV_MMC :
         switch (ctrl) { 
 
@@ -265,43 +212,6 @@ DRESULT disk_ioctl (
                 res = RES_PARERR; 
         }
         break;
-
-        case DRV_NAND :
-            switch (ctrl) { 
-
-                case GET_BLOCK_SIZE:
-                    *(WORD*)buff = 1; 
-                    res = RES_OK; 
-                    break; 
-
-                case GET_SECTOR_COUNT :   /* Get number of sectors on the disk (DWORD) */ 
-                    if (medias[DRV_NAND].blockSize < SECTOR_SIZE_DEFAULT)
-                        *(DWORD*)buff = (DWORD)(medias[DRV_NAND].size /
-                                                (SECTOR_SIZE_DEFAULT /
-                                                medias[DRV_NAND].blockSize));
-                    else
-                        *(DWORD*)buff = (DWORD)(medias[DRV_NAND].size);
-                    res = RES_OK;
-                    break; 
-
-                case GET_SECTOR_SIZE :	 /* Get sectors on the disk (WORD) */ 
-                    //*(WORD*)buff = medias[DRV_MMC].blockSize;
-                    if (medias[DRV_NAND].blockSize < SECTOR_SIZE_DEFAULT)
-                        *(WORD*)buff = SECTOR_SIZE_DEFAULT;
-                    else
-                        *(WORD*)buff = medias[DRV_NAND].blockSize;
-                    res = RES_OK;
-                    break;
-
-                case CTRL_SYNC :   /* Make sure that data has been written */ 
-                    MED_Flush(&medias[DRV_NAND]);
-                    res = RES_OK; 
-                    break; 
-
-                default: 
-                    res = RES_PARERR; 
-        }
-
     } 
 
    return res; 

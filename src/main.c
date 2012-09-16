@@ -165,6 +165,7 @@ int main()
 	
 	//------- Init USB ----------------
 	usb_init();
+	usb_mount_sdcard();
 	
 	//-------- Init ADC without Autostart --------------
     initadc(0);
