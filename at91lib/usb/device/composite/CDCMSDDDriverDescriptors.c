@@ -494,34 +494,24 @@ static const unsigned char languageIdDescriptor[] = {
 /// Manufacturer name.
 static const unsigned char manufacturerDescriptor[] = {
 
-    USBStringDescriptor_LENGTH(5),
+    USBStringDescriptor_LENGTH(6),
     USBGenericDescriptor_STRING,
-    USBStringDescriptor_UNICODE('A'),
-    USBStringDescriptor_UNICODE('t'),
-    USBStringDescriptor_UNICODE('m'),
+    USBStringDescriptor_UNICODE('R'),
     USBStringDescriptor_UNICODE('e'),
-    USBStringDescriptor_UNICODE('l')
+    USBStringDescriptor_UNICODE('p'),
+    USBStringDescriptor_UNICODE('R'),
+    USBStringDescriptor_UNICODE('a'),
+    USBStringDescriptor_UNICODE('p')
 };
 
 /// Product name.
 static const unsigned char productDescriptor[] = {
 
-    USBStringDescriptor_LENGTH(14),
+    USBStringDescriptor_LENGTH(3),
     USBGenericDescriptor_STRING,
-    USBStringDescriptor_UNICODE('C'),
-    USBStringDescriptor_UNICODE('o'),
-    USBStringDescriptor_UNICODE('m'),
+    USBStringDescriptor_UNICODE('4'),
     USBStringDescriptor_UNICODE('p'),
-    USBStringDescriptor_UNICODE('o'),
-    USBStringDescriptor_UNICODE('s'),
     USBStringDescriptor_UNICODE('i'),
-    USBStringDescriptor_UNICODE('t'),
-    USBStringDescriptor_UNICODE('e'),
-    USBStringDescriptor_UNICODE(' '),
-    USBStringDescriptor_UNICODE('D'),
-    USBStringDescriptor_UNICODE('e'),
-    USBStringDescriptor_UNICODE('m'),
-    USBStringDescriptor_UNICODE('o')
 };
 
 /// Product serial number.
