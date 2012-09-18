@@ -75,14 +75,14 @@ static SBCInquiryData inquiryData = {
     0x0,                            // Unused features
     0,                              // Task management model not supported
     0x0,                            // ???
-    {'A','T','M','E','L',' ',' ',' '},
+    {'4','p','i',' ',' ',' ',' ',' '},
     {'M','a','s','s',' ',
      'S','t','o','r','a','g','e',' ',
      'M','S','D'},
     {'0','.','0','1'},
     {'M','a','s','s',' ',
      'S','t','o','r','a','g','e',' ',
-     'E','x','a','m','p','l','e'},
+     ' ',' ',' ',' ',' ',' ',' '},
     0x00,                           // Unused features
     0x00,                           // Reserved bits
     {SBC_VERSION_DESCRIPTOR_SBC_3}, // SBC-3 compliant device

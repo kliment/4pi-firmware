@@ -38,7 +38,7 @@
 //------------------------------------------------------------------------------
 
 /// Number of medias which are effectively used.
-unsigned int numMedias = 0;
+unsigned int numMedias = 1;
 
 //------------------------------------------------------------------------------
 //! \brief  Handle interrupts on specified media

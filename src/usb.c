@@ -71,9 +71,6 @@ static unsigned char usbSerialBuffer[DATABUFFERSIZE];
 /// Available medias.
 Media medias[MAX_LUNS];
 
-/// Number of medias which are effectively used (Defined in Media.c).
-//unsigned int numMedias = 0;
-
 /// Device LUNs.
 MSDLun luns[MAX_LUNS];
 
@@ -213,7 +210,7 @@ void usb_printf (char * format, ...)
 void usb_init()
 {
     // USB CDCMSD driver initialization
-    CDCMSDDDriver_Initialize(luns, numMedias);
+    CDCMSDDDriver_Initialize(luns, 1);
 
 	VBUS_CONFIGURE();
 	USBD_Connect();

@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "usb.h"
+#include "sdcard.h"
 #include "serial.h"
 #include "samadc.h"
 #include "com_interpreter.h"
@@ -151,7 +152,6 @@ int main()
 {
 
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
-    printf("-- USB Device CDC Serial Project %s --\n\r", SOFTPACK_VERSION);
     printf("-- %s\n\r", BOARD_NAME);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
@@ -165,7 +165,8 @@ int main()
 	
 	//------- Init USB ----------------
 	usb_init();
-	usb_mount_sdcard();
+//	usb_mount_sdcard();
+	sdcard_mount();
 	
 	//-------- Init ADC without Autostart --------------
     initadc(0);
