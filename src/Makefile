@@ -135,6 +135,7 @@ VPATH += $(BOARDS)/$(BOARD)
 VPATH += $(BOARDS)/$(BOARD)/$(CHIP)
 VPATH += $(EXT_LIBS)/cmsis
 VPATH += $(FATFS)/src
+VPATH += $(FATFS)/src/option
 VPATH += $(PERIPH)/systick
 VPATH += $(MEM)
 VPATH += $(MEM)/sdmmc/
@@ -214,9 +215,8 @@ C_OBJECTS += sdcard.o
 C_OBJECTS += Media.o
 C_OBJECTS += MEDSdcard.o
 C_OBJECTS += diskio.o
-C_OBJECTS += ff_util.o
-C_OBJECTS += tff.o
 C_OBJECTS += ff.o
+C_OBJECTS += unicode.o
 C_OBJECTS += sdmmc_mci.o
 
 # Objects for different chips

@@ -39,6 +39,11 @@ static const char* getError(FRESULT r)
 	return errorStrings[r];
 }
 
+DWORD get_fattime()
+{
+	return 0;
+}
+
 void ISR_Media()
 {
     MED_HandleAll(medias, 1);
