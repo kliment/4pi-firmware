@@ -45,6 +45,7 @@ void ISR_Media()
 }
 
 
+
 void sdcard_mount()
 {
 	DIR dirs;
@@ -59,7 +60,8 @@ void sdcard_mount()
 		return;
 	}
 	
-	f_mount(&fs,0);
+	f_mount(0,&fs);
+	
 	if (f_opendir(&dirs,"0:") == FR_NO_FILESYSTEM)
 	{
 		printf("sdcard: No filesystem found on SD card, formatting...");
