@@ -87,8 +87,10 @@ INCLUDES += -I$(AT91LIB)/peripherals
 INCLUDES += -I$(AT91LIB)/components
 INCLUDES += -I$(AT91LIB)/usb/device
 INCLUDES += -I$(AT91LIB)/memories
+INCLUDES += -I$(AT91LIB)/drivers
 INCLUDES += -I$(AT91LIB)
 INCLUDES += -I$(EXT_LIBS)
+INCLUDES += -I$(EXT_LIBS)/fat
 
 ifeq ($(CHIP_CORE), cortexm3)
 TARGET_OPTS = -mcpu=cortex-m3 -mthumb
@@ -112,6 +114,8 @@ UTILITY = $(AT91LIB)/utility
 PERIPH = $(AT91LIB)/peripherals
 BOARDS = $(AT91LIB)/boards
 MEMORY = $(AT91LIB)/memories
+DRV = $(AT91LIB)/drivers
+FATFS = $(EXT_LIBS)/fat/fatfs
 
 VPATH += $(USB)/device/cdc-serial
 VPATH += $(USB)/device/core
@@ -128,12 +132,19 @@ VPATH += $(PERIPH)/systick
 VPATH += $(PERIPH)/pio
 VPATH += $(PERIPH)/pmc
 VPATH += $(PERIPH)/cp15
+VPATH += $(PERIPH)/dma
+VPATH += $(PERIPH)/mci
 VPATH += $(BOARDS)/$(BOARD)
 VPATH += $(BOARDS)/$(BOARD)/$(CHIP)
 VPATH += $(EXT_LIBS)/cmsis
 VPATH += $(PERIPH)/systick
 VPATH += $(PERIPH)/eefc
+VPATH += $(MEMORY)
 VPATH += $(MEMORY)/flash
+VPATH += $(MEMORY)/sdmmc/
+VPATH += $(DRV)/dmad
+VPATH += $(FATFS)/src
+VPATH += $(FATFS)/src/option
 
 
 
@@ -175,6 +186,7 @@ C_OBJECTS += samadc.o
 #C_OBJECTS += spi.o
 C_OBJECTS += string.o
 C_OBJECTS += dbgu.o
+C_OBJECTS += math.o
 C_OBJECTS += usart.o
 C_OBJECTS += pio.o
 C_OBJECTS += pio_it.o
@@ -191,6 +203,14 @@ C_OBJECTS += parameters.o
 C_OBJECTS += eefc.o
 C_OBJECTS += flashd_eefc.o
 
+#media
+C_OBJECTS += Media.o
+C_OBJECTS += MEDSdcard.o
+C_OBJECTS += sdmmc_mci.o
+
+#fatfs
+C_OBJECTS += ff.o
+C_OBJECTS += unicode.o
 
 
 
@@ -204,6 +224,15 @@ else
 C_OBJECTS += aic.o
 C_OBJECTS += cp15.o
 endif
+
+ifeq ($(CHIP_IP_MCI), MCI_DMA)
+C_OBJECTS += dmad.o
+C_OBJECTS += dma.o
+C_OBJECTS += mci_hs.o
+else
+C_OBJECTS += mci.o
+endif
+
 
 # Objects built from Assembly source files
 ifneq ($(CHIP_CORE), cortexm3)
