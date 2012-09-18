@@ -14,7 +14,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <fatfs_config.h>
+#include <fatfs/src/ff.h>
 
 //------------------------------------------------------------------------------
 //         Internal variables
@@ -23,7 +23,8 @@
 /*-----------------------------------------------------------------------*/
 /* Initialize a Drive                                                    */
 /*-----------------------------------------------------------------------*/
-
+#define DRV_MMC 0
+#define SECTOR_SIZE_DEFAULT 512
 
 DSTATUS disk_initialize (
     BYTE drv                /* Physical drive number (0..) */
