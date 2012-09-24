@@ -22,13 +22,15 @@
 #include <stdlib.h>
 #include "samadc.h"
 #include "heaters.h"
+#ifndef COMPUTE_THERMISTORS
 #include "thermistortables.h"
+#else
+#include <math.h>
+#endif
 
 #define HEATER_BED			0
 #define HEATER_HOTEND_1		1
 #define HEATER_HOTEND_2		2
-
-
 
 const Pin BEDHEAT={1 <<  20, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
 const Pin HOTEND1={1 <<  21, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
@@ -73,8 +75,16 @@ void heater_switch(unsigned char heater, unsigned char en){
 // Convert °C to mV
 //-------------------------
 #if defined (HEATER_USES_THERMISTOR) || defined (BED_USES_THERMISTOR)
-int temp2analog_thermistor(int celsius, const short table[][2], int numtemps) 
-{
+
+#if defined COMPUTE_THERMISTORS
+
+int temp2analog_thermistor(int celsius, const float beta, const float rs, const float r_inf) {
+	float r = r_inf*exp(beta/(celsius - ABS_ZERO));
+	return (int)(0.5 + ADC_VREF*r/(r + rs));
+}
+
+#else
+int temp2analog_thermistor(int celsius, const short table[][2], int numtemps) {
     int raw = 0;
     unsigned char i;
     
@@ -96,12 +106,24 @@ int temp2analog_thermistor(int celsius, const short table[][2], int numtemps)
 
     return /*3300 -*/ raw;
 }
+
+#endif
 #endif
 
 //-------------------------
 // Convert mV to °C
 //-------------------------
 #if defined (HEATER_USES_THERMISTOR) || defined (BED_USES_THERMISTOR)
+
+#if defined COMPUTE_THERMISTORS
+
+int analog2temp_thermistor(int raw, const float beta, const float rs, const float r_inf) {
+	float r = rs/(ADC_VREF/(float)(raw))-1;
+	return (int)(0.5 + ABS_ZERO + beta/log( r/r_inf ));
+}
+
+#else
+
 int analog2temp_thermistor(int raw,const short table[][2], int numtemps) {
     int celsius = 0;
     unsigned char i;
@@ -126,6 +148,9 @@ int analog2temp_thermistor(int raw,const short table[][2], int numtemps) {
 
     return celsius;
 }
+
+#endif
+
 #endif
 
 //-------------------------
@@ -145,7 +170,6 @@ void init_heaters_values(void)
 	heaters[0].prev_temp = 0;
 	heaters[0].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (int)heaters[0].PID_I;
 	heaters[0].temp_iState_min = heaters[0].temp_iState_max * (-1);
-	
 
 	heaters[1].io_adr = HEATER_HOTEND_2;
 	heaters[1].ad_cannel = 1;
@@ -158,8 +182,6 @@ void init_heaters_values(void)
 	heaters[1].prev_temp = 0;
 	heaters[1].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (int)heaters[1].PID_I;
 	heaters[1].temp_iState_min = heaters[1].temp_iState_max * (-1);
-	
-	
 	
 }
 
