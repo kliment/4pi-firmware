@@ -32,7 +32,7 @@
 #include "samadc.h"
 #include "com_interpreter.h"
 #include "heaters.h"
-
+#include "usb.h"
 
 
 

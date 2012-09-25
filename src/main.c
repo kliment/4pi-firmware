@@ -99,6 +99,7 @@ void SysTick_Handler(void)
     if(timestamp%2000==0)
     {
 	    //printf("Temp 0 / 1: %u mV / %u mV \n", adc_read(5), adc_read(3));
+		sdcard_handle_state();
 		usb_handle_state();
     }
     
@@ -165,8 +166,8 @@ int main()
 	
 	//------- Init USB ----------------
 	usb_init();
-//	usb_mount_sdcard();
-	sdcard_mount();
+	
+	sdcard_set_mode(SD_MODE_CPU);
 	
 	//-------- Init ADC without Autostart --------------
     initadc(0);
@@ -190,8 +191,8 @@ int main()
     //motor_enaxis(1,1);
 		while (1) {
   		//uncomment to use//sprinter_mainloop();
-    	//main loop events go here
-    	
+    	//main loop events go here    	
+
     	if(buflen)
 		  {
     		//-------- Check and execute G-CODE --------------

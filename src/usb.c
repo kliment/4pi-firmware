@@ -193,7 +193,7 @@ void usb_unmount_sdcard()
 
 
 
-void usb_printf (char * format, ...)
+void usb_printf (const char * format, ...)
 {
   char buffer[256];
   unsigned int str_len = 0;
@@ -210,7 +210,7 @@ void usb_printf (char * format, ...)
 void usb_init()
 {
     // USB CDCMSD driver initialization
-    CDCMSDDDriver_Initialize(luns, 1);
+    CDCMSDDDriver_Initialize(luns, 0);
 
 	VBUS_CONFIGURE();
 	USBD_Connect();
@@ -225,14 +225,16 @@ void usb_handle_state()
 {
 	if (USBState == STATE_INVALID)
 	{
-		if (USBD_GetState() == USBD_STATE_CONFIGURED)
+		if (USBD_GetState() >= USBD_STATE_CONFIGURED)
 		{
+			printf("USB connected\n\r");
 			USBState = STATE_RESUME;
 		}
 	}
 	
 	if (USBState == STATE_RESUME)
 	{
+		printf("USB resumed\n\r");
 		CDCDSerialDriver_Read(0,usbSerialBuffer,DATABUFFERSIZE,(TransferCallback)UsbDataReceived,0);
 		USBState = STATE_IDLE;
 	}
