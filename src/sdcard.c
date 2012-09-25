@@ -61,6 +61,9 @@ void sdcard_handle_state()
 	if (!had_card && has_card)
 	{
 		printf("sdcard: card inserted\n");
+		uint8_t mode = sd_mode;
+		sd_mode = 0xff;
+		sdcard_set_mode(mode);
 	}
 	else if (had_card && !had_card)
 	{

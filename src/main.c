@@ -99,8 +99,6 @@ void SysTick_Handler(void)
     if(timestamp%2000==0)
     {
 	    //printf("Temp 0 / 1: %u mV / %u mV \n", adc_read(5), adc_read(3));
-		sdcard_handle_state();
-		usb_handle_state();
     }
     
     if(timestamp%5==0) //every 5 ms
@@ -192,6 +190,12 @@ int main()
 		while (1) {
   		//uncomment to use//sprinter_mainloop();
     	//main loop events go here    	
+			if (!(timestamp % 2000))
+			{
+				sdcard_handle_state();
+				usb_handle_state();
+			}
+
 
     	if(buflen)
 		  {
