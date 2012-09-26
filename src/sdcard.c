@@ -3,15 +3,20 @@
 #include <memories/MEDSdcard.h>
 #include <fatfs/src/ff.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #include "sdcard.h"
+#include "usb.h"
 
 #define MAX_LUNS            1
 #define DRV_DISK            0
 
+
 Media medias[MAX_LUNS];
 
+static unsigned char had_card = 0;
 static unsigned char is_mounted = 0;
+static unsigned char sd_mode = SD_MODE_CPU;
 static FATFS fs;
 
 
@@ -49,6 +54,45 @@ void ISR_Media()
     MED_HandleAll(medias, 1);
 }
 
+void sdcard_handle_state()
+{
+	unsigned char has_card = sdcard_carddetected();
+	
+	if (!had_card && has_card)
+	{
+		printf("sdcard: card inserted\n");
+		uint8_t mode = sd_mode;
+		sd_mode = 0xff;
+		sdcard_set_mode(mode);
+	}
+	else if (had_card && !had_card)
+	{
+		printf("sdcard: card removed\n");
+/*		sdcard_unmount();
+		usb_unmount_sdcard();*/
+		is_mounted = 0;
+	}
+	had_card = has_card;
+}
+
+void sdcard_set_mode(unsigned char mode)
+{
+	if (mode == sd_mode)
+		return;
+		
+	if (mode == SD_MODE_CPU)
+	{
+		usb_unmount_sdcard();
+		sdcard_mount();
+	}
+	else if (mode = SD_MODE_HOST)
+	{
+		sdcard_unmount();
+		usb_mount_sdcard();
+	}
+	mode = sd_mode;
+	
+}
 
 
 void sdcard_mount()
@@ -61,7 +105,7 @@ void sdcard_mount()
 	
 	if (!MEDSdcard_Initialize(&medias[DRV_DISK],0))
 	{
-		printf("\r\nsdcard: SD card initialization failed, no sd card inserted?\r\n");
+		printf("\nsdcard: SD card initialization failed, no sd card inserted?\n");
 		return;
 	}
 	
@@ -73,11 +117,11 @@ void sdcard_mount()
 		res = f_mkfs(0,0,512);
 		if (res != FR_OK)
 		{
-			printf("failed: %s\r\n",getError(res));
+			printf("failed: %s\n",getError(res));
 			return;
 		}
 		else
-			printf("ok\r\n");
+			printf("done\n");
 	}
 	is_mounted = 1;
 }
@@ -87,7 +131,7 @@ void sdcard_unmount()
 	if (!is_mounted)
 		return;
 		
-	f_mount(NULL,0);
+	f_mount(0,NULL);
 	is_mounted = 0;
 }
 
