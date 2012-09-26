@@ -59,6 +59,9 @@ typedef struct {
     unsigned char numPorts;
 } CDCFunDriver;
 
+
+dtrCallbackFunc dtrCallback = NULL;
+
 //-----------------------------------------------------------------------------
 //         Internal variables
 //-----------------------------------------------------------------------------
@@ -152,7 +155,12 @@ static void CDCD_SetControlLineState(const USBGenericRequest *request,
               isDTEPresent);
 
     cdcFunDriver.pCdcPorts[serial].isCarrierActivated = activateCarrier;
+
     USBD_Write(0, 0, 0, 0, 0);
+
+	if (dtrCallback)
+		dtrCallback(isDTEPresent);
+
 }
 
 //-----------------------------------------------------------------------------

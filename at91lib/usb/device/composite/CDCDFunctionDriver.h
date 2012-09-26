@@ -89,6 +89,8 @@ typedef struct _CDCDSerialPort{
 //-----------------------------------------------------------------------------
 //         Callbacks
 //-----------------------------------------------------------------------------
+typedef void (*dtrCallbackFunc)(unsigned char dtrState);
+extern dtrCallbackFunc dtrCallback;
 
 //-----------------------------------------------------------------------------
 //         Exported functions

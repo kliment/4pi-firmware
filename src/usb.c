@@ -10,6 +10,7 @@
 #include <memories/MEDSdcard.h>
 #include <usb/device/massstorage/MSDDriver.h>
 #include <usb/device/massstorage/MSDLun.h>
+#include <usb/device/composite/CDCDFunctionDriver.h>
 #include <pmc/pmc.h>
 
 #include <stdio.h>
@@ -61,6 +62,7 @@
 //-----------------------------------------------------------------------------
 /// State of USB, for suspend and resume
 unsigned char USBState = STATE_INVALID;
+static unsigned char s_DTRState = 0;
 
 //- CDC
 
@@ -158,6 +160,16 @@ void USBDCallbacks_Suspended(void)
 }
 
 
+static void DTRCallback(unsigned char dtrState)
+{
+	printf("DTR change %d\n",dtrState);
+	
+	if (!s_DTRState && dtrState)
+	{
+		usb_printf("start\n");
+	}
+	s_DTRState = dtrState;
+}
 
 //-----------------------------------------------------------------------------
 /// Callback invoked when data has been received on the USB.
@@ -169,8 +181,10 @@ static void UsbDataReceived(unsigned int unused,
 {
    
 	if (status == USBD_STATUS_SUCCESS)
+	{
 		samserial_datareceived(usbSerialBuffer,received);
-
+	}
+	
 	CDCDSerialDriver_Read(0,usbSerialBuffer,DATABUFFERSIZE,(TransferCallback)UsbDataReceived,0);
 }
 
@@ -209,6 +223,7 @@ void usb_printf (const char * format, ...)
 
 void usb_init()
 {
+	dtrCallback = DTRCallback;
     // USB CDCMSD driver initialization
     CDCMSDDDriver_Initialize(luns, 0);
 
