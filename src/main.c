@@ -100,12 +100,6 @@ void SysTick_Handler(void)
     {
 	    //printf("Temp 0 / 1: %u mV / %u mV \n", adc_read(5), adc_read(3));
     }
-    
-    if(timestamp%5==0) //every 5 ms
-    {
-		if(buflen < (BUFSIZE-1))
-			get_command();
-    }
 	
 	if(timestamp%250==0) //every 100 ms
     {
@@ -187,27 +181,29 @@ int main()
 
     //motor_enaxis(0,1);
     //motor_enaxis(1,1);
-		while (1) {
+	while (1) {
   		//uncomment to use//sprinter_mainloop();
     	//main loop events go here    	
-			if (!(timestamp % 2000))
-			{
-				sdcard_handle_state();
-				usb_handle_state();
-			}
+		if (!(timestamp % 2000))
+		{
+			sdcard_handle_state();
+			usb_handle_state();
+		}
 
 
-    	if(buflen)
-		  {
-    		//-------- Check and execute G-CODE --------------
-			process_commands();
+		get_command();
 			
+    	if(buflen)
+	 	{
+	   		//-------- Check and execute G-CODE --------------
+			process_commands();
+		
 			//-------- Increment G-Code FIFO  --------------
 			buflen = (buflen-1);
 		    bufindr++;
 		    if(bufindr == BUFSIZE) bufindr = 0;
 			
-		  }
+		}
 		  
     }
 }
