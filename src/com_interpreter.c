@@ -14,6 +14,75 @@
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
+ 
+ // look here for descriptions of gcodes: http://linuxcnc.org/handbook/gcode/g-code.html
+// http://objects.reprap.org/wiki/Mendel_User_Manual:_RepRapGCodes
+
+//Implemented Codes
+//-------------------
+// G0  -> G1
+// G1  - Coordinated Movement X Y Z E
+// G2  - CW ARC
+// G3  - CCW ARC
+// G4  - Dwell S<seconds> or P<milliseconds>
+// G28 - Home all Axis
+// G90 - Use Absolute Coordinates
+// G91 - Use Relative Coordinates
+// G92 - Set current position to cordinates given
+
+//RepRap M Codes
+// M104 - Set extruder target temp
+// M105 - Read current temp
+// M106 - Fan on
+// M107 - Fan off
+// M109 - Wait for extruder current temp to reach target temp.
+// M114 - Display current position
+
+//Custom M Codes
+// M20  - List SD card
+// M21  - Init SD card
+// M22  - Release SD card
+// M23  - Select SD file (M23 filename.g)
+// M24  - Start/resume SD print
+// M25  - Pause SD print
+// M26  - Set SD position in bytes (M26 S12345)
+// M27  - Report SD print status
+// M28  - Start SD write (M28 filename.g)
+// M29  - Stop SD write
+//   -  <filename> - Delete file on sd card
+// M42  - Set output on free pins, on a non pwm pin (over pin 13 on an arduino mega) use S255 to turn it on and S0 to turn it off. Use P to decide the pin (M42 P23 S255) would turn pin 23 on
+// M80  - Turn on Power Supply
+// M81  - Turn off Power Supply
+// M82  - Set E codes absolute (default)
+// M83  - Set E codes relative while in Absolute Coordinates (G90) mode
+// M84  - Disable steppers until next move, 
+//        or use S<seconds> to specify an inactivity timeout, after which the steppers will be disabled.  S0 to disable the timeout.
+// M85  - Set inactivity shutdown timer with parameter S<seconds>. To disable set zero (default)
+// M92  - Set axis_steps_per_unit - same syntax as G92
+// M93  - Send axis_steps_per_unit
+// M115	- Capabilities string
+// M119 - Show Endstopper State 
+// M140 - Set bed target temp
+// M190 - Wait for bed current temp to reach target temp.
+// M201 - Set maximum acceleration in units/s^2 for print moves (M201 X1000 Y1000)
+// M202 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
+// M203 - Set temperture monitor to Sx
+// M204 - Set default acceleration: S normal moves T filament only moves (M204 S3000 T7000) in mm/sec^2
+// M205 - advanced settings:  minimum travel speed S=while printing T=travel only,  X=maximum xy jerk, Z=maximum Z jerk
+// M206 - set additional homing offset
+
+// M220 - set speed factor override percentage S=factor in percent 
+// M221 - set extruder multiply factor S100 --> original Extrude Speed 
+
+// M301 - Set PID parameters P I and D
+// M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
+
+// M400 - Finish all moves
+
+// M500 - stores paramters in EEPROM
+// M501 - reads parameters from EEPROM (if you need to reset them after you changed them temporarily).
+// M502 - reverts to the default "factory settings". You still need to store them in EEPROM afterwards if you want to.
+// M503 - Print settings
 
 
 #include <board.h>
@@ -32,9 +101,12 @@
 #include "samadc.h"
 #include "com_interpreter.h"
 #include "heaters.h"
+#include "planner.h"
 #include "usb.h"
+#include "stepper_control.h"
 
 
+extern void motor_enaxis(unsigned char axis, unsigned char en);
 
 
 volatile char uart_in_buffer[256];
@@ -46,14 +118,31 @@ char cmdbuffer[BUFSIZE][MAX_CMD_SIZE];
 unsigned char fromsd[BUFSIZE];
 
 
-unsigned char bufindr = 0;
-unsigned char bufindw = 0;
-unsigned char buflen = 0;
+volatile unsigned char bufindr = 0;
+volatile unsigned char bufindw = 0;
+volatile unsigned char buflen = 0;
 unsigned char serial_char;
-int serial_count = 0;
+volatile int serial_count = 0;
 unsigned char comment_mode = 0;
 char *strchr_pointer; // just a pointer to find chars in the cmd string like X, Y, Z, E, etc
 long gcode_N, gcode_LastN;
+
+//Inactivity shutdown variables
+unsigned long previous_millis_cmd = 0;
+unsigned long max_inactive_time = 0;
+unsigned long stepper_inactive_time = 0;
+
+unsigned char relative_mode = 0;
+volatile signed short feedmultiply=100; //100->original / 200 -> Factor 2 / 50 -> Factor 0.5
+signed short saved_feedmultiply = 0;
+volatile char feedmultiplychanged=0;
+volatile signed short extrudemultiply=100; //100->1 200->2
+
+unsigned char active_extruder = 0;		//0 --> Exteruder 1 / 1 --> Extruder 2
+unsigned char tmp_extruder = 0;
+
+
+extern volatile unsigned long timestamp;
 
 //extern int bed_temp_celsius;
 
@@ -61,7 +150,6 @@ long gcode_N, gcode_LastN;
 void usb_characterhandler(unsigned char c){ 
     //every time the USB receives a new character, this function is called
 	uart_in_buffer[uart_wr_pointer++] = c;
-    //printf("%c, %u\n",c,uart_wr_pointer);
 	if(uart_wr_pointer >= UART_BUFFER_SIZE)
 		uart_wr_pointer = 0;
 }
@@ -82,14 +170,14 @@ unsigned char get_byte_from_UART(unsigned char *zeichen)
 
 void ClearToSend()
 {
-  //previous_millis_cmd = millis();
-  usb_printf("ok\r\n");
+	previous_millis_cmd = timestamp;
+	usb_printf("ok\r\n");
 }
 
 void FlushSerialRequestResend()
 {
-  uart_rd_pointer = uart_wr_pointer;
-  usb_printf("Resend:%u ok\r\n",gcode_LastN + 1);
+	uart_rd_pointer = uart_wr_pointer;
+	usb_printf("Resend:%u ok\r\n",gcode_LastN + 1);
 }
 
 void get_command() 
@@ -204,13 +292,15 @@ unsigned char code_seen(char code)
   return (strchr_pointer != NULL);  //Return True if a character was found
 }
 
+
 //------------------------------------------------
 // CHECK COMMAND AND CONVERT VALUES
 //------------------------------------------------
 void process_commands()
 {
   unsigned long codenum; //throw away variable
-  char *starpos = NULL;
+  //char *starpos = NULL;
+  unsigned char cnt_c = 0;
 
   if(code_seen('G'))
   {
@@ -218,27 +308,91 @@ void process_commands()
     {
       case 0: // G0 -> G1
       case 1: // G1
-        //ClearToSend();
+        get_coordinates(); // For X Y Z E F
+        prepare_move();
+        previous_millis_cmd = timestamp;
         return;
         //break;
-      #ifdef USE_ARC_FUNCTION
       case 2: // G2  - CW ARC
-        //break;
+        get_arc_coordinates();
+        prepare_arc_move(1);
+        previous_millis_cmd = timestamp;
         return;
       case 3: // G3  - CCW ARC
-        //break;
+        get_arc_coordinates();
+        prepare_arc_move(0);
+        previous_millis_cmd = timestamp;
         return;  
-      #endif  
       case 4: // G4 dwell
-        break;
+		codenum = 0;
+		if(code_seen('P')) codenum = code_value(); // milliseconds to wait
+		if(code_seen('S')) codenum = code_value() * 1000; // seconds to wait
+		codenum += timestamp;  // keep track of when we started waiting
+		st_synchronize();  // wait for all movements to finish
+
+		while(timestamp  < codenum )
+		{
+
+		}
+		break;
       case 28: //G28 Home all Axis one at a time
+	    saved_feedrate = feedrate;
+        saved_feedmultiply = feedmultiply;
+        previous_millis_cmd = timestamp;
+        
+        feedmultiply = 100;    
+      
+        enable_endstops(1);
+      
+        /*
+		for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+        {
+          destination[cnt_c] = current_position[cnt_c];
+        }
+		*/
+        feedrate = 0;
+        is_homing = 1;
+
+        home_all_axis = !((code_seen(axis_codes[0])) || (code_seen(axis_codes[1])) || (code_seen(axis_codes[2])));
+
+        if((home_all_axis) || (code_seen(axis_codes[X_AXIS]))) 
+          homing_routine(X_AXIS);
+
+        if((home_all_axis) || (code_seen(axis_codes[Y_AXIS]))) 
+          homing_routine(Y_AXIS);
+
+        if((home_all_axis) || (code_seen(axis_codes[Z_AXIS]))) 
+          homing_routine(Z_AXIS);
+        
+        #ifdef ENDSTOPS_ONLY_FOR_HOMING
+            enable_endstops(0);
+      	#endif
+      
+        is_homing = 0;
+        feedrate = saved_feedrate;
+        feedmultiply = saved_feedmultiply;
+      
+        previous_millis_cmd = timestamp;
+		
+		
         break;
       case 90: // G90
+		relative_mode = 0;
         break;
       case 91: // G91
+		relative_mode = 1;
         break;
       case 92: // G92
-        break;
+		if(!code_seen(axis_codes[E_AXIS])) 
+			st_synchronize();
+          
+        for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++)
+        {
+			if(code_seen(axis_codes[cnt_c])) current_position[cnt_c] = code_value();  
+        }
+        plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+        
+		break;
       default:
         usb_printf("Unknown G-COM: %s \r\n",cmdbuffer[bufindr]);
       break;
@@ -258,17 +412,20 @@ void process_commands()
         }
         break;
       case 104: // M104
-		if (code_seen('S')) heaters[0].target_temp = code_value();
-		heaters[1].target_temp = heaters[0].target_temp;
+		if (code_seen('S'))
+		{
+			if(tmp_extruder < MAX_EXTRUDER)
+				heaters[tmp_extruder].target_temp = code_value();
+		}
         break;
       case 140: // M140 set bed temp
 		if (code_seen('S')) bed_heater.target_temp = code_value();
-	  
         break;
       case 105: // M105
-
-		  	usb_printf("ok T:%u @%u B:%u",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
-
+		  	if(tmp_extruder < MAX_EXTRUDER)
+				usb_printf("ok T:%u @%u B:%u",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
+			else
+				usb_printf("ok T:%u @%u B:%u",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
         return;
         //break;
       case 109: // M109 - Wait for extruder heater to reach target.
@@ -286,20 +443,145 @@ void process_commands()
 
         break;
       case 82:
-		break;
-		
+        axis_relative_modes[3] = 0;
+        break;
       case 83:
-		break;
-		
+        axis_relative_modes[3] = 1;
+        break;
       case 84:
+        st_synchronize(); // wait for all movements to finish
+        if(code_seen('S'))
+        {
+          stepper_inactive_time = code_value() * 1000; 
+        }
+        else if(code_seen('T'))
+        {
+          enable_x(); 
+          enable_y(); 
+          enable_z(); 
+          enable_e(); 
+        }
+        else
+        { 
+          disable_x(); 
+          disable_y(); 
+          disable_z(); 
+          disable_e(); 
+        }
         break;
-		
       case 85: // M85
+        code_seen('S');
+        max_inactive_time = code_value() * 1000; 
         break;
-		
+	  case 92: // M92
+        for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+        {
+          if(code_seen(axis_codes[cnt_c])) 
+          {
+            axis_steps_per_unit[cnt_c] = code_value();
+            axis_steps_per_sqr_second[cnt_c] = max_acceleration_units_per_sq_second[cnt_c] * axis_steps_per_unit[cnt_c];
+          }
+        }
+        break;
+      case 93: // M93 show current axis steps.
+		usb_printf("ok X:%d Y:%d Z:%d E:%d",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
+		//printf("ok X:%d Y:%d Z:%d E:%d",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
+        break;
+	  case 114: // M114 Display current position
+		usb_printf("X:%d Y:%d Z:%d E:%d",(int)current_position[0],(int)current_position[1],(int)current_position[2],(int)current_position[3]);
+        break;
       case 115: // M115
         usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:1\r\n");
         break;
+	  case 119: // M119 show endstop state
+		break;
+	  case 201: // M201  Set maximum acceleration in units/s^2 for print moves (M201 X1000 Y1000)
+
+        for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+        {
+          if(code_seen(axis_codes[cnt_c]))
+          {
+            max_acceleration_units_per_sq_second[cnt_c] = code_value();
+            axis_steps_per_sqr_second[cnt_c] = code_value() * axis_steps_per_unit[cnt_c];
+          }
+        }
+        break;
+      case 202: // M202 max feedrate mm/sec
+        for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+        {
+          if(code_seen(axis_codes[cnt_c])) max_feedrate[cnt_c] = code_value();
+        }
+      break;
+      case 203: // M203 Temperature monitor
+          //if(code_seen('S')) manage_monitor = code_value();
+          //if(manage_monitor==100) manage_monitor=1; // Set 100 to heated bed
+      break;
+      case 204: // M204 acceleration S normal moves T filmanent only moves
+          if(code_seen('S')) move_acceleration = code_value() ;
+          if(code_seen('T')) retract_acceleration = code_value() ;
+      break;
+      case 205: //M205 advanced settings:  minimum travel speed S=while printing T=travel only,  B=minimum segment time X= maximum xy jerk, Z=maximum Z jerk, E= max E jerk
+        if(code_seen('S')) minimumfeedrate = code_value();
+        if(code_seen('T')) mintravelfeedrate = code_value();
+      //if(code_seen('B')) minsegmenttime = code_value() ;
+        if(code_seen('X')) max_xy_jerk = code_value() ;
+        if(code_seen('Z')) max_z_jerk = code_value() ;
+        if(code_seen('E')) max_e_jerk = code_value() ;
+      break;
+      case 206: // M206 additional homing offset
+        if(code_seen('D'))
+        {
+          usb_printf("Addhome X:%g Y:%g Z:%g",add_homing[0],add_homing[1],add_homing[2]);
+        }
+
+        for(cnt_c=0; cnt_c < 3; cnt_c++) 
+        {
+          if(code_seen(axis_codes[cnt_c])) add_homing[cnt_c] = code_value();
+        }
+      break;  	
+	  case 220: // M220 S<factor in percent>- set speed factor override percentage
+      {
+        if(code_seen('S')) 
+        {
+          feedmultiply = code_value() ;
+          feedmultiply = constrain(feedmultiply, 20, 200);
+          feedmultiplychanged=1;
+        }
+      }
+      break;
+      case 221: // M221 S<factor in percent>- set extrude factor override percentage
+      {
+        if(code_seen('S')) 
+        {
+          extrudemultiply = code_value() ;
+          extrudemultiply = constrain(extrudemultiply, 40, 200);
+        }
+      }
+      break;
+      case 301: // M301
+      {
+        if(tmp_extruder < MAX_EXTRUDER)
+		{
+			if(code_seen('P')) heaters[tmp_extruder].PID_Kp = code_value();
+			if(code_seen('I')) heaters[tmp_extruder].PID_I = code_value();
+			if(code_seen('D')) heaters[tmp_extruder].PID_Kd = code_value();
+			heaters[tmp_extruder].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (int)heaters[tmp_extruder].PID_I;
+			heaters[tmp_extruder].temp_iState_min = heaters[tmp_extruder].temp_iState_max * (-1);
+		}
+      }
+      break;
+      case 303: // M303 PID autotune
+      {
+        //float help_temp = 150.0;
+        //if (code_seen('S')) help_temp=code_value();
+        //PID_autotune(help_temp);
+      }
+      break;
+      case 400: // M400 finish all moves
+      {
+      	st_synchronize();	
+      }
+      break;	  
 
       default:
 		usb_printf("Unknown M-COM: %s \r\n",cmdbuffer[bufindr]);
@@ -308,9 +590,22 @@ void process_commands()
     }
     
   }
-  else{
-  
-      usb_printf("Unknown command: %s \r\n",cmdbuffer[bufindr]);
+  else if(code_seen('T')) 
+  {
+    tmp_extruder = code_value();
+    if(tmp_extruder >= MAX_EXTRUDER) 
+	{
+		//No more extruder
+		usb_printf("Only 2 Extruder possible\r\n");
+    }
+    else 
+	{
+		active_extruder = tmp_extruder;
+    }
+  }
+  else
+  {
+       usb_printf("Unknown command: %s \r\n",cmdbuffer[bufindr]);
   }
   
   ClearToSend();

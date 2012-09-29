@@ -209,6 +209,9 @@ C_OBJECTS += board_memories.o
 C_OBJECTS += board_lowlevel.o
 C_OBJECTS += com_interpreter.o
 C_OBJECTS += heaters.o
+C_OBJECTS += arc_func.o
+C_OBJECTS += planner.o
+C_OBJECTS += stepper_control.o
 C_OBJECTS += usb.o
 C_OBJECTS += sdcard.o
 
@@ -261,7 +264,7 @@ C_OBJECTS_$(1) = $(addprefix $(OBJ)/$(1)_, $(C_OBJECTS))
 ASM_OBJECTS_$(1) = $(addprefix $(OBJ)/$(1)_, $(ASM_OBJECTS))
 
 $(1): $$(ASM_OBJECTS_$(1)) $$(C_OBJECTS_$(1))
-	$(CC) $(LDFLAGS) -T"$(AT91LIB)/boards/$(BOARD)/$(CHIP)/$$@.lds" -o $(OUTPUT)-$$@.elf $$^
+	$(CC) $(LDFLAGS) -T"$(AT91LIB)/boards/$(BOARD)/$(CHIP)/$$@.lds" -o $(OUTPUT)-$$@.elf $$^ -lm
 	$(OBJCOPY) -O binary $(OUTPUT)-$$@.elf $(OUTPUT)-$$@.bin
 	$(SIZE) $$^ $(OUTPUT)-$$@.elf
 
