@@ -209,6 +209,9 @@ C_OBJECTS += board_memories.o
 C_OBJECTS += board_lowlevel.o
 C_OBJECTS += com_interpreter.o
 C_OBJECTS += heaters.o
+C_OBJECTS += arc_func.o
+C_OBJECTS += planner.o
+C_OBJECTS += stepper_control.o
 C_OBJECTS += usb.o
 C_OBJECTS += sdcard.o
 

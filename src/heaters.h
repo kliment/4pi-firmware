@@ -31,7 +31,7 @@
 
 // Support to compute temperature  from themistor Beta instead of using lookup tables
 // See http://en.wikipedia.org/wiki/Thermistor#B_or_.CE.B2_parameter_equation
-#define COMPUTE_THERMISTORS
+//#define COMPUTE_THERMISTORS
 #define ABS_ZERO -273.15
 #define ADC_VREF       3300  // 3.3 * 1000
 
@@ -73,7 +73,7 @@
 #define PID_IGAIN 22 //256 is 1.0  // value of X (e.g 0.25) means that each degree error over 1 sec (2 measurements) changes duty cycle by 2X (=0.5) units (verify?)
 #define PID_DGAIN 2048 //256 is 1.0  // value of X means that around reached setpoint, each degree change over one measurement (half second) adjusts PWM by X units to compensate
 
-#define HEATER_DUTY_FOR_SETPOINT(setpoint) ((int)((187L*(long)setpoint)>>8)-27)  
+#define HEATER_DUTY_FOR_SETPOINT(setpoint) ((signed short)((187L*(long)setpoint)>>8)-27)  
 // Change this value (range 30-255) to limit the current to the nozzle
 #define HEATER_CURRENT 255
 
@@ -118,22 +118,22 @@
 
 #if defined (HEATER_USES_THERMISTOR) || defined (BED_USES_THERMISTOR)
 #if defined COMPUTE_THERMISTORS
-int temp2analog_thermistor(int celsius, const float beta, const float rs, const float r_inf);
-int analog2temp_thermistor(int raw, const float beta, const float rs, const float r_inf);
+signed short temp2analog_thermistor(signed short celsius, const float beta, const float rs, const float r_inf);
+signed short analog2temp_thermistor(signed short raw, const float beta, const float rs, const float r_inf);
 #else
-int temp2analog_thermistor(int celsius, const short table[][2], int numtemps);
-int analog2temp_thermistor(int raw,const short table[][2], int numtemps);
+signed short temp2analog_thermistor(signed short celsius, const short table[][2], signed short numtemps);
+signed short analog2temp_thermistor(signed short raw,const short table[][2], signed short numtemps);
 #endif
 #endif
 
 #if defined (HEATER_USES_AD595) || defined (BED_USES_AD595)
-int temp2analog_ad595(int celsius);
-int analog2temp_ad595(int raw);
+signed short temp2analog_ad595(signed short celsius);
+signed short analog2temp_ad595(signed short raw);
 #endif
 
 #if defined (HEATER_USES_MAX6675) || defined (BED_USES_MAX6675)
-int temp2analog_max6675(int celsius);
-int analog2temp_max6675(int raw);
+signed short temp2analog_max6675(signed short celsius);
+signed short analog2temp_max6675(signed short raw);
 #endif
 
 
@@ -144,39 +144,39 @@ void heater_soft_pwm(void);
 
 
 typedef struct {
-	int target_temp;
-	int akt_temp;
+	signed short target_temp;
+	signed short akt_temp;
 	unsigned char pwm;
 	unsigned char soft_pwm_aktiv;
-	unsigned int PID_Kp;
-	unsigned int PID_I;
-	unsigned int PID_Kd;
+	unsigned short PID_Kp;
+	unsigned short PID_I;
+	unsigned short PID_Kd;
 	
 	unsigned char io_adr;
 	unsigned char ad_cannel;
 	
-	int temp_iState;
-	int prev_temp;
-	int pTerm;
-	int iTerm;
-	int dTerm;
-	int temp_iState_min;
-	int temp_iState_max;
+	signed short temp_iState;
+	signed short prev_temp;
+	signed short pTerm;
+	signed short iTerm;
+	signed short dTerm;
+	signed short temp_iState_min;
+	signed short temp_iState_max;
 
 } heater_struct;
 
 typedef struct {
-	int target_temp;
-	int akt_temp;
+	signed short target_temp;
+	signed short akt_temp;
 
 } heater_bed_struct;
 
 
 
-extern int bed_temp_celsius;
-extern int hotend1_temp_celsius;
-extern int hotend2_temp_celsius;
-extern int target_hotend1;
+extern signed short bed_temp_celsius;
+extern signed short hotend1_temp_celsius;
+extern signed short hotend2_temp_celsius;
+extern signed short target_hotend1;
 
 extern heater_struct heaters[];
 extern heater_bed_struct bed_heater;

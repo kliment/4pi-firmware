@@ -13,12 +13,13 @@ void samserial_setcallback(void (*c)(unsigned char)){
 
 void samserial_datareceived(const void* pBuffer,int size)
 {
+	int i;
 	const char* pDataPtr = (const char*)pBuffer;
-
+	
 	if (callback)
 	{
-		while(size--)
-			callback(*pDataPtr++);
+		for (i=0;i<size;i++)
+			callback(pDataPtr[i]);
 	}
 }
 

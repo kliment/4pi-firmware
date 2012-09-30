@@ -162,11 +162,13 @@ void USBDCallbacks_Suspended(void)
 
 static void DTRCallback(unsigned char dtrState)
 {
-	printf("DTR change %d\n",dtrState);
 	
-	if (!s_DTRState && dtrState)
+	if (s_DTRState != dtrState)
 	{
-		usb_printf("start\n");
+		printf("DTR change %d\n",dtrState);
+
+		if (dtrState)
+			usb_printf("start\n");
 	}
 	s_DTRState = dtrState;
 }
