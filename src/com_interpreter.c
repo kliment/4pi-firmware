@@ -429,12 +429,65 @@ void process_commands()
         return;
         //break;
       case 109: // M109 - Wait for extruder heater to reach target.
+		if(tmp_extruder < MAX_EXTRUDER)
+		{
+			if (code_seen('S')) heaters[tmp_extruder].target_temp = code_value();
 
+			codenum = timestamp; 
+
+			/* See if we are heating up or cooling down */
+			 // true if heating, false if cooling
+			unsigned char target_direction = (heaters[tmp_extruder].akt_temp < heaters[tmp_extruder].target_temp); 
+
+		#ifdef TEMP_RESIDENCY_TIME
+			long residencyStart;
+			residencyStart = -1;
+			/* continue to loop until we have reached the target temp   
+			_and_ until TEMP_RESIDENCY_TIME hasn't passed since we reached it */
+			while( (target_direction ? (heaters[tmp_extruder].akt_temp < heaters[tmp_extruder].target_temp) : (heaters[tmp_extruder].akt_temp > heaters[tmp_extruder].target_temp))
+			|| (residencyStart > -1 && (timestamp - residencyStart) < TEMP_RESIDENCY_TIME*1000) )
+			{
+		#else
+			while ( target_direction ? (heaters[tmp_extruder].akt_temp < heaters[tmp_extruder].target_temp) : (heaters[tmp_extruder].akt_temp > heaters[tmp_extruder].target_temp) ) 
+			{
+		#endif
+				if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
+				{
+					usb_printf("ok T:%u",heaters[tmp_extruder].akt_temp);
+					codenum = timestamp;
+				}
+				#ifdef TEMP_RESIDENCY_TIME
+				/* start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
+				or when current temp falls outside the hysteresis after target temp was reached */
+				if (   (residencyStart == -1 &&  target_direction && heaters[tmp_extruder].akt_temp >= heaters[tmp_extruder].target_temp)
+				|| (residencyStart == -1 && !target_direction && heaters[tmp_extruder].akt_temp <= heaters[tmp_extruder].target_temp)
+				|| (residencyStart > -1 && labs(heaters[tmp_extruder].akt_temp) - heaters[tmp_extruder].target_temp > TEMP_HYSTERESIS) )
+				{
+					residencyStart = timestamp;
+				}
+				#endif
+			}
+		}
 		break;
 		
       case 190: // M190 - Wait for bed heater to reach target temperature.
-		break;
+		
+		if (code_seen('S')) bed_heater.target_temp = code_value();
+		codenum = timestamp; 
+		while(bed_heater.akt_temp < bed_heater.target_temp) 
+		{
+			if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
+			{
+				if(tmp_extruder < MAX_EXTRUDER)
+					usb_printf("T:%u B:%u",heaters[tmp_extruder].akt_temp,bed_heater.akt_temp);
+				else
+					usb_printf("T:%u B:%u",heaters[0].akt_temp,bed_heater.akt_temp);
+				
+				codenum = timestamp; 
+			}
+		}
 
+		break;
       case 106: //M106 Fan On
 
         break;

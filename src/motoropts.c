@@ -114,13 +114,13 @@ void motor_setopts(unsigned char axis, unsigned char ustepbits, unsigned char cu
     }
     if(ustepbits<4){
         if(ustepbits&1)
-            PIO_Set(&XMS1);
+            PIO_Set(&MS1);
         else
-            PIO_Clear(&XMS1);
+            PIO_Clear(&MS1);
         if(ustepbits&2)
-            PIO_Set(&XMS2);
+            PIO_Set(&MS2);
         else
-            PIO_Clear(&XMS2);
+            PIO_Clear(&MS2);
     }
     AD5206_setchan(channel,current);
 }
