@@ -85,7 +85,7 @@ void sdcard_set_mode(unsigned char mode)
 		usb_unmount_sdcard();
 		sdcard_mount();
 	}
-	else if (mode = SD_MODE_HOST)
+	else if (mode == SD_MODE_HOST)
 	{
 		sdcard_unmount();
 		usb_mount_sdcard();
