@@ -139,7 +139,7 @@ signed short analog2temp_max6675(signed short raw);
 
 void manage_heaters(void);
 void init_heaters_values(void);
-void heater_soft_pwm(void);
+//void heater_soft_pwm(void);
 
 
 

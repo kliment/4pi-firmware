@@ -33,7 +33,7 @@ extern void motor_unstep();
 
 extern void heaters_setup();
 extern void manage_heaters(void);
-extern void heater_soft_pwm(void);
+//extern void heater_soft_pwm(void);
 extern void ConfigureTc_1(void);
 
 
@@ -94,7 +94,7 @@ void SysTick_Handler(void)
 	//Had to wait 10ms to avoid crash ????
 	if(timestamp > 10)
 	{
-		heater_soft_pwm();
+		//heater_soft_pwm();
 	}
 	
 	    
@@ -148,7 +148,7 @@ int main()
 	
 	//-------- Timer 1 for heater PWM --------------
 	printf("Configuring Timer 1 PWM.\n\r");
-	//ConfigureTc_1();
+	ConfigureTc_1();
 
 	printf("Plan Init\n\r");
 	plan_init();

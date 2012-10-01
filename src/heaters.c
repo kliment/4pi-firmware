@@ -225,51 +225,67 @@ void heater_on_off_control(heater_struct *hotend)
 //--------------------------------------------------
 // PWM with Timer 1
 //--------------------------------------------------
+/*
+void TC1_IrqHandler(void)
+{
+	volatile unsigned int dummy;
+    // Clear status bit to acknowledge interrupt
+    dummy = AT91C_BASE_TC1->TC_SR;
 
-//need 1,1 us  :-( :-(
+	if(dummy & AT91C_TC_CPCS)
+	{
+	
+	}
+}
+*/
+
+//need 1,1 us  
+//void heater_soft_pwm(void)
 
 volatile unsigned char g_TC1_pwm_cnt = 0;
 volatile unsigned char pwm_io_is_off[2] = {0,0};
-//void TC1_IrqHandler(void)
-void heater_soft_pwm(void)
+void TC1_IrqHandler(void)
 {
-	PIO_Set(&time_check2);
-	PIO_Clear(&time_check2);
-	PIO_Set(&time_check2);
-	//volatile unsigned int dummy;
+	
+	
+	volatile unsigned int dummy;
     // Clear status bit to acknowledge interrupt
-    //dummy = AT91C_BASE_TC1->TC_SR;
+    dummy = AT91C_BASE_TC1->TC_SR;
+	
+	if(dummy & AT91C_TC_CPCS)
+	{
+	}
+	
+	PIO_Set(&time_check2);
+	
+	g_TC1_pwm_cnt+=2;
+	
 
-	//if(dummy & AT91C_TC_CPCS)
-	//{
-		g_TC1_pwm_cnt+=2;
-		
-
-		if(heaters[0].soft_pwm_aktiv == 1)
+	if(heaters[0].soft_pwm_aktiv == 1)
+	{
+		if(g_TC1_pwm_cnt == 0)
 		{
-			if(g_TC1_pwm_cnt == 0)
+			if(g_pwm_value[0] == 0)
 			{
-				if(g_pwm_value[0] == 0)
-				{
-					heater_switch(g_pwm_io_adr[0], 0);
-					pwm_io_is_off[0] = 1;
-				}
-				else
-				{
-					heater_switch(g_pwm_io_adr[0], 1);
-					pwm_io_is_off[0] = 0;
-				}
+				heater_switch(g_pwm_io_adr[0], 0);
+				pwm_io_is_off[0] = 1;
 			}
 			else
 			{
-				if((g_TC1_pwm_cnt >= g_pwm_value[0]) && (pwm_io_is_off[0] == 0))
-				{
-					heater_switch(g_pwm_io_adr[0], 0);
-					pwm_io_is_off[0] = 1;
-				}
+				heater_switch(g_pwm_io_adr[0], 1);
+				pwm_io_is_off[0] = 0;
 			}
 		}
-	//}
+		else
+		{
+			if((g_TC1_pwm_cnt >= g_pwm_value[0]) && (pwm_io_is_off[0] == 0))
+			{
+				heater_switch(g_pwm_io_adr[0], 0);
+				pwm_io_is_off[0] = 1;
+			}
+		}
+	}
+
 	PIO_Clear(&time_check2);
 }
 
@@ -386,12 +402,12 @@ void ConfigureTc_1(void)
 	// Configure TC for a 10 kHz frequency and trigger on RC compare
 	//TC_FindMckDivisor(freq, BOARD_MCK, &div, &tcclks);
 	TC_Configure(AT91C_BASE_TC1, 3 | AT91C_TC_CPCTRG);
-	AT91C_BASE_TC1->TC_RB = 3;
+	//AT91C_BASE_TC1->TC_RB = 3;
 	AT91C_BASE_TC1->TC_RC = (BOARD_MCK / 128) / freq; // timerFreq / desiredFreq
 
 	// Configure and enable interrupt on RC compare
-	//IRQ_ConfigureIT(AT91C_ID_TC1, 2, TC1_IrqHandler);
-	AT91C_BASE_TC1->TC_IER = AT91C_TC_CPCS | AT91C_TC_CPBS;
+	IRQ_ConfigureIT(AT91C_ID_TC1, 2, TC1_IrqHandler);
+	AT91C_BASE_TC1->TC_IER = AT91C_TC_CPCS; // | AT91C_TC_CPBS;
 	IRQ_EnableIT(AT91C_ID_TC1);
 
 	// Start the counter if LED is enabled.

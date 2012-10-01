@@ -154,13 +154,16 @@ void ConfigureTc0_Stepper(void)
     unsigned int freq=1000; 
     //TC_FindMckDivisor(freq, BOARD_MCK, &div, &tcclks);
     TC_Configure(AT91C_BASE_TC0, 3 | AT91C_TC_CPCTRG);
-    AT91C_BASE_TC0->TC_RB = 3; //6*((BOARD_MCK / div)/1000000); //6 uSec per step pulse 
+    //AT91C_BASE_TC0->TC_RB = 3; //6*((BOARD_MCK / div)/1000000); //6 uSec per step pulse 
     AT91C_BASE_TC0->TC_RC = (BOARD_MCK / 128) / freq; // timerFreq / desiredFreq
 
     // Configure and enable interrupt on RC compare
     IRQ_ConfigureIT(AT91C_ID_TC0, 0, TC0_IrqHandler);
-    AT91C_BASE_TC0->TC_IER = AT91C_TC_CPCS|AT91C_TC_CPBS;
-    IRQ_EnableIT(AT91C_ID_TC0);
+    
+	//AT91C_BASE_TC0->TC_IER = AT91C_TC_CPCS|AT91C_TC_CPBS;
+	AT91C_BASE_TC0->TC_IER = AT91C_TC_CPCS;
+    
+	IRQ_EnableIT(AT91C_ID_TC0);
 
     // Start the counter if LED is enabled.
     TC_Start(AT91C_BASE_TC0);
