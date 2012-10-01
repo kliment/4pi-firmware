@@ -102,7 +102,6 @@
 #include "com_interpreter.h"
 #include "heaters.h"
 #include "planner.h"
-#include "usb.h"
 #include "stepper_control.h"
 
 
@@ -299,6 +298,7 @@ unsigned char code_seen(char code)
 void process_commands()
 {
   unsigned long codenum; //throw away variable
+  unsigned char read_endstops[6] = {0,0,0,0,0,0};
   //char *starpos = NULL;
   unsigned char cnt_c = 0;
 
@@ -486,7 +486,6 @@ void process_commands()
 				codenum = timestamp; 
 			}
 		}
-
 		break;
       case 106: //M106 Fan On
 
@@ -547,6 +546,26 @@ void process_commands()
         usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:1\r\n");
         break;
 	  case 119: // M119 show endstop state
+		#if (X_MIN_ACTIV > -1)
+			read_endstops[0] = PIO_Get(&X_MIN_PIN);
+      	#endif
+      	#if (X_MAX_ACTIV > -1)
+			read_endstops[1] = PIO_Get(&Y_MIN_PIN);
+      	#endif
+      	#if (Y_MIN_ACTIV > -1)
+			read_endstops[2] = PIO_Get(&Z_MIN_PIN);
+      	#endif
+      	#if (Y_MAX_ACTIV > -1)
+			read_endstops[3] = PIO_Get(&X_MAX_PIN);
+      	#endif
+      	#if (Z_MIN_ACTIV > -1)
+			read_endstops[4] = PIO_Get(&Y_MAX_PIN);
+      	#endif
+      	#if (Z_MAX_ACTIV > -1)
+			read_endstops[5] = PIO_Get(&Z_MAX_PIN);
+      	#endif
+      
+        usb_printf("Xmin:%d Ymin:%d Zmin:%d / Xmax:%d Ymax:%d Zmax:%d",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
 		break;
 	  case 201: // M201  Set maximum acceleration in units/s^2 for print moves (M201 X1000 Y1000)
 

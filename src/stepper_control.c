@@ -237,6 +237,11 @@ void TC0_IrqHandler(void)
     
     // Clear status bit to acknowledge interrupt
     dummy = AT91C_BASE_TC0->TC_SR;
+	
+	if(dummy & AT91C_TC_CPCS)
+	{
+		//Not used at the moment
+	}
 		
 	// If there is no current block, attempt to pop one from the buffer
 	if (current_block == NULL)

@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "usb.h"
-#include "sdcard.h"
 #include "serial.h"
 #include "samadc.h"
 #include "com_interpreter.h"
@@ -82,13 +80,11 @@ void SysTick_Handler(void)
 
     }
     
-    /*
-	if(timestamp%5==0) //every 5 ms
+    if(timestamp%5==0) //every 5 ms
     {
 		if(buflen < (BUFSIZE-1))
 			get_command();
     }
-	*/
 	
 	if(timestamp%250==0) //every 100 ms
     {
@@ -110,6 +106,7 @@ int main()
 {
 	
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
+    printf("-- USB Device CDC Serial Project %s --\n\r", SOFTPACK_VERSION);
     printf("-- %s\n\r", BOARD_NAME);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
@@ -119,11 +116,6 @@ int main()
     //-------- Init UART --------------
 	printf("USB Seriel INIT\n\r");
 	samserial_init();
-	
-	//------- Init USB ----------------
-	usb_init();
-	
-	sdcard_set_mode(SD_MODE_CPU);
 	
 	//-------- Init ADC without Autostart --------------
 	printf("Init ADC\n\r");
@@ -168,20 +160,18 @@ int main()
 	{
   		//uncomment to use//sprinter_mainloop();
     	//main loop events go here
-		if (!(timestamp % 2000))
-		{
-			sdcard_handle_state();
-			usb_handle_state();
-		}
-
-		if(buflen < (BUFSIZE-1))
-			get_command();
-			
-    	if(buflen > 0)
-	 	{
-	   		//-------- Check and execute G-CODE --------------
-			process_commands();
 		
+		if(timestamp%2==0) //every 2 ms
+		{
+			//stepper_timer();
+		}
+    	
+    	if(buflen > 0)
+		{
+			
+			//-------- Check and execute G-CODE --------------
+			process_commands();
+			
 			//-------- Increment G-Code FIFO  --------------
 			buflen = (buflen-1);
 		    bufindr++;
