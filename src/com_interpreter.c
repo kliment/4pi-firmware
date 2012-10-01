@@ -140,20 +140,23 @@ volatile signed short extrudemultiply=100; //100->1 200->2
 unsigned char active_extruder = 0;		//0 --> Exteruder 1 / 1 --> Extruder 2
 unsigned char tmp_extruder = 0;
 
-
 extern volatile unsigned long timestamp;
 
-//extern int bed_temp_celsius;
-
-
-void usb_characterhandler(unsigned char c){ 
+//-----------------------------------------------------
+/// Function is called from the USB routine when bytes 
+/// over the USB received
+//-----------------------------------------------------
+void usb_characterhandler(unsigned char c)
+{ 
     //every time the USB receives a new character, this function is called
 	uart_in_buffer[uart_wr_pointer++] = c;
 	if(uart_wr_pointer >= UART_BUFFER_SIZE)
 		uart_wr_pointer = 0;
 }
 
-
+//-----------------------------------------------------
+/// Function to get bytes from the usb uart FIFO
+//-----------------------------------------------------
 unsigned char get_byte_from_UART(unsigned char *zeichen)
 {
 	if(uart_rd_pointer == uart_wr_pointer)
@@ -166,19 +169,27 @@ unsigned char get_byte_from_UART(unsigned char *zeichen)
 	return(1);	
 }
 
-
+//-----------------------------------------------------
+/// Send OK after command is worked and next G-Code can send
+//-----------------------------------------------------
 void ClearToSend()
 {
 	previous_millis_cmd = timestamp;
 	usb_printf("ok\r\n");
 }
 
+//-----------------------------------------------------
+/// Error, resend last Command and clear the FIFO
+//-----------------------------------------------------
 void FlushSerialRequestResend()
 {
 	uart_rd_pointer = uart_wr_pointer;
 	usb_printf("Resend:%u ok\r\n",gcode_LastN + 1);
 }
 
+//-----------------------------------------------------
+/// Read the command from the FIFO and store to the commad FIFO
+//-----------------------------------------------------
 void get_command() 
 { 
   while( get_byte_from_UART(&serial_char) != 0 && buflen < BUFSIZE)
@@ -281,6 +292,10 @@ void get_command()
 
 }
 
+
+//-----------------------------------------------------
+/// Tools to search and convert the strings to values
+//-----------------------------------------------------
 float code_value() { return (strtod(&cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1], NULL)); }
 long code_value_long() { return (strtol(&cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1], NULL, 10)); }
 unsigned char code_seen_str(char code_string[]) { return (strstr(cmdbuffer[bufindr], code_string) != NULL); }  //Return True if the string was found
@@ -405,7 +420,7 @@ void process_commands()
     switch( (int)code_value() ) 
     {
 
-      case 42: //M42 -Change pin status via gcode
+      case 42: //M42 Change pin status via gcode
         if (code_seen('S'))
         {
 

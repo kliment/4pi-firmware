@@ -264,61 +264,62 @@ void homing_routine(unsigned char axis)
 {
   signed short min_pin, max_pin, home_dir, max_length=0, home_bounce=0;
 
-  switch(axis){
-    case X_AXIS:
-      min_pin = X_MIN_ACTIV;
-      max_pin = X_MAX_ACTIV;
-      home_dir = X_HOME_DIR;
-      max_length = X_MAX_LENGTH;
-      home_bounce = 10;
-      break;
-    case Y_AXIS:
-      min_pin = Y_MIN_ACTIV;
-      max_pin = Y_MAX_ACTIV;
-      home_dir = Y_HOME_DIR;
-      max_length = Y_MAX_LENGTH;
-      home_bounce = 10;
-      break;
-    case Z_AXIS:
-      min_pin = Z_MIN_ACTIV;
-      max_pin = Z_MAX_ACTIV;
-      home_dir = Z_HOME_DIR;
-      max_length = Z_MAX_LENGTH;
-      home_bounce = 4;
-      break;
-    default:
-      //never reached
-      break;
-  }
+	switch(axis)
+	{
+		case X_AXIS:
+			min_pin = X_MIN_ACTIV;
+			max_pin = X_MAX_ACTIV;
+			home_dir = X_HOME_DIR;
+			max_length = X_MAX_LENGTH;
+			home_bounce = 10;
+		break;
+		case Y_AXIS:
+			min_pin = Y_MIN_ACTIV;
+			max_pin = Y_MAX_ACTIV;
+			home_dir = Y_HOME_DIR;
+			max_length = Y_MAX_LENGTH;
+			home_bounce = 10;
+		break;
+		case Z_AXIS:
+			min_pin = Z_MIN_ACTIV;
+			max_pin = Z_MAX_ACTIV;
+			home_dir = Z_HOME_DIR;
+			max_length = Z_MAX_LENGTH;
+			home_bounce = 4;
+		break;
+		default:
+			//never reached
+		break;
+	}
 
-  if ((min_pin > (-1) && home_dir==(-1)) || (max_pin > (-1) && home_dir==1))
-  {
-    current_position[axis] = (-1.5) * max_length * home_dir;
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-    destination[axis] = 0;
-    feedrate = homing_feedrate[axis];
-    prepare_move();
-    st_synchronize();
+	if ((min_pin > (-1) && home_dir==(-1)) || (max_pin > (-1) && home_dir==1))
+	{
+		current_position[axis] = (-1.5) * max_length * home_dir;
+		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+		destination[axis] = 0;
+		feedrate = homing_feedrate[axis];
+		prepare_move();
+		st_synchronize();
 
-    current_position[axis] = home_bounce/2 * home_dir;
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-    destination[axis] = 0;
-    prepare_move();
-    st_synchronize();
+		current_position[axis] = home_bounce/2 * home_dir;
+		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+		destination[axis] = 0;
+		prepare_move();
+		st_synchronize();
 
-    current_position[axis] = (home_bounce * home_dir)*(-1);
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-    destination[axis] = 0;
-    feedrate = homing_feedrate[axis]/2;
-    prepare_move();
-    st_synchronize();
+		current_position[axis] = (home_bounce * home_dir)*(-1);
+		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+		destination[axis] = 0;
+		feedrate = homing_feedrate[axis]/2;
+		prepare_move();
+		st_synchronize();
 
-    current_position[axis] = (home_dir == (-1)) ? 0 : max_length;
-    current_position[axis] += add_homing[axis];
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-    destination[axis] = current_position[axis];
-    feedrate = 0;
-  }
+		current_position[axis] = (home_dir == (-1)) ? 0 : max_length;
+		current_position[axis] += add_homing[axis];
+		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+		destination[axis] = current_position[axis];
+		feedrate = 0;
+	}
 }
 
 

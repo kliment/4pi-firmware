@@ -47,22 +47,30 @@ extern const Pin time_check2;
 //Global struct for Heatercontrol
 heater_struct heaters[2];
 heater_bed_struct bed_heater;
-volatile unsigned char g_pwm_value[2] = {0,0};
-volatile unsigned char g_pwm_io_adr[2] = {0,0};
+
+//-----------------------------------------------------
+/// SOFT Pwm for Heater 1 & 2 and Ext Pwm 1 & 2 like Fan
+//-----------------------------------------------------
+volatile unsigned char g_pwm_value[4] = {0,0,0,0};
+volatile unsigned char g_pwm_io_adr[4] = {0,0,0,0};
 
 
 //-------------------------
 // SETUP HEATERS IO
 //-------------------------
-void heaters_setup(){
-    Pin FETPINS[]={BEDHEAT,HOTEND1,HOTEND2,AUX1,AUX2};
-    PIO_Configure(FETPINS,5);
-    unsigned short i;
-    for(i=0;i<5;++i)
-        PIO_Clear(&(FETPINS[i]));
-		
+void heaters_setup()
+{
+	Pin FETPINS[]={BEDHEAT,HOTEND1,HOTEND2,AUX1,AUX2};
+
+	PIO_Configure(FETPINS,5);
+
+	unsigned short i;
+	
+	for(i=0;i<5;++i)
+		PIO_Clear(&(FETPINS[i]));
+
 	init_heaters_values();	
-		
+
 }
 
 //-------------------------
@@ -126,7 +134,7 @@ signed short temp2analog_thermistor(signed short celsius, const short table[][2]
 #if defined COMPUTE_THERMISTORS
 
 signed short analog2temp_thermistor(signed short raw, const float beta, const float rs, const float r_inf) {
-	float r = rs/(ADC_VREF/(float)(raw))-1;
+	float r = rs/((ADC_VREF/(float)(raw))-1);
 	return (signed short)(0.5 + ABS_ZERO + beta/log( r/r_inf ));
 }
 
@@ -222,34 +230,22 @@ void heater_on_off_control(heater_struct *hotend)
 	
 }
 
+
+
+
 //--------------------------------------------------
-// PWM with Timer 1
+// Soft PWM, runs every 100 us
+// need 1,1 us  
 //--------------------------------------------------
-/*
-void TC1_IrqHandler(void)
-{
-	volatile unsigned int dummy;
-    // Clear status bit to acknowledge interrupt
-    dummy = AT91C_BASE_TC1->TC_SR;
-
-	if(dummy & AT91C_TC_CPCS)
-	{
-	
-	}
-}
-*/
-
-//need 1,1 us  
-//void heater_soft_pwm(void)
-
 volatile unsigned char g_TC1_pwm_cnt = 0;
-volatile unsigned char pwm_io_is_off[2] = {0,0};
+volatile unsigned char pwm_io_is_off[4] = {0,0,0,0};
 void TC1_IrqHandler(void)
 {
 	
 	
 	volatile unsigned int dummy;
-    // Clear status bit to acknowledge interrupt
+    // Clear status bit to acknowledge interrupt !!
+	// Dont forget --> other interupts are blocked until the bit is cleared
     dummy = AT91C_BASE_TC1->TC_SR;
 	
 	if(dummy & AT91C_TC_CPCS)
@@ -398,16 +394,17 @@ void ConfigureTc_1(void)
 
 	// Enable peripheral clock
 	AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_TC1;
-	unsigned int freq=10000; 
+	
 	// Configure TC for a 10 kHz frequency and trigger on RC compare
-	//TC_FindMckDivisor(freq, BOARD_MCK, &div, &tcclks);
+	unsigned int freq=10000; 
+
 	TC_Configure(AT91C_BASE_TC1, 3 | AT91C_TC_CPCTRG);
 	//AT91C_BASE_TC1->TC_RB = 3;
 	AT91C_BASE_TC1->TC_RC = (BOARD_MCK / 128) / freq; // timerFreq / desiredFreq
 
 	// Configure and enable interrupt on RC compare
 	IRQ_ConfigureIT(AT91C_ID_TC1, 2, TC1_IrqHandler);
-	AT91C_BASE_TC1->TC_IER = AT91C_TC_CPCS; // | AT91C_TC_CPBS;
+	AT91C_BASE_TC1->TC_IER = AT91C_TC_CPCS;
 	IRQ_EnableIT(AT91C_ID_TC1);
 
 	// Start the counter if LED is enabled.
@@ -440,7 +437,6 @@ void manage_heaters(void)
 		heater_PID_control(&heaters[0]);
 		g_pwm_value[0] = heaters[0].pwm;
 		g_pwm_io_adr[0] = heaters[0].io_adr;
-		//printf("gPWM: %d \n\r", g_pwm_value[0]);
 		hotend_timer = 1;
 	}
 	else if(hotend_timer == 1)
