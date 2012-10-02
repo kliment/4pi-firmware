@@ -1,7 +1,8 @@
-#define X_AXIS 0
-#define Y_AXIS 1
-#define Z_AXIS 2
-#define E_AXIS 3
+#define X_AXIS  0
+#define Y_AXIS  1
+#define Z_AXIS  2
+#define E_AXIS  3
+#define E1_AXIS 4		//for Stepper Control
 
 #define NUM_AXIS 4
 

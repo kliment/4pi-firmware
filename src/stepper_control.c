@@ -1,6 +1,6 @@
 /*
  Stepper Control
- Load Data from Plannerbuffer 
+ it pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately. 
  
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ volatile unsigned long step_events_completed; // The number of step events execu
 #ifdef ADVANCE
 	volatile long advance_rate, advance, final_advance = 0;
 	volatile short old_advance = 0;
-	volatile short e_steps;
+	volatile long e_steps[3];
 #endif
 
 volatile unsigned char busy = 0; 		// ture when SIG_OUTPUT_COMPARE1A is being serviced. Used to avoid retriggering that handler.
@@ -200,7 +200,7 @@ void trapezoid_generator_reset()
 		advance = current_block->initial_advance;
 		final_advance = current_block->final_advance;
 		// Do E steps + advance steps
-		e_steps += ((advance >>8) - old_advance);
+		e_steps[current_block->active_extruder] += ((advance >>8) - old_advance);
 		old_advance = advance >>8;  
 	#endif
 	
@@ -250,7 +250,7 @@ void TC0_IrqHandler(void)
 			counter_e = counter_x;
 			step_events_completed = 0;
 			#ifdef ADVANCE
-			e_steps = 0;
+			e_steps[current_block->active_extruder] = 0;
 			#endif
 		} 
 		else
@@ -408,13 +408,21 @@ void TC0_IrqHandler(void)
 		}
 
 		
-		
+	
 		#ifndef ADVANCE
-		if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
-			motor_setdir(E_AXIS, INVERT_E_DIR);
+		if ((out_bits & (1<<E_AXIS)) != 0) // -direction
+		{  
+			if(current_block->active_extruder == 1)
+				motor_setdir(E1_AXIS, INVERT_E_DIR);
+			else
+				motor_setdir(E_AXIS, INVERT_E_DIR);
 		}
-		else { // +direction
-			motor_setdir(E_AXIS, !INVERT_E_DIR);
+		else // +direction
+		{ 
+			if(current_block->active_extruder == 1)
+				motor_setdir(E1_AXIS, !INVERT_E_DIR);
+			else
+				motor_setdir(E_AXIS, !INVERT_E_DIR);
 		}
 		#endif //!ADVANCE
 
@@ -426,10 +434,10 @@ void TC0_IrqHandler(void)
 		if (counter_e > 0) {
 			counter_e -= current_block->step_event_count;
 			if ((out_bits & (1<<E_AXIS)) != 0) { // - direction
-				e_steps--;
+				e_steps[current_block->active_extruder]--;
 			}
 			else {
-				e_steps++;
+				e_steps[current_block->active_extruder]++;
 			}
 		}    
 		#endif //ADVANCE
@@ -447,7 +455,6 @@ void TC0_IrqHandler(void)
 				virtual_steps_x++;
 
 			counter_x -= current_block->step_event_count;
-			//WRITE(X_STEP_PIN, LOW);
 		}
 
 		counter_y += current_block->steps_y;
@@ -463,7 +470,6 @@ void TC0_IrqHandler(void)
 				virtual_steps_y++;
 
 			counter_y -= current_block->step_event_count;
-			//WRITE(Y_STEP_PIN, LOW);
 		}
 
 		counter_z += current_block->steps_z;
@@ -479,15 +485,18 @@ void TC0_IrqHandler(void)
 				virtual_steps_z++;
 
 			counter_z -= current_block->step_event_count;
-			//WRITE(Z_STEP_PIN, LOW);
 		}
 
 		#ifndef ADVANCE
 		counter_e += current_block->steps_e;
-		if (counter_e > 0) {
-			motor_step(E_AXIS);
+		if (counter_e > 0) 
+		{
+			if(current_block->active_extruder == 1)
+				motor_step(E1_AXIS);
+			else
+				motor_step(E_AXIS);
+				
 			counter_e -= current_block->step_event_count;
-			//WRITE(E_STEP_PIN, LOW);
 		}
 		#endif //!ADVANCE
 
@@ -513,7 +522,7 @@ void TC0_IrqHandler(void)
 			#ifdef ADVANCE
 			//if(advance > current_block->advance) advance = current_block->advance;
 			// Do E steps + advance steps
-			e_steps += ((advance >>8) - old_advance);
+			e_steps[current_block->active_extruder] += ((advance >>8) - old_advance);
 			old_advance = advance >>8;  
 			#endif
 		} 
@@ -539,7 +548,7 @@ void TC0_IrqHandler(void)
 			#ifdef ADVANCE
 			if(advance < final_advance) advance = final_advance;
 			// Do E steps + advance steps
-			e_steps += ((advance >>8) - old_advance);
+			e_steps[current_block->active_extruder] += ((advance >>8) - old_advance);
 			old_advance = advance >>8;  
 			#endif //ADVANCE
 		}
