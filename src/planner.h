@@ -10,13 +10,22 @@
 #define disable_y()  motor_enaxis(1, 0)
 #define disable_z()  motor_enaxis(2, 0)
 #define disable_e()  motor_enaxis(3, 0)
+#define disable_e1() motor_enaxis(4, 0)
 
 #define enable_x()  motor_enaxis(0, 1)
 #define enable_y()  motor_enaxis(1, 1)
 #define enable_z()  motor_enaxis(2, 1)
 #define enable_e()  motor_enaxis(3, 1)
+#define enable_e1() motor_enaxis(4, 1)
 
+// Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
+// of the buffer and all stops. This should not be much greater than zero and should only be changed
+// if unwanted behavior is observed on a user's machine when running at very slow speeds.
 #define MINIMUM_PLANNER_SPEED 0.05 // (mm/sec)
+
+//For the retract (negative Extruder) move this maxiumum Limit of Feedrate is used
+//The next positive Extruder move use also this Limit, 
+//then for the next (second after retract) move the original Maximum (_MAX_FEEDRATE) Limit is used
 #define MAX_RETRACT_FEEDRATE 100    //mm/sec
 
 extern const int X_MAX_LENGTH;

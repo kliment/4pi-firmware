@@ -31,14 +31,20 @@
 #include "heaters.h"
 #include "stepper_control.h"
 
+//-----------------------------------------------------------------------
+// Disables axis when it's not being used.
+//-----------------------------------------------------------------------
 #define DISABLE_X 0
 #define DISABLE_Y 0
 #define DISABLE_Z 0
 #define DISABLE_E 0
 
+// If defined the movements slow down when the look ahead buffer is only half full
 #define SLOWDOWN
 
-
+//-----------------------------------------------------------------------
+//Max Length for Prusa Mendel, check the ways of your axis and set this Values
+//-----------------------------------------------------------------------
 const int X_MAX_LENGTH = 200;
 const int Y_MAX_LENGTH = 200;
 const int Z_MAX_LENGTH = 100;
@@ -239,6 +245,7 @@ void kill(char debug)
 	disable_y();
 	disable_z();
 	disable_e();
+	disable_e1();
 
    
 }
@@ -253,6 +260,7 @@ void manage_inactivity(char debug)
 		disable_y(); 
 		disable_z(); 
 		disable_e(); 
+		disable_e1();
 	}
 	check_axes_activity();
 }
@@ -722,6 +730,7 @@ void check_axes_activity()
 	unsigned char y_active = 0;  
 	unsigned char z_active = 0;
 	unsigned char e_active = 0;
+	
 	block_t *block;
 
 	if(block_buffer_tail != block_buffer_head) 
@@ -741,7 +750,7 @@ void check_axes_activity()
 	if((DISABLE_X) && (x_active == 0)) disable_x();
 	if((DISABLE_Y) && (y_active == 0)) disable_y();
 	if((DISABLE_Z) && (z_active == 0)) disable_z();
-	if((DISABLE_E) && (e_active == 0)) disable_e();
+	if((DISABLE_E) && (e_active == 0)) {disable_e(); disable_e1();}
 }
 
 
@@ -841,6 +850,7 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 	if(block->steps_e != 0)
 	{
 		enable_e();
+		enable_e1();
 		delayMicroseconds(DELAY_ENABLE);
 	}
 	#else
@@ -849,7 +859,7 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 	if(block->steps_x != 0) enable_x();
 	if(block->steps_y != 0) enable_y();
 	if(block->steps_z != 0) enable_z();
-	if(block->steps_e != 0) enable_e();
+	if(block->steps_e != 0) { enable_e(); enable_e1(); }
 	#endif 
 
 	if (block->steps_e == 0)

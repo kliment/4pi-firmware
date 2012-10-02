@@ -56,6 +56,9 @@ extern void motor_setdir(unsigned char axis, unsigned char dir);
 extern void motor_step(unsigned char axis);
 extern void motor_unstep();
 
+//-----------------------------------------------------------------------
+// Inverting axis direction
+//-----------------------------------------------------------------------
 const unsigned char INVERT_X_DIR = 0;
 const unsigned char INVERT_Y_DIR = 0;
 const unsigned char INVERT_Z_DIR = 1;
