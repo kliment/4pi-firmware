@@ -45,14 +45,15 @@ const Pin AUX2={1 <<  24, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULL
 extern const Pin time_check2;
 
 //Global struct for Heatercontrol
-heater_struct heaters[2];
+heater_struct heaters[2];	//MAX_EXTRUDERS ?
 heater_bed_struct bed_heater;
 
 //-----------------------------------------------------
 /// SOFT Pwm for Heater 1 & 2 and Ext Pwm 1 & 2 like Fan
 //-----------------------------------------------------
 volatile unsigned char g_pwm_value[4] = {0,0,0,0};
-volatile unsigned char g_pwm_io_adr[4] = {0,0,0,0};
+volatile unsigned char g_pwm_io_adr[4] = {1,2,3,4};
+volatile unsigned char g_pwm_aktiv[4] = {0,0,0,0};
 
 
 //-------------------------
@@ -76,14 +77,17 @@ void heaters_setup()
 //-------------------------
 // IO Function
 //-------------------------
-void heater_switch(unsigned char heater, unsigned char en){
-    Pin FETPINS[]={BEDHEAT,HOTEND1,HOTEND2,AUX1,AUX2};
-    if(heater<0||heater>5)
-        return;
-    if(en)
-        PIO_Set(&(FETPINS[heater]));
-    else
-        PIO_Clear(&(FETPINS[heater]));
+void heater_switch(unsigned char heater, unsigned char en)
+{
+	Pin FETPINS[]={BEDHEAT,HOTEND1,HOTEND2,AUX1,AUX2};
+
+	if(heater<0||heater>5)
+		return;
+	
+	if(en)
+		PIO_Set(&(FETPINS[heater]));
+	else
+		PIO_Clear(&(FETPINS[heater]));
 }
 
 
@@ -94,33 +98,35 @@ void heater_switch(unsigned char heater, unsigned char en){
 
 #if defined COMPUTE_THERMISTORS
 
-signed short temp2analog_thermistor(signed short celsius, const float beta, const float rs, const float r_inf) {
+signed short temp2analog_thermistor(signed short celsius, const float beta, const float rs, const float r_inf)
+{
 	float r = r_inf*exp(beta/(celsius - ABS_ZERO));
 	return (signed short)(0.5 + ADC_VREF*r/(r + rs));
 }
 
 #else
-signed short temp2analog_thermistor(signed short celsius, const short table[][2], signed short numtemps) {
-    signed short raw = 0;
-    unsigned char i;
-    
-    for (i=1; i<numtemps; i++)
-    {
-      if (table[i][1] < celsius)
-      {
-        raw = table[i-1][0] + 
-          (celsius - table[i-1][1]) * 
-          (table[i][0] - table[i-1][0]) /
-          (table[i][1] - table[i-1][1]);
-      
-        break;
-      }
-    }
+signed short temp2analog_thermistor(signed short celsius, const short table[][2], signed short numtemps)
+{
+	signed short raw = 0;
+	unsigned char i;
 
-    // Overflow: Set to last value in the table
-    if (i == numtemps) raw = table[i-1][0];
+	for (i=1; i<numtemps; i++)
+	{
+		if (table[i][1] < celsius)
+		{
+			raw = table[i-1][0] + 
+			(celsius - table[i-1][1]) * 
+			(table[i][0] - table[i-1][0]) /
+			(table[i][1] - table[i-1][1]);
 
-    return /*3300 -*/ raw;
+			break;
+		}
+	}
+
+	// Overflow: Set to last value in the table
+	if (i == numtemps) raw = table[i-1][0];
+
+	return raw;
 }
 
 #endif
@@ -133,36 +139,36 @@ signed short temp2analog_thermistor(signed short celsius, const short table[][2]
 
 #if defined COMPUTE_THERMISTORS
 
-signed short analog2temp_thermistor(signed short raw, const float beta, const float rs, const float r_inf) {
+signed short analog2temp_thermistor(signed short raw, const float beta, const float rs, const float r_inf)
+{
 	float r = rs/((ADC_VREF/(float)(raw))-1);
 	return (signed short)(0.5 + ABS_ZERO + beta/log( r/r_inf ));
 }
 
 #else
 
-signed short analog2temp_thermistor(signed short raw,const short table[][2], signed short numtemps) {
-    signed short celsius = 0;
-    unsigned char i;
-    
-    //raw = 3300 - raw;
+signed short analog2temp_thermistor(signed short raw,const short table[][2], signed short numtemps)
+{
+	signed short celsius = 0;
+	unsigned char i;
 
-    for (i=1; i<numtemps; i++)
-    {
-      if (table[i][0] > raw)
-      {
-        celsius  = table[i-1][1] + 
-          (raw - table[i-1][0]) * 
-          (table[i][1] - table[i-1][1]) /
-          (table[i][0] - table[i-1][0]);
+	for (i=1; i<numtemps; i++)
+	{
+		if (table[i][0] > raw)
+		{
+			celsius  = table[i-1][1] + 
+			(raw - table[i-1][0]) * 
+			(table[i][1] - table[i-1][1]) /
+			(table[i][0] - table[i-1][0]);
 
-        break;
-      }
-    }
+			break;
+		}
+	}
 
-    // Overflow: Set to last value in the table
-    if (i == numtemps) celsius = table[i-1][1];
+	// Overflow: Set to last value in the table
+	if (i == numtemps) celsius = table[i-1][1];
 
-    return celsius;
+	return celsius;
 }
 
 #endif
@@ -235,15 +241,16 @@ void heater_on_off_control(heater_struct *hotend)
 
 //--------------------------------------------------
 // Soft PWM, runs every 100 us
-// need 1,1 us  
+// need 2,42 us  
 //--------------------------------------------------
 volatile unsigned char g_TC1_pwm_cnt = 0;
 volatile unsigned char pwm_io_is_off[4] = {0,0,0,0};
 void TC1_IrqHandler(void)
 {
-	
-	
+
 	volatile unsigned int dummy;
+	unsigned char cnt_pwm_ch = 0;
+	
     // Clear status bit to acknowledge interrupt !!
 	// Dont forget --> other interupts are blocked until the bit is cleared
     dummy = AT91C_BASE_TC1->TC_SR;
@@ -256,32 +263,35 @@ void TC1_IrqHandler(void)
 	
 	g_TC1_pwm_cnt+=2;
 	
-
-	if(heaters[0].soft_pwm_aktiv == 1)
+	//Check the 4 PWM channels
+	for(cnt_pwm_ch = 0;cnt_pwm_ch < 4;cnt_pwm_ch++)
 	{
-		if(g_TC1_pwm_cnt == 0)
+		if(g_pwm_aktiv[cnt_pwm_ch] == 1)
 		{
-			if(g_pwm_value[0] == 0)
+			if(g_TC1_pwm_cnt == 0)
 			{
-				heater_switch(g_pwm_io_adr[0], 0);
-				pwm_io_is_off[0] = 1;
+				if(g_pwm_value[cnt_pwm_ch] == 0)
+				{
+					heater_switch(g_pwm_io_adr[cnt_pwm_ch], 0);
+					pwm_io_is_off[cnt_pwm_ch] = 1;
+				}
+				else
+				{
+					heater_switch(g_pwm_io_adr[cnt_pwm_ch], 1);
+					pwm_io_is_off[cnt_pwm_ch] = 0;
+				}
 			}
 			else
 			{
-				heater_switch(g_pwm_io_adr[0], 1);
-				pwm_io_is_off[0] = 0;
-			}
-		}
-		else
-		{
-			if((g_TC1_pwm_cnt >= g_pwm_value[0]) && (pwm_io_is_off[0] == 0))
-			{
-				heater_switch(g_pwm_io_adr[0], 0);
-				pwm_io_is_off[0] = 1;
+				if((g_TC1_pwm_cnt >= g_pwm_value[cnt_pwm_ch]) && (pwm_io_is_off[cnt_pwm_ch] == 0))
+				{
+					heater_switch(g_pwm_io_adr[cnt_pwm_ch], 0);
+					pwm_io_is_off[cnt_pwm_ch] = 1;
+				}
 			}
 		}
 	}
-
+	
 	PIO_Clear(&time_check2);
 }
 
@@ -437,12 +447,14 @@ void manage_heaters(void)
 		heater_PID_control(&heaters[0]);
 		g_pwm_value[0] = heaters[0].pwm;
 		g_pwm_io_adr[0] = heaters[0].io_adr;
+		g_pwm_aktiv[0] = heaters[0].soft_pwm_aktiv;
 		hotend_timer = 1;
 	}
 	else if(hotend_timer == 1)
 	{
 		heater_on_off_control(&heaters[1]);
 		g_pwm_io_adr[1] = heaters[1].io_adr;
+		g_pwm_aktiv[1] = heaters[1].soft_pwm_aktiv;
 		hotend_timer = 0;
 	}
 }

@@ -558,7 +558,7 @@ void process_commands()
 		usb_printf("X:%d Y:%d Z:%d E:%d",(int)current_position[0],(int)current_position[1],(int)current_position[2],(int)current_position[3]);
         break;
       case 115: // M115
-        usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:1\r\n");
+        usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n",MAX_EXTRUDER);
         break;
 	  case 119: // M119 show endstop state
 		#if (X_MIN_ACTIV > -1)
@@ -688,6 +688,7 @@ void process_commands()
     else 
 	{
 		active_extruder = tmp_extruder;
+		usb_printf("T%d",active_extruder);
     }
   }
   else
