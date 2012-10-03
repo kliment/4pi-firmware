@@ -126,8 +126,19 @@ signed short temp2analog_thermistor(signed short celsius, const short table[][2]
 #if defined COMPUTE_THERMISTORS
 
 signed short analog2temp_thermistor(signed short raw, const float beta, const float rs, const float r_inf) {
-	float r = rs/(ADC_VREF/(float)(raw))-1;
-	return (signed short)(0.5 + ABS_ZERO + beta/log( r/r_inf ));
+  signed short celsius = 0;
+
+  if ((raw < 0) || (raw >= ADC_VREF))
+		return (0);		// return if value is out of range
+
+	float r = rs/((ADC_VREF/(float)(raw))-1);
+
+	celsius = 0.5 + ABS_ZERO + beta/log( r/r_inf );
+
+	if (celsius < 0)
+    celsius = 0;
+
+  return celsius;
 }
 
 #else
