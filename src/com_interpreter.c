@@ -96,7 +96,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+#include "init_configuration.h"
 #include "serial.h"
 #include "samadc.h"
 #include "com_interpreter.h"
@@ -121,7 +121,7 @@ volatile unsigned char bufindr = 0;
 volatile unsigned char bufindw = 0;
 volatile unsigned char buflen = 0;
 unsigned char serial_char;
-volatile int serial_count = 0;
+volatile unsigned short serial_count = 0;
 unsigned char comment_mode = 0;
 char *strchr_pointer; // just a pointer to find chars in the cmd string like X, Y, Z, E, etc
 long gcode_N, gcode_LastN;
@@ -313,7 +313,7 @@ unsigned char code_seen(char code)
 void process_commands()
 {
   unsigned long codenum; //throw away variable
-  unsigned char read_endstops[6] = {0,0,0,0,0,0};
+  char read_endstops[6] = {'X','X','X','X','X','X'};
   //char *starpos = NULL;
   unsigned char cnt_c = 0;
 
@@ -562,25 +562,25 @@ void process_commands()
         break;
 	  case 119: // M119 show endstop state
 		#if (X_MIN_ACTIV > -1)
-			read_endstops[0] = PIO_Get(&X_MIN_PIN);
-      	#endif
-      	#if (X_MAX_ACTIV > -1)
-			read_endstops[1] = PIO_Get(&Y_MIN_PIN);
+			read_endstops[0] = (PIO_Get(&X_MIN_PIN) ^ X_ENDSTOP_INVERT) + 48;
       	#endif
       	#if (Y_MIN_ACTIV > -1)
-			read_endstops[2] = PIO_Get(&Z_MIN_PIN);
-      	#endif
-      	#if (Y_MAX_ACTIV > -1)
-			read_endstops[3] = PIO_Get(&X_MAX_PIN);
+			read_endstops[1] = (PIO_Get(&Y_MIN_PIN) ^ Y_ENDSTOP_INVERT) + 48;
       	#endif
       	#if (Z_MIN_ACTIV > -1)
-			read_endstops[4] = PIO_Get(&Y_MAX_PIN);
+			read_endstops[2] = (PIO_Get(&Z_MIN_PIN) ^ Z_ENDSTOP_INVERT) + 48;
+      	#endif
+      	#if (X_MAX_ACTIV > -1)
+			read_endstops[3] = (PIO_Get(&X_MAX_PIN) ^ X_ENDSTOP_INVERT) + 48;
+      	#endif
+      	#if (Y_MAX_ACTIV > -1)
+			read_endstops[4] = (PIO_Get(&Y_MAX_PIN) ^ Y_ENDSTOP_INVERT) + 48;
       	#endif
       	#if (Z_MAX_ACTIV > -1)
-			read_endstops[5] = PIO_Get(&Z_MAX_PIN);
+			read_endstops[5] = (PIO_Get(&Z_MAX_PIN) ^ Z_ENDSTOP_INVERT) + 48
       	#endif
       
-        usb_printf("Xmin:%d Ymin:%d Zmin:%d / Xmax:%d Ymax:%d Zmax:%d",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
+        usb_printf("Xmin:%c Ymin:%c Zmin:%c / Xmax:%c Ymax:%c Zmax:%c",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
 		break;
 	  case 201: // M201  Set maximum acceleration in units/s^2 for print moves (M201 X1000 Y1000)
 

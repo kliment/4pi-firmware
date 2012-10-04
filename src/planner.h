@@ -18,22 +18,9 @@
 #define enable_e()  motor_enaxis(3, 1)
 #define enable_e1() motor_enaxis(4, 1)
 
-// Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
-// of the buffer and all stops. This should not be much greater than zero and should only be changed
-// if unwanted behavior is observed on a user's machine when running at very slow speeds.
-#define MINIMUM_PLANNER_SPEED 0.05 // (mm/sec)
 
-//For the retract (negative Extruder) move this maxiumum Limit of Feedrate is used
-//The next positive Extruder move use also this Limit, 
-//then for the next (second after retract) move the original Maximum (_MAX_FEEDRATE) Limit is used
-#define MAX_RETRACT_FEEDRATE 100    //mm/sec
 
-extern const int X_MAX_LENGTH;
-extern const int Y_MAX_LENGTH;
-extern const int Z_MAX_LENGTH;
-extern const char min_software_endstops;
-extern const char max_software_endstops;
-extern const int dropsegments;
+
 
 
 // This struct is used when buffering the setup for each linear movement "nominal" values are as specified in 

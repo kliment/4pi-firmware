@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+#include "init_configuration.h"
 #include "com_interpreter.h"
 #include "arc_func.h"
 #include "planner.h"
@@ -50,22 +50,24 @@ const Pin X_MAX_PIN={1 <<  15, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PU
 const Pin Y_MAX_PIN={1 <<  17, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PULLUP};
 const Pin Z_MAX_PIN={1 <<  18, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PULLUP};
 
+unsigned char X_ENDSTOP_INVERT = _X_ENDSTOP_INVERT;
+unsigned char Y_ENDSTOP_INVERT = _Y_ENDSTOP_INVERT;
+unsigned char Z_ENDSTOP_INVERT = _Z_ENDSTOP_INVERT;
+
+unsigned char INVERT_X_DIR = _INVERT_X_DIR;
+unsigned char INVERT_Y_DIR = _INVERT_Y_DIR;
+unsigned char INVERT_Z_DIR = _INVERT_Z_DIR;
+unsigned char INVERT_E_DIR = _INVERT_E_DIR;
+
 //Motor opts
 extern void motor_enaxis(unsigned char axis, unsigned char en);
 extern void motor_setdir(unsigned char axis, unsigned char dir);
 extern void motor_step(unsigned char axis);
 extern void motor_unstep();
 
-//-----------------------------------------------------------------------
-// Inverting axis direction
-//-----------------------------------------------------------------------
-const unsigned char INVERT_X_DIR = 0;
-const unsigned char INVERT_Y_DIR = 0;
-const unsigned char INVERT_Z_DIR = 1;
-const unsigned char INVERT_E_DIR = 0;
 
 #ifdef ENDSTOPS_ONLY_FOR_HOMING
-unsigned char check_endstops = 0;
+	unsigned char check_endstops = 0;
 #endif
 
 
@@ -274,7 +276,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if X_MIN_ACTIV > -1
-				unsigned char x_min_endstop=PIO_Get(&X_MIN_PIN);	//read IO
+				unsigned char x_min_endstop=(PIO_Get(&X_MIN_PIN) != X_ENDSTOP_INVERT);	//read IO
 				if(x_min_endstop && old_x_min_endstop && (current_block->steps_x > 0)) 
 				{
 					if(!is_homing)
@@ -297,7 +299,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS 
 			{
 				#if X_MAX_ACTIV > -1
-				unsigned char x_max_endstop=PIO_Get(&X_MAX_PIN);	//read IO
+				unsigned char x_max_endstop=(PIO_Get(&X_MAX_PIN)  != X_ENDSTOP_INVERT);	//read IO
 				if(x_max_endstop && old_x_max_endstop && (current_block->steps_x > 0))
 				{
 					if(!is_homing)
@@ -321,7 +323,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if Y_MIN_ACTIV > -1
-				unsigned char y_min_endstop=PIO_Get(&Y_MIN_PIN);	//read IO
+				unsigned char y_min_endstop=(PIO_Get(&Y_MIN_PIN) != Y_ENDSTOP_INVERT);	//read IO
 				if(y_min_endstop && old_y_min_endstop && (current_block->steps_y > 0))
 				{
 					if(!is_homing)
@@ -344,7 +346,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if Y_MAX_ACTIV > -1
-				unsigned char y_max_endstop=PIO_Get(&Y_MAX_PIN);	//read IO
+				unsigned char y_max_endstop=(PIO_Get(&Y_MAX_PIN) != Y_ENDSTOP_INVERT);	//read IO
 				if(y_max_endstop && old_y_max_endstop && (current_block->steps_y > 0))
 				{
 					if(!is_homing)
@@ -368,7 +370,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if Z_MIN_ACTIV > -1
-				unsigned char z_min_endstop=PIO_Get(&Z_MIN_PIN);	//read IO
+				unsigned char z_min_endstop=(PIO_Get(&Z_MIN_PIN) != Z_ENDSTOP_INVERT);	//read IO
 				if(z_min_endstop && old_z_min_endstop && (current_block->steps_z > 0))
 				{
 					if(!is_homing)  
@@ -391,7 +393,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if Z_MAX_ACTIV > -1
-				unsigned char z_max_endstop=PIO_Get(&Z_MAX_PIN);	//read IO
+				unsigned char z_max_endstop=(PIO_Get(&Z_MAX_PIN) != Z_ENDSTOP_INVERT);	//read IO
 				if(z_max_endstop && old_z_max_endstop && (current_block->steps_z > 0))
 				{
 					if(!is_homing)
