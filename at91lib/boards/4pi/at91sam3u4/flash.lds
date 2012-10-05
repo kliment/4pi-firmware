@@ -69,7 +69,6 @@ SECTIONS
         _srelocate = .;
         *(.ramfunc);
         *(.data);
-		*(.data.*);
         . = ALIGN(4);
         _erelocate = .;
     } >sram0

@@ -19,23 +19,24 @@
  
  #define MAX_STEP_FREQUENCY 30000
  
- //-----------------------------------------------------------------------
-//// ENDSTOP SETTINGS:
-//-----------------------------------------------------------------------
-// Sets direction of endstops when homing; 1=MAX, -1=MIN
-#define X_HOME_DIR -1
-#define Y_HOME_DIR -1
-#define Z_HOME_DIR -1
  
-#define X_MIN_ACTIV          1
-#define X_MAX_ACTIV          -1
-
-#define Y_MIN_ACTIV          1
-#define Y_MAX_ACTIV          -1
-
-#define Z_MIN_ACTIV          1
-#define Z_MAX_ACTIV          -1
  
+ extern const Pin X_MIN_PIN;
+ extern const Pin Y_MIN_PIN;
+ extern const Pin Z_MIN_PIN;
+ extern const Pin X_MAX_PIN;
+ extern const Pin Y_MAX_PIN;
+ extern const Pin Z_MAX_PIN;
+ 
+ extern unsigned char X_ENDSTOP_INVERT;
+ extern unsigned char Y_ENDSTOP_INVERT;
+ extern unsigned char Z_ENDSTOP_INVERT;
+ 
+ extern unsigned char INVERT_X_DIR;
+ extern unsigned char INVERT_Y_DIR;
+ extern unsigned char INVERT_Z_DIR;
+ extern unsigned char INVERT_E_DIR;
+
  
  
  void ConfigureTc0_Stepper(void);
