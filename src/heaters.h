@@ -92,6 +92,7 @@ signed short analog2temp_thermistor_table(signed short raw,const short table[][2
 void manage_heaters(void);
 void init_heaters_values(void);
 void heater_switch(unsigned char heater, unsigned char en);
+void LED_switch(unsigned char led, unsigned char en);
 //void heater_soft_pwm(void);
 
 

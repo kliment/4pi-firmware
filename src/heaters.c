@@ -40,6 +40,18 @@ const Pin HOTEND2={1 <<  23, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_P
 const Pin AUX1={1 <<  25, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
 const Pin AUX2={1 <<  24, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
 
+/// LED pin definition.
+const Pin PIN_LED1 = {1 << 22, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT};
+const Pin PIN_LED2 = {1 << 29, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT};
+const Pin PIN_LED3 = {1 << 28, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT};
+const Pin PIN_LED4 = {1 << 2 , AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT};
+const Pin PIN_LED5 = {1 << 1 , AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT};
+const Pin PIN_LED6 = {1 << 0 , AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT};
+const Pin PIN_LED7 = {1 << 26, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_DEFAULT};
+const Pin PIN_LED8 = {1 << 20, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT};
+const Pin PIN_LED9 = {1 << 0 , AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_OUTPUT_0, PIO_DEFAULT};
+
+
 extern const Pin time_check2;
 
 //Global struct for Heatercontrol
@@ -60,20 +72,26 @@ volatile unsigned char g_pwm_aktiv[4] = {0,0,0,0};
 void heaters_setup()
 {
 	Pin FETPINS[]={BEDHEAT,HOTEND1,HOTEND2,AUX1,AUX2};
+	Pin LEDPINS[]={PIN_LED1,PIN_LED2,PIN_LED3,PIN_LED4,PIN_LED5,PIN_LED6,PIN_LED7,PIN_LED8,PIN_LED9};
 
 	PIO_Configure(FETPINS,5);
+	PIO_Configure(LEDPINS,9);
 
 	unsigned short i;
 	
 	for(i=0;i<5;++i)
 		PIO_Clear(&(FETPINS[i]));
 
+	for(i=0;i<9;++i)
+		PIO_Clear(&(LEDPINS[i]));
+		
+	
 	init_heaters_values();	
 
 }
 
 //-------------------------
-// IO Function
+// IO Function for FET's
 //-------------------------
 void heater_switch(unsigned char heater, unsigned char en)
 {
@@ -86,6 +104,22 @@ void heater_switch(unsigned char heater, unsigned char en)
 		PIO_Set(&(FETPINS[heater]));
 	else
 		PIO_Clear(&(FETPINS[heater]));
+}
+
+//-------------------------
+// IO Function for LED's
+//-------------------------
+void LED_switch(unsigned char led, unsigned char en)
+{
+	Pin LEDPINS[]={PIN_LED1,PIN_LED2,PIN_LED3,PIN_LED4,PIN_LED5,PIN_LED6,PIN_LED7,PIN_LED8,PIN_LED9};
+
+	if(led<0||led>9)
+		return;
+	
+	if(en)
+		PIO_Set(&(LEDPINS[led]));
+	else
+		PIO_Clear(&(LEDPINS[led]));
 }
 
 
@@ -304,7 +338,7 @@ void init_heaters_values(void)
 
 //--------------------------------------------------
 // Soft PWM, runs every 100 us
-// need 2,42 us  
+// need 2,12 us  + 0,3 us per PWM channel
 //--------------------------------------------------
 volatile unsigned char g_TC1_pwm_cnt = 0;
 volatile unsigned char pwm_io_is_off[4] = {0,0,0,0};
@@ -365,11 +399,14 @@ void heater_on_off_control(heater_struct *hotend)
 {
 	hotend->akt_temp = analog2temp_convert(adc_read(hotend->ad_cannel),hotend->thermistor_type);
 	
-	if(hotend->akt_temp < 4)
+	#ifdef MINTEMP
+	if(hotend->akt_temp < MINTEMP)
 	{
 		hotend->target_temp = 0;
 		heater_switch(hotend->io_adr, 0);
+		hotend->pwm = 0;
 	}
+	#endif
 		
 	if(hotend->akt_temp  > (hotend->target_temp+1))
 	{
@@ -474,16 +511,19 @@ void onoff_control_bed(void)
 	{
 		bed_heater.target_temp = 0;
 		heater_switch(HEATER_BED, 0);
+		LED_switch(3,0);
 	}
 	#endif
 			
 	if(bed_heater.akt_temp  > bed_heater.target_temp)
 	{
 		heater_switch(HEATER_BED, 0);
+		LED_switch(3,0);
 	}
 	else if((bed_heater.akt_temp  < bed_heater.target_temp) && (bed_heater.target_temp > 0))
 	{
 		heater_switch(HEATER_BED, 1);
+		LED_switch(3,1);
 	}
 }
 
@@ -528,6 +568,7 @@ void manage_heaters(void)
 	{
 		//Call every 2 sec
 		onoff_control_bed();
+		
 		bed_timer = 0;
 	}
 	
@@ -539,6 +580,12 @@ void manage_heaters(void)
 		g_pwm_value[0] = heaters[0].pwm;
 		g_pwm_io_adr[0] = heaters[0].io_adr;
 		g_pwm_aktiv[0] = heaters[0].soft_pwm_aktiv;
+		
+		if(g_pwm_value[0] > 0)
+			LED_switch(4,1);
+		else
+			LED_switch(4,0);
+			
 		hotend_timer = 1;
 	}
 	else if(hotend_timer == 1)
@@ -548,6 +595,12 @@ void manage_heaters(void)
 		g_pwm_value[1] = heaters[1].pwm;
 		g_pwm_io_adr[1] = heaters[1].io_adr;
 		g_pwm_aktiv[1] = heaters[1].soft_pwm_aktiv;
+		
+		if(g_pwm_value[1] > 0)
+			LED_switch(5,1);
+		else
+			LED_switch(5,0);
+		
 		hotend_timer = 0;
 	}
 }
