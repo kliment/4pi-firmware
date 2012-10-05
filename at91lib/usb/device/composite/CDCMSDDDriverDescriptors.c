@@ -149,9 +149,9 @@ static const USBDeviceDescriptor deviceDescriptor = {
     CDCMSDDDriverDescriptors_VENDORID,
     CDCMSDDDriverDescriptors_PRODUCTID,
     CDCMSDDDriverDescriptors_RELEASE,
-    1, // No string descriptor for manufacturer
-    2, // Index of product string descriptor is #1
-    0, // No string descriptor for serial number
+    0, // No string descriptor for manufacturer
+    1, // Index of product string descriptor is #1
+    2, // No string descriptor for serial number
     1 // Device has 1 possible configuration
 };
 
@@ -529,7 +529,6 @@ static const unsigned char serialNumberDescriptor[] = {
 static const unsigned char *stringDescriptors[] = {
 
     languageIdDescriptor,
-    manufacturerDescriptor,
     productDescriptor,
     serialNumberDescriptor,
 };

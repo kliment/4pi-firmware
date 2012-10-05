@@ -60,14 +60,14 @@ void sdcard_handle_state()
 	
 	if (!had_card && has_card)
 	{
-		printf("sdcard: card inserted\n");
+		printf("sdcard: card inserted\n\r");
 		uint8_t mode = sd_mode;
 		sd_mode = 0xff;
 		sdcard_set_mode(mode);
 	}
 	else if (had_card && !had_card)
 	{
-		printf("sdcard: card removed\n");
+		printf("sdcard: card removed\n\r");
 /*		sdcard_unmount();
 		usb_unmount_sdcard();*/
 		is_mounted = 0;
@@ -82,13 +82,11 @@ void sdcard_set_mode(unsigned char mode)
 		
 	if (mode == SD_MODE_CPU)
 	{
-		usb_unmount_sdcard();
 		sdcard_mount();
 	}
 	else if (mode = SD_MODE_HOST)
 	{
 		sdcard_unmount();
-		usb_mount_sdcard();
 	}
 	mode = sd_mode;
 	

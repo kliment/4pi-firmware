@@ -115,15 +115,17 @@ int main()
 
     // If they are present, configure Vbus & Wake-up pins
     //PIO_InitializeInterrupts(0);
-	
-    //-------- Init UART --------------
-	printf("USB Seriel INIT\n\r");
-	samserial_init();
-	
+
 	//------- Init USB ----------------
+	printf("USB Init\n\r");
 	usb_init();
 	
 	sdcard_set_mode(SD_MODE_CPU);
+	
+	
+    //-------- Init UART --------------
+	printf("USB Serial INIT\n\r");
+	samserial_init();
 	
 	//-------- Init ADC without Autostart --------------
 	printf("Init ADC\n\r");

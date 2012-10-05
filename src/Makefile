@@ -37,6 +37,9 @@
 CHIP  = at91sam3u4
 BOARD = 4pi
 
+USB_MODE=USB_CDC
+#USB_DEVICE=COMPOSITE
+
 # Trace level used for compilation
 # (can be overriden by adding TRACE_LEVEL=#number to the command-line)
 # TRACE_LEVEL_DEBUG      5
@@ -99,7 +102,7 @@ else
 TARGET_OPTS = 
 endif
 
-CFLAGS += $(TARGET_OPTS)
+CFLAGS += $(TARGET_OPTS) -D$(USB_MODE)=1
 CFLAGS += -Wall -mlong-calls -ffunction-sections
 CFLAGS += -g $(OPTIMIZATION) $(INCLUDES) -D$(CHIP) -DTRACE_LEVEL=$(TRACE_LEVEL)
 ASFLAGS = $(TARGET_OPTS) -Wall -g $(OPTIMIZATION) $(INCLUDES) -D$(CHIP) -D__ASSEMBLY__
@@ -163,9 +166,9 @@ C_OBJECTS += USBDCallbacks_Initialized.o
 C_OBJECTS += USBDCallbacks_Reset.o
 #C_OBJECTS += USBDCallbacks_Resumed.o
 #C_OBJECTS += USBDCallbacks_Suspended.o
-#C_OBJECTS += USBDDriverCb_CfgChanged.o
 C_OBJECTS += USBDDriverCb_IfSettingChanged.o
 
+ifeq ($(USB_MODE),USB_COMPOSITE)
 # at91lib/usb/device/massstorage
 VPATH += $(USB)/common/massstorage
 VPATH += $(USB)/device/massstorage
@@ -173,17 +176,27 @@ C_OBJECTS += MSDDStateMachine.o
 C_OBJECTS += MSDLun.o
 C_OBJECTS += SBCMethods.o
 
-# at91lib/usb/common/cdc
-VPATH += $(USB)/common/cdc
-C_OBJECTS += CDCSetControlLineStateRequest.o
-C_OBJECTS += CDCLineCoding.o
-
 # at91lib/usb/device/composite
 VPATH += $(USB)/device/composite
 C_OBJECTS += CDCMSDDDriver.o
 C_OBJECTS += CDCMSDDDriverDescriptors.o
 C_OBJECTS += MSDDFunctionDriver.o
 C_OBJECTS += CDCDFunctionDriver.o
+
+else
+
+VPATH += $(USB)/device/cdc-serial
+C_OBJECTS += CDCDSerialDriver.o
+C_OBJECTS += CDCDSerialDriverDescriptors.o
+C_OBJECTS += USBDDriverCb_CfgChanged.o
+
+endif
+
+# at91lib/usb/common/cdc
+VPATH += $(USB)/common/cdc
+C_OBJECTS += CDCSetControlLineStateRequest.o
+C_OBJECTS += CDCLineCoding.o
+
 
 # Objects built from C source files
 C_OBJECTS += main.o
