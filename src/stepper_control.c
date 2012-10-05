@@ -1,6 +1,6 @@
 /*
  Stepper Control
- Load Data from Plannerbuffer 
+ it pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately. 
  
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -29,15 +29,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+#include "init_configuration.h"
 #include "com_interpreter.h"
 #include "arc_func.h"
 #include "planner.h"
 #include "stepper_control.h"
 
+//INIT the Stepper Interrupt
 void TC0_IrqHandler(void);
 
-//Time messure
+//Time messure with IO Pins
 const Pin time_check1={1 <<  24, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_0, PIO_PULLUP};
 const Pin time_check2={1 <<  26, AT91C_BASE_PIOB, AT91C_ID_PIOB, PIO_OUTPUT_0, PIO_PULLUP};
 
@@ -49,30 +50,32 @@ const Pin X_MAX_PIN={1 <<  15, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PU
 const Pin Y_MAX_PIN={1 <<  17, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PULLUP};
 const Pin Z_MAX_PIN={1 <<  18, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PULLUP};
 
+unsigned char X_ENDSTOP_INVERT = _X_ENDSTOP_INVERT;
+unsigned char Y_ENDSTOP_INVERT = _Y_ENDSTOP_INVERT;
+unsigned char Z_ENDSTOP_INVERT = _Z_ENDSTOP_INVERT;
+
+unsigned char INVERT_X_DIR = _INVERT_X_DIR;
+unsigned char INVERT_Y_DIR = _INVERT_Y_DIR;
+unsigned char INVERT_Z_DIR = _INVERT_Z_DIR;
+unsigned char INVERT_E_DIR = _INVERT_E_DIR;
+
 //Motor opts
 extern void motor_enaxis(unsigned char axis, unsigned char en);
 extern void motor_setdir(unsigned char axis, unsigned char dir);
 extern void motor_step(unsigned char axis);
 extern void motor_unstep();
 
-const unsigned char INVERT_X_DIR = 0;
-const unsigned char INVERT_Y_DIR = 0;
-const unsigned char INVERT_Z_DIR = 1;
-const unsigned char INVERT_E_DIR = 0;
 
 #ifdef ENDSTOPS_ONLY_FOR_HOMING
-unsigned char check_endstops = 0;
+	unsigned char check_endstops = 0;
 #endif
 
-
-// Stepper
 
 // intRes = intIn1 * intIn2 >> 16
 // uses:
 // r26 to store 0
 // r27 to store the byte 1 of the 24 bit result
-//#define MultiU16X8toH16(intRes, charIn1, intIn2)
-
+// #define MultiU16X8toH16(intRes, charIn1, intIn2)
 
 // intRes = longIn1 * longIn2 >> 24
 // uses:
@@ -80,10 +83,6 @@ unsigned char check_endstops = 0;
 // r27 to store the byte 1 of the 48bit result
 // #define MultiU24X24toH16(intRes, longIn1, longIn2)
 
-// Some useful constants
-
-//#define ENABLE_STEPPER_DRIVER_INTERRUPT()  TIMSK1 |= (1<<OCIE1A)
-//#define DISABLE_STEPPER_DRIVER_INTERRUPT() TIMSK1 &= ~(1<<OCIE1A)
 
 #ifdef ENDSTOPS_ONLY_FOR_HOMING
   #define CHECK_ENDSTOPS  if(check_endstops)
@@ -91,11 +90,11 @@ unsigned char check_endstops = 0;
   #define CHECK_ENDSTOPS
 #endif
 
-volatile block_t *current_block;  // A pointer to the block currently being traced
+volatile block_t *current_block;  		// A pointer to the block currently being traced
 
 // Variables used by The Stepper Driver Interrupt
 volatile unsigned char out_bits;        // The next stepping-bits to be output
-volatile long 	counter_x,       // Counter variables for the bresenham line tracer
+volatile long 	counter_x,       		// Counter variables for the bresenham line tracer
 				counter_y, 
 				counter_z,       
 				counter_e;
@@ -104,15 +103,13 @@ volatile unsigned long step_events_completed; // The number of step events execu
 #ifdef ADVANCE
 	volatile long advance_rate, advance, final_advance = 0;
 	volatile short old_advance = 0;
-#endif
-#ifdef ADVANCE
-	volatile short e_steps;
+	volatile long e_steps[3];
 #endif
 
-volatile unsigned char busy = 0; // ture when SIG_OUTPUT_COMPARE1A is being serviced. Used to avoid retriggering that handler.
+volatile unsigned char busy = 0; 		// ture when SIG_OUTPUT_COMPARE1A is being serviced. Used to avoid retriggering that handler.
 volatile long acceleration_time, deceleration_time;
-volatile unsigned short acc_step_rate; // needed for deceleration start point
-volatile unsigned short OCR1A_nominal;
+volatile unsigned short acc_step_rate; 	// needed for deceleration start point
+volatile unsigned short TC_RC_nominal;
 
 volatile volatile unsigned char endstop_x_hit=0;
 volatile volatile unsigned char endstop_y_hit=0;
@@ -129,13 +126,8 @@ volatile unsigned char old_z_max_endstop=0;
 
 void stepper_setup(void)
 {
-	
 	Pin time_pins[]={time_check1,time_check2,X_MIN_PIN,Y_MIN_PIN,Z_MIN_PIN,X_MAX_PIN,Y_MAX_PIN,Z_MAX_PIN};
-    PIO_Configure(time_pins,8);
-	
-	
-	
-
+	PIO_Configure(time_pins,8);
 }
 
 void enable_endstops(unsigned char check)
@@ -151,9 +143,10 @@ void ConfigureTc0_Stepper(void)
 
 	// Enable peripheral clock
     AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_TC0;
-    unsigned int freq=1000; 
-    //TC_FindMckDivisor(freq, BOARD_MCK, &div, &tcclks);
+    unsigned int freq=1000; 	//Start Frequenz
+    
     TC_Configure(AT91C_BASE_TC0, 3 | AT91C_TC_CPCTRG);
+	
     //AT91C_BASE_TC0->TC_RB = 3; //6*((BOARD_MCK / div)/1000000); //6 uSec per step pulse 
     AT91C_BASE_TC0->TC_RC = (BOARD_MCK / 128) / freq; // timerFreq / desiredFreq
 
@@ -192,15 +185,15 @@ void ConfigureTc0_Stepper(void)
 unsigned short calc_timer(unsigned short step_rate)
 {
 	unsigned short timer;
+	
 	if(step_rate > MAX_STEP_FREQUENCY) step_rate = MAX_STEP_FREQUENCY;
 
-
 	if(step_rate < 50) step_rate = 50;
-	//step_rate -= 49; // Correct for minimal speed
-
+	
 	timer = (unsigned short)((BOARD_MCK / 128) / step_rate);
 
 	if(timer < 10) { timer = 10; }//(40kHz this should never happen)
+	
 	return timer;
 }
 
@@ -212,7 +205,7 @@ void trapezoid_generator_reset()
 		advance = current_block->initial_advance;
 		final_advance = current_block->final_advance;
 		// Do E steps + advance steps
-		e_steps += ((advance >>8) - old_advance);
+		e_steps[current_block->active_extruder] += ((advance >>8) - old_advance);
 		old_advance = advance >>8;  
 	#endif
 	
@@ -222,13 +215,14 @@ void trapezoid_generator_reset()
 	acc_step_rate = current_block->initial_rate;
 	acceleration_time = calc_timer(acc_step_rate);
 	AT91C_BASE_TC0->TC_RC = acceleration_time;
-	OCR1A_nominal = calc_timer(current_block->nominal_rate);
+	TC_RC_nominal = calc_timer(current_block->nominal_rate);
 
 }
 
 // "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.  
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately. 
-// Time for ISR is at the moment 14 us --> :-( need to be faster 
+// Time for ISR is at the moment 14 us --> :-( need to be faster
+// One IO Operation need 500 ns 
 //------------------------------------------------------------------------------
 /// Interrupt handler for TC0 interrupt --> Stepper.
 //------------------------------------------------------------------------------
@@ -261,7 +255,7 @@ void TC0_IrqHandler(void)
 			counter_e = counter_x;
 			step_events_completed = 0;
 			#ifdef ADVANCE
-			e_steps = 0;
+			e_steps[current_block->active_extruder] = 0;
 			#endif
 		} 
 		else
@@ -282,7 +276,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if X_MIN_ACTIV > -1
-				unsigned char x_min_endstop=PIO_Get(&X_MIN_PIN);	//read IO
+				unsigned char x_min_endstop=(PIO_Get(&X_MIN_PIN) != X_ENDSTOP_INVERT);	//read IO
 				if(x_min_endstop && old_x_min_endstop && (current_block->steps_x > 0)) 
 				{
 					if(!is_homing)
@@ -305,7 +299,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS 
 			{
 				#if X_MAX_ACTIV > -1
-				unsigned char x_max_endstop=PIO_Get(&X_MAX_PIN);	//read IO
+				unsigned char x_max_endstop=(PIO_Get(&X_MAX_PIN)  != X_ENDSTOP_INVERT);	//read IO
 				if(x_max_endstop && old_x_max_endstop && (current_block->steps_x > 0))
 				{
 					if(!is_homing)
@@ -329,7 +323,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if Y_MIN_ACTIV > -1
-				unsigned char y_min_endstop=PIO_Get(&Y_MIN_PIN);	//read IO
+				unsigned char y_min_endstop=(PIO_Get(&Y_MIN_PIN) != Y_ENDSTOP_INVERT);	//read IO
 				if(y_min_endstop && old_y_min_endstop && (current_block->steps_y > 0))
 				{
 					if(!is_homing)
@@ -352,7 +346,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if Y_MAX_ACTIV > -1
-				unsigned char y_max_endstop=PIO_Get(&Y_MAX_PIN);	//read IO
+				unsigned char y_max_endstop=(PIO_Get(&Y_MAX_PIN) != Y_ENDSTOP_INVERT);	//read IO
 				if(y_max_endstop && old_y_max_endstop && (current_block->steps_y > 0))
 				{
 					if(!is_homing)
@@ -376,7 +370,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if Z_MIN_ACTIV > -1
-				unsigned char z_min_endstop=PIO_Get(&Z_MIN_PIN);	//read IO
+				unsigned char z_min_endstop=(PIO_Get(&Z_MIN_PIN) != Z_ENDSTOP_INVERT);	//read IO
 				if(z_min_endstop && old_z_min_endstop && (current_block->steps_z > 0))
 				{
 					if(!is_homing)  
@@ -399,7 +393,7 @@ void TC0_IrqHandler(void)
 			CHECK_ENDSTOPS
 			{
 				#if Z_MAX_ACTIV > -1
-				unsigned char z_max_endstop=PIO_Get(&Z_MAX_PIN);	//read IO
+				unsigned char z_max_endstop=(PIO_Get(&Z_MAX_PIN) != Z_ENDSTOP_INVERT);	//read IO
 				if(z_max_endstop && old_z_max_endstop && (current_block->steps_z > 0))
 				{
 					if(!is_homing)
@@ -419,13 +413,21 @@ void TC0_IrqHandler(void)
 		}
 
 		
-		
+	
 		#ifndef ADVANCE
-		if ((out_bits & (1<<E_AXIS)) != 0) {  // -direction
-			motor_setdir(E_AXIS, INVERT_E_DIR);
+		if ((out_bits & (1<<E_AXIS)) != 0) // -direction
+		{  
+			if(current_block->active_extruder == 1)
+				motor_setdir(E1_AXIS, INVERT_E_DIR);
+			else
+				motor_setdir(E_AXIS, INVERT_E_DIR);
 		}
-		else { // +direction
-			motor_setdir(E_AXIS, !INVERT_E_DIR);
+		else // +direction
+		{ 
+			if(current_block->active_extruder == 1)
+				motor_setdir(E1_AXIS, !INVERT_E_DIR);
+			else
+				motor_setdir(E_AXIS, !INVERT_E_DIR);
 		}
 		#endif //!ADVANCE
 
@@ -437,10 +439,10 @@ void TC0_IrqHandler(void)
 		if (counter_e > 0) {
 			counter_e -= current_block->step_event_count;
 			if ((out_bits & (1<<E_AXIS)) != 0) { // - direction
-				e_steps--;
+				e_steps[current_block->active_extruder]--;
 			}
 			else {
-				e_steps++;
+				e_steps[current_block->active_extruder]++;
 			}
 		}    
 		#endif //ADVANCE
@@ -458,7 +460,6 @@ void TC0_IrqHandler(void)
 				virtual_steps_x++;
 
 			counter_x -= current_block->step_event_count;
-			//WRITE(X_STEP_PIN, LOW);
 		}
 
 		counter_y += current_block->steps_y;
@@ -474,7 +475,6 @@ void TC0_IrqHandler(void)
 				virtual_steps_y++;
 
 			counter_y -= current_block->step_event_count;
-			//WRITE(Y_STEP_PIN, LOW);
 		}
 
 		counter_z += current_block->steps_z;
@@ -490,15 +490,18 @@ void TC0_IrqHandler(void)
 				virtual_steps_z++;
 
 			counter_z -= current_block->step_event_count;
-			//WRITE(Z_STEP_PIN, LOW);
 		}
 
 		#ifndef ADVANCE
 		counter_e += current_block->steps_e;
-		if (counter_e > 0) {
-			motor_step(E_AXIS);
+		if (counter_e > 0) 
+		{
+			if(current_block->active_extruder == 1)
+				motor_step(E1_AXIS);
+			else
+				motor_step(E_AXIS);
+				
 			counter_e -= current_block->step_event_count;
-			//WRITE(E_STEP_PIN, LOW);
 		}
 		#endif //!ADVANCE
 
@@ -524,7 +527,7 @@ void TC0_IrqHandler(void)
 			#ifdef ADVANCE
 			//if(advance > current_block->advance) advance = current_block->advance;
 			// Do E steps + advance steps
-			e_steps += ((advance >>8) - old_advance);
+			e_steps[current_block->active_extruder] += ((advance >>8) - old_advance);
 			old_advance = advance >>8;  
 			#endif
 		} 
@@ -550,13 +553,13 @@ void TC0_IrqHandler(void)
 			#ifdef ADVANCE
 			if(advance < final_advance) advance = final_advance;
 			// Do E steps + advance steps
-			e_steps += ((advance >>8) - old_advance);
+			e_steps[current_block->active_extruder] += ((advance >>8) - old_advance);
 			old_advance = advance >>8;  
 			#endif //ADVANCE
 		}
 		else 
 		{
-			AT91C_BASE_TC0->TC_RC = OCR1A_nominal;
+			AT91C_BASE_TC0->TC_RC = TC_RC_nominal;
 		}
 
 		// If current block is finished, reset pointer 

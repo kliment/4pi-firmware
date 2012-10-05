@@ -1,7 +1,8 @@
-#define X_AXIS 0
-#define Y_AXIS 1
-#define Z_AXIS 2
-#define E_AXIS 3
+#define X_AXIS  0
+#define Y_AXIS  1
+#define Z_AXIS  2
+#define E_AXIS  3
+#define E1_AXIS 4		//for Stepper Control
 
 #define NUM_AXIS 4
 
@@ -9,21 +10,17 @@
 #define disable_y()  motor_enaxis(1, 0)
 #define disable_z()  motor_enaxis(2, 0)
 #define disable_e()  motor_enaxis(3, 0)
+#define disable_e1() motor_enaxis(4, 0)
 
 #define enable_x()  motor_enaxis(0, 1)
 #define enable_y()  motor_enaxis(1, 1)
 #define enable_z()  motor_enaxis(2, 1)
 #define enable_e()  motor_enaxis(3, 1)
+#define enable_e1() motor_enaxis(4, 1)
 
-#define MINIMUM_PLANNER_SPEED 0.05 // (mm/sec)
-#define MAX_RETRACT_FEEDRATE 100    //mm/sec
 
-extern const int X_MAX_LENGTH;
-extern const int Y_MAX_LENGTH;
-extern const int Z_MAX_LENGTH;
-extern const char min_software_endstops;
-extern const char max_software_endstops;
-extern const int dropsegments;
+
+
 
 
 // This struct is used when buffering the setup for each linear movement "nominal" values are as specified in 

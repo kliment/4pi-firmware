@@ -20,70 +20,29 @@
  
 */
 
-#define THERMISTORHEATER	1
-#define THERMISTORBED		1
+#define THERMISTORTYP_TABLE_1 	1
+#define THERMISTORTYP_TABLE_2 	2
+#define THERMISTORTYP_TABLE_3 	3
+#define THERMISTORTYP_TABLE_4 	4
+#define THERMISTORTYP_TABLE_5 	5
+#define THERMISTORTYP_TABLE_6 	6
+#define THERMISTORTYP_TABLE_7 	7
 
-#define BED_USES_THERMISTOR
-#define HEATER_USES_THERMISTOR
+#define THERMISTORTYP_COMPUTE_11 	11
+#define THERMISTORTYP_COMPUTE_12 	12
+#define THERMISTORTYP_COMPUTE_13 	13
+#define THERMISTORTYP_COMPUTE_14 	14
+#define THERMISTORTYP_COMPUTE_15 	15
+#define THERMISTORTYP_COMPUTE_16 	16
+#define THERMISTORTYP_COMPUTE_17 	17
 
-#define MINTEMP
-#define MAXTEMP
-
-// Support to compute temperature  from themistor Beta instead of using lookup tables
-// See http://en.wikipedia.org/wiki/Thermistor#B_or_.CE.B2_parameter_equation
-//#define COMPUTE_THERMISTORS
-#define ABS_ZERO -273.15
-#define ADC_VREF       3300  // 3.3 * 1000
-
-// extruder thermistor
-#define E_BETA 4066	// EPCOS 100K Thermistor (B57540G0104F000)
-#define E_R_INF ( 100000.0*exp(-E_BETA/298.15) ) // 100K @ 25C
-#define E_RS 4700 // 4pi uses 4.7K series resistor to ADC_VREF
-
-// heated bed thermistor
-#define BED_BETA 4066	// EPCOS 100K Thermistor (B57540G0104F000)
-#define BED_R_INF ( 100000.0*exp(-E_BETA/298.15) ) // 100K @ 25C
-#define BED_RS 4700 // 4pi uses 4.7K series resistor to ADC_VREF
+#define AD595_TYP_50 	50
 
 
-//#define BETA 4092	// EPCOS 100K Thermistor (B57560G1104F)
-//#define R_INF ( 100000.0*exp(-E_BETA/298.15) ) // 100K @ 25C
-//#define RS 4700
-
-//#define BETA 3974	// Honeywell 100K Thermistor (135-104LAG-J01)
-//#define R_INF ( 100000.0*exp(-E_BETA/298.15) ) // 100K @ 25C
-//#define RS 4700
-
-//#define BETA 3960	// RRRF 100K Thermistor; RS 198-961
-//#define R_INF ( 100000.0*exp(-E_BETA/298.15) ) // 100K @ 25C
-//#define RS 4700
-
-//#define BETA 3964	// RRRF 10K Thermistor
-//#define R_INF ( 10000.0*exp(-E_BETA/298.15) ) // 10K @ 25C
-//#define RS 4700
-
-//#define BETA 3480	// EPCOS 10K Thermistor (B57550G103J); RS 484-0149
-//#define R_INF ( 10000.0*exp(-E_BETA/298.15) ) // 10K @ 25C
-//#define RS 4700
-
-
-//PID Controler Settings
-#define PID_INTEGRAL_DRIVE_MAX 80 // too big, and heater will lag after changing temperature, too small and it might not compensate enough for long-term errors
-#define PID_PGAIN 1024 //256 is 1.0  // value of X means that error of 1 degree is changing PWM duty by X, probably no need to go over 25
-#define PID_IGAIN 22 //256 is 1.0  // value of X (e.g 0.25) means that each degree error over 1 sec (2 measurements) changes duty cycle by 2X (=0.5) units (verify?)
-#define PID_DGAIN 2048 //256 is 1.0  // value of X means that around reached setpoint, each degree change over one measurement (half second) adjusts PWM by X units to compensate
-
-#define HEATER_DUTY_FOR_SETPOINT(setpoint) ((signed short)((187L*(long)setpoint)>>8)-27)  
-// Change this value (range 30-255) to limit the current to the nozzle
-#define HEATER_CURRENT 255
-
-#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
-#define min(a,b) ((a)<(b)?(a):(b))
-#define max(a,b) ((a)>(b)?(a):(b))
-
-//#include "Configuration.h"
+//#include "init_configuration.h"
 //#include "thermistortables.h"
 
+/*
 #if defined HEATER_USES_THERMISTOR
 #if defined COMPUTE_THERMISTORS
 #define temp2analogh( c ) temp2analog_thermistor(c,E_BETA, E_RS, E_R_INF)
@@ -115,32 +74,25 @@
 #define temp2analogBed( c ) temp2analog_max6675(c)
 #define analog2tempBed( c ) analog2temp_max6675(c)
 #endif
+*/
 
-#if defined (HEATER_USES_THERMISTOR) || defined (BED_USES_THERMISTOR)
-#if defined COMPUTE_THERMISTORS
-signed short temp2analog_thermistor(signed short celsius, const float beta, const float rs, const float r_inf);
-signed short analog2temp_thermistor(signed short raw, const float beta, const float rs, const float r_inf);
-#else
-signed short temp2analog_thermistor(signed short celsius, const short table[][2], signed short numtemps);
-signed short analog2temp_thermistor(signed short raw,const short table[][2], signed short numtemps);
-#endif
-#endif
 
-#if defined (HEATER_USES_AD595) || defined (BED_USES_AD595)
-signed short temp2analog_ad595(signed short celsius);
-signed short analog2temp_ad595(signed short raw);
-#endif
+signed short temp2analog_thermistor_compute(signed short celsius, const float beta, const float rs, const float r_inf);
+signed short analog2temp_thermistor_compute(signed short raw, const float beta, const float rs, const float r_inf);
 
-#if defined (HEATER_USES_MAX6675) || defined (BED_USES_MAX6675)
-signed short temp2analog_max6675(signed short celsius);
-signed short analog2temp_max6675(signed short raw);
-#endif
+signed short temp2analog_thermistor_table(signed short celsius, const short table[][2], signed short numtemps);
+signed short analog2temp_thermistor_table(signed short raw,const short table[][2], signed short numtemps);
+
+
+#define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
 
 
 void manage_heaters(void);
 void init_heaters_values(void);
+void heater_switch(unsigned char heater, unsigned char en);
 //void heater_soft_pwm(void);
-
 
 
 typedef struct {
@@ -162,12 +114,16 @@ typedef struct {
 	signed short dTerm;
 	signed short temp_iState_min;
 	signed short temp_iState_max;
+	
+	signed short thermistor_type;
+	
 
 } heater_struct;
 
 typedef struct {
 	signed short target_temp;
 	signed short akt_temp;
+	signed short thermistor_type;
 
 } heater_bed_struct;
 

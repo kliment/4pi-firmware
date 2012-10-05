@@ -1,80 +1,114 @@
 #ifndef THERMISTORTABLES_H_
 #define THERMISTORTABLES_H_
 
-#define ADC_VREF_4       3300*4  // 3.3 * 1000
+#define ADC_VREF    	 3300  		// 3.3 * 1000
+#define ADC_VREF_4       3300*4  	// 3.3 * 1000 * 4
+
+#define ABS_ZERO 	-273.15
 
 
+#define E_RS 4700 // 4pi uses 4.7K series resistor to ADC_VREF
 
+// Support to compute temperature  from themistor Beta instead of using lookup tables
+// See http://en.wikipedia.org/wiki/Thermistor#B_or_.CE.B2_parameter_equation
+// Type 11
+#define E_BETA_11 4066	// EPCOS 100K Thermistor (B57540G0104F000)
+#define E_R_INF_11 ( 100000.0*exp(-E_BETA_11/298.15) ) // 100K @ 25C
 
-#if (THERMISTORHEATER == 1) || (THERMISTORBED == 1) //100k bed thermistor
+// Type 16
+#define E_BETA_16 4092	// EPCOS 100K Thermistor (B57560G1104F)
+#define E_R_INF_16 ( 100000.0*exp(-E_BETA_16/298.15) ) // 100K @ 25C
 
+// Type 17
+#define E_BETA_17 3974	// Honeywell 100K Thermistor (135-104LAG-J01)
+#define E_R_INF_17 ( 100000.0*exp(-E_BETA_17/298.15) ) // 100K @ 25C
+
+// Type 15
+#define E_BETA_15 3960	// RRRF 100K Thermistor; RS 198-961
+#define E_R_INF_15 ( 100000.0*exp(-E_BETA_15/298.15) ) // 100K @ 25C
+
+// Type 14
+#define E_BETA_14 3964	// RRRF 10K Thermistor
+#define E_R_INF_14 ( 10000.0*exp(-E_BETA_14/298.15) ) // 10K @ 25C
+
+// Type 13
+#define E_BETA_13 3480	// EPCOS 10K Thermistor (B57550G103J); RS 484-0149
+#define E_R_INF_13 ( 10000.0*exp(-E_BETA_13/298.15) ) // 10K @ 25C
+
+//--------------------------------------------
+// Convert Temperatur with Table
+//--------------------------------------------
+
+//100k thermistor B57540G0104F000
+// Type 1
 #define NUMTEMPS_1 61
 const short temptable_1[NUMTEMPS_1][2] = {
-{	(ADC_VREF_4*23) / 0xFFF	,	300	},
-{	(ADC_VREF_4*25) / 0xFFF	,	295	},
-{	(ADC_VREF_4*27) / 0xFFF	,	290	},
-{	(ADC_VREF_4*28) / 0xFFF	,	285	},
-{	(ADC_VREF_4*31) / 0xFFF	,	280	},
-{	(ADC_VREF_4*33) / 0xFFF	,	275	},
-{	(ADC_VREF_4*35) / 0xFFF	,	270	},
-{	(ADC_VREF_4*38) / 0xFFF	,	265	},
-{	(ADC_VREF_4*41) / 0xFFF	,	260	},
-{	(ADC_VREF_4*44) / 0xFFF	,	255	},
-{	(ADC_VREF_4*48) / 0xFFF	,	250	},
-{	(ADC_VREF_4*52) / 0xFFF	,	245	},
-{	(ADC_VREF_4*56) / 0xFFF	,	240	},
-{	(ADC_VREF_4*61) / 0xFFF	,	235	},
-{	(ADC_VREF_4*66) / 0xFFF	,	230	},
-{	(ADC_VREF_4*71) / 0xFFF	,	225	},
-{	(ADC_VREF_4*78) / 0xFFF	,	220	},
-{	(ADC_VREF_4*84) / 0xFFF	,	215	},
-{	(ADC_VREF_4*92) / 0xFFF	,	210	},
-{	(ADC_VREF_4*100) / 0xFFF	,	205	},
-{	(ADC_VREF_4*109) / 0xFFF	,	200	},
-{	(ADC_VREF_4*120) / 0xFFF	,	195	},
-{	(ADC_VREF_4*131) / 0xFFF	,	190	},
-{	(ADC_VREF_4*143) / 0xFFF	,	185	},
-{	(ADC_VREF_4*156) / 0xFFF	,	180	},
-{	(ADC_VREF_4*171) / 0xFFF	,	175	},
-{	(ADC_VREF_4*187) / 0xFFF	,	170	},
-{	(ADC_VREF_4*205) / 0xFFF	,	165	},
-{	(ADC_VREF_4*224) / 0xFFF	,	160	},
-{	(ADC_VREF_4*245) / 0xFFF	,	155	},
-{	(ADC_VREF_4*268) / 0xFFF	,	150	},
-{	(ADC_VREF_4*293) / 0xFFF	,	145	},
-{	(ADC_VREF_4*320) / 0xFFF	,	140	},
-{	(ADC_VREF_4*348) / 0xFFF	,	135	},
-{	(ADC_VREF_4*379) / 0xFFF	,	130	},
-{	(ADC_VREF_4*411) / 0xFFF	,	125	},
-{	(ADC_VREF_4*445) / 0xFFF	,	120	},
-{	(ADC_VREF_4*480) / 0xFFF	,	115	},
-{	(ADC_VREF_4*516) / 0xFFF	,	110	},
-{	(ADC_VREF_4*553) / 0xFFF	,	105	},
-{	(ADC_VREF_4*591) / 0xFFF	,	100	},
-{	(ADC_VREF_4*628) / 0xFFF	,	95	},
-{	(ADC_VREF_4*665) / 0xFFF	,	90	},
-{	(ADC_VREF_4*702) / 0xFFF	,	85	},
-{	(ADC_VREF_4*737) / 0xFFF	,	80	},
-{	(ADC_VREF_4*770) / 0xFFF	,	75	},
-{	(ADC_VREF_4*801) / 0xFFF	,	70	},
-{	(ADC_VREF_4*830) / 0xFFF	,	65	},
-{	(ADC_VREF_4*857) / 0xFFF	,	60	},
-{	(ADC_VREF_4*881) / 0xFFF	,	55	},
-{	(ADC_VREF_4*903) / 0xFFF	,	50	},
-{	(ADC_VREF_4*922) / 0xFFF	,	45	},
-{	(ADC_VREF_4*939) / 0xFFF	,	40	},
-{	(ADC_VREF_4*954) / 0xFFF	,	35	},
-{	(ADC_VREF_4*966) / 0xFFF	,	30	},
-{	(ADC_VREF_4*977) / 0xFFF	,	25	},
-{	(ADC_VREF_4*985) / 0xFFF	,	20	},
-{	(ADC_VREF_4*993) / 0xFFF	,	15	},
-{	(ADC_VREF_4*999) / 0xFFF	,	10	},
-{	(ADC_VREF_4*1004) / 0xFFF	,	5	},
-{	(ADC_VREF_4*1008) / 0xFFF	,	0	} //safety
+	{ 73   , 300},
+	{ 80   , 295},
+	{ 87   , 290},
+	{ 90   , 285},
+	{ 99   , 280},
+	{ 106  , 275},
+	{ 113  , 270},
+	{ 122  , 265},
+	{ 132  , 260},
+	{ 142  , 255},
+	{ 153  , 250},
+	{ 165  , 245},
+	{ 179  , 240},
+	{ 194  , 235},
+	{ 210  , 230},
+	{ 228  , 225},
+	{ 248  , 220},
+	{ 270  , 215},
+	{ 294  , 210},
+	{ 321  , 205},
+	{ 350  , 200},
+	{ 382  , 195},
+	{ 418  , 190},
+	{ 457  , 185},
+	{ 500  , 180},
+	{ 547  , 175},
+	{ 599  , 170},
+	{ 656  , 165},
+	{ 718  , 160},
+	{ 786  , 155},
+	{ 859  , 150},
+	{ 939  , 145},
+	{ 1025 , 140},
+	{ 1117 , 135},
+	{ 1214 , 130},
+	{ 1318 , 125},
+	{ 1427 , 120},
+	{ 1540 , 115},
+	{ 1658 , 110},
+	{ 1777 , 105},
+	{ 1899 , 100},
+	{ 2020 ,  95},
+	{ 2140 ,  90},
+	{ 2258 ,  85},
+	{ 2371 ,  80},
+	{ 2479 ,  75},
+	{ 2581 ,  70},
+	{ 2676 ,  65},
+	{ 2763 ,  60},
+	{ 2841 ,  55},
+	{ 2912 ,  50},
+	{ 2975 ,  45},
+	{ 3029 ,  40},
+	{ 3077 ,  35},
+	{ 3117 ,  30},
+	{ 3152 ,  25},
+	{ 3181 ,  20},
+	{ 3205 ,  15},
+	{ 3225 ,  10},
+	{ 3241 ,  5},
+	{ 3254 ,  0} //safety
 };
-#endif
 
-#if (THERMISTORHEATER == 2) || (THERMISTORBED == 2) //200k bed thermistor verified by arcol
+
+//200k bed thermistor verified by arcol
+//Type: 2
 #define NUMTEMPS_2 64
 const short temptable_2[NUMTEMPS_2][2] = {
    { (ADC_VREF_4*16) / 0xFFF, 315},
@@ -143,8 +177,9 @@ const short temptable_2[NUMTEMPS_2][2] = {
    { (ADC_VREF_4*1023) / 0xFFF,   0} //safety
 };
 
-#endif
-#if (THERMISTORHEATER == 3) || (THERMISTORBED == 3) //mendel-parts
+
+//mendel-parts
+//Type: 3
 #define NUMTEMPS_3 28
 const short temptable_3[NUMTEMPS_3][2] = {
 		{ (ADC_VREF_4*1) / 0xFFF,864},
@@ -177,9 +212,10 @@ const short temptable_3[NUMTEMPS_3][2] = {
 		{ (ADC_VREF_4*1018) / 0xFFF,-20}
 	};
 
-#endif
-#if (THERMISTORHEATER == 4) || (THERMISTORBED == 4) //10k thermistor
 
+
+//10k thermistor
+//Type: 4
 #define NUMTEMPS_4 20
 const short temptable_4[NUMTEMPS_4][2] = {
    { (ADC_VREF_4*1) / 0xFFF, 430},
@@ -203,10 +239,10 @@ const short temptable_4[NUMTEMPS_4][2] = {
    { (ADC_VREF_4*955) / 0xFFF, -11},
    { (ADC_VREF_4*1008) / 0xFFF, -35}
 };
-#endif
 
-#if (THERMISTORHEATER == 5) || (THERMISTORBED == 5) //100k ParCan thermistor (104GT-2)
 
+//100k ParCan thermistor (104GT-2)
+//Type: 5
 #define NUMTEMPS_5 61
 const short temptable_5[NUMTEMPS_5][2] = {
 { (ADC_VREF_4*1) / 0xFFF, 713},
@@ -271,161 +307,111 @@ const short temptable_5[NUMTEMPS_5][2] = {
 { (ADC_VREF_4*1004) / 0xFFF, 8},
 { (ADC_VREF_4*1021) / 0xFFF, 0}
 };
-#endif
 
-#if (THERMISTORHEATER == 6) || (THERMISTORBED == 6) // 100k Epcos thermistor
+
+// 100k Epcos thermistor
+//Type: 6
 #define NUMTEMPS_6 36
 const short temptable_6[NUMTEMPS_6][2] = {
-   { (ADC_VREF_4*28 / 0xFFF	, 250},
-   { (ADC_VREF_4*31 / 0xFFF	, 245},
-   { (ADC_VREF_4*35 / 0xFFF	, 240},
-   { (ADC_VREF_4*39 / 0xFFF	, 235},
-   { (ADC_VREF_4*42 / 0xFFF	, 230},
-   { (ADC_VREF_4*44 / 0xFFF	, 225},
-   { (ADC_VREF_4*49 / 0xFFF	, 220},
-   { (ADC_VREF_4*53 / 0xFFF	, 215},
-   { (ADC_VREF_4*62 / 0xFFF	, 210},
-   { (ADC_VREF_4*71 / 0xFFF	, 205}, //fitted graphically
-   { (ADC_VREF_4*78 / 0xFFF	, 200}, //fitted graphically
-   { (ADC_VREF_4*94 / 0xFFF	, 190},
-   { (ADC_VREF_4*102 / 0xFFF	, 185},
-   { (ADC_VREF_4*116 / 0xFFF	, 170},
-   { (ADC_VREF_4*143 / 0xFFF	, 160},
-   { (ADC_VREF_4*183 / 0xFFF	, 150},
-   { (ADC_VREF_4*223 / 0xFFF	, 140},
-   { (ADC_VREF_4*270 / 0xFFF	, 130},
-   { (ADC_VREF_4*318 / 0xFFF	, 120},
-   { (ADC_VREF_4*383 / 0xFFF	, 110},
-   { (ADC_VREF_4*413 / 0xFFF	, 105},
-   { (ADC_VREF_4*439 / 0xFFF	, 100},
-   { (ADC_VREF_4*484 / 0xFFF	, 95},
-   { (ADC_VREF_4*513 / 0xFFF	, 90},
-   { (ADC_VREF_4*607 / 0xFFF	, 80},
-   { (ADC_VREF_4*664 / 0xFFF	, 70},
-   { (ADC_VREF_4*781 / 0xFFF	, 60},
-   { (ADC_VREF_4*810 / 0xFFF	, 55},
-   { (ADC_VREF_4*849 / 0xFFF	, 50},
-   { (ADC_VREF_4*914 / 0xFFF	, 45},
-   { (ADC_VREF_4*914 / 0xFFF	, 40},
-   { (ADC_VREF_4*935 / 0xFFF	, 35},
-   { (ADC_VREF_4*954 / 0xFFF	, 30},
-   { (ADC_VREF_4*970 / 0xFFF	, 25},
-   { (ADC_VREF_4*978 / 0xFFF	, 22},
-   { (ADC_VREF_4*1008 / 0xFFF	, 3}
+   { (ADC_VREF_4*28) / 0xFFF	, 250},
+   { (ADC_VREF_4*31) / 0xFFF	, 245},
+   { (ADC_VREF_4*35) / 0xFFF	, 240},
+   { (ADC_VREF_4*39) / 0xFFF	, 235},
+   { (ADC_VREF_4*42) / 0xFFF	, 230},
+   { (ADC_VREF_4*44) / 0xFFF	, 225},
+   { (ADC_VREF_4*49) / 0xFFF	, 220},
+   { (ADC_VREF_4*53) / 0xFFF	, 215},
+   { (ADC_VREF_4*62) / 0xFFF	, 210},
+   { (ADC_VREF_4*71) / 0xFFF	, 205}, //fitted graphically
+   { (ADC_VREF_4*78) / 0xFFF	, 200}, //fitted graphically
+   { (ADC_VREF_4*94) / 0xFFF	, 190},
+   { (ADC_VREF_4*102) / 0xFFF	, 185},
+   { (ADC_VREF_4*116) / 0xFFF	, 170},
+   { (ADC_VREF_4*143) / 0xFFF	, 160},
+   { (ADC_VREF_4*183) / 0xFFF	, 150},
+   { (ADC_VREF_4*223) / 0xFFF	, 140},
+   { (ADC_VREF_4*270) / 0xFFF	, 130},
+   { (ADC_VREF_4*318) / 0xFFF	, 120},
+   { (ADC_VREF_4*383) / 0xFFF	, 110},
+   { (ADC_VREF_4*413) / 0xFFF	, 105},
+   { (ADC_VREF_4*439) / 0xFFF	, 100},
+   { (ADC_VREF_4*484) / 0xFFF	, 95},
+   { (ADC_VREF_4*513) / 0xFFF	, 90},
+   { (ADC_VREF_4*607) / 0xFFF	, 80},
+   { (ADC_VREF_4*664) / 0xFFF	, 70},
+   { (ADC_VREF_4*781) / 0xFFF	, 60},
+   { (ADC_VREF_4*810) / 0xFFF	, 55},
+   { (ADC_VREF_4*849) / 0xFFF	, 50},
+   { (ADC_VREF_4*914) / 0xFFF	, 45},
+   { (ADC_VREF_4*914) / 0xFFF	, 40},
+   { (ADC_VREF_4*935) / 0xFFF	, 35},
+   { (ADC_VREF_4*954) / 0xFFF	, 30},
+   { (ADC_VREF_4*970) / 0xFFF	, 25},
+   { (ADC_VREF_4*978) / 0xFFF	, 22},
+   { (ADC_VREF_4*1008) / 0xFFF	, 3}
 };
-#endif
 
-#if (THERMISTORHEATER == 7) || (THERMISTORBED == 7) // 100k Honeywell 135-104LAG-J01
+
+// 100k Honeywell 135-104LAG-J01
+//Type: 7
 #define NUMTEMPS_7 55
 const short temptable_7[NUMTEMPS_7][2] = {
-   { (ADC_VREF_4*46 / 0xFFF	, 270},
-   { (ADC_VREF_4*50 / 0xFFF	, 265},
-   { (ADC_VREF_4*54 / 0xFFF	, 260},
-   { (ADC_VREF_4*58 / 0xFFF	, 255},
-   { (ADC_VREF_4*62 / 0xFFF	, 250},
-   { (ADC_VREF_4*67 / 0xFFF	, 245},
-   { (ADC_VREF_4*72 / 0xFFF	, 240},
-   { (ADC_VREF_4*79 / 0xFFF	, 235},
-   { (ADC_VREF_4*85 / 0xFFF	, 230},
-   { (ADC_VREF_4*91 / 0xFFF	, 225},
-   { (ADC_VREF_4*99 / 0xFFF	, 220},
-   { (ADC_VREF_4*107 / 0xFFF	, 215},
-   { (ADC_VREF_4*116 / 0xFFF	, 210},
-   { (ADC_VREF_4*126 / 0xFFF	, 205},
-   { (ADC_VREF_4*136 / 0xFFF	, 200},
-   { (ADC_VREF_4*149 / 0xFFF	, 195},
-   { (ADC_VREF_4*160 / 0xFFF	, 190},
-   { (ADC_VREF_4*175 / 0xFFF	, 185},
-   { (ADC_VREF_4*191 / 0xFFF	, 180},
-   { (ADC_VREF_4*209 / 0xFFF	, 175},
-   { (ADC_VREF_4*224 / 0xFFF	, 170},
-   { (ADC_VREF_4*246 / 0xFFF	, 165},
-   { (ADC_VREF_4*267 / 0xFFF	, 160},
-   { (ADC_VREF_4*293 / 0xFFF	, 155},
-   { (ADC_VREF_4*316 / 0xFFF	, 150},
-   { (ADC_VREF_4*340 / 0xFFF	, 145},
-   { (ADC_VREF_4*364 / 0xFFF	, 140},
-   { (ADC_VREF_4*396 / 0xFFF	, 135},
-   { (ADC_VREF_4*425 / 0xFFF	, 130},
-   { (ADC_VREF_4*460 / 0xFFF	, 125},
-   { (ADC_VREF_4*489 / 0xFFF	, 120},
-   { (ADC_VREF_4*526 / 0xFFF	, 115},
-   { (ADC_VREF_4*558 / 0xFFF	, 110},
-   { (ADC_VREF_4*591 / 0xFFF	, 105},
-   { (ADC_VREF_4*628 / 0xFFF	, 100},
-   { (ADC_VREF_4*660 / 0xFFF	, 95},
-   { (ADC_VREF_4*696 / 0xFFF	, 90},
-   { (ADC_VREF_4*733 / 0xFFF	, 85},
-   { (ADC_VREF_4*761 / 0xFFF	, 80},
-   { (ADC_VREF_4*794 / 0xFFF	, 75},
-   { (ADC_VREF_4*819 / 0xFFF	, 70},
-   { (ADC_VREF_4*847 / 0xFFF	, 65},
-   { (ADC_VREF_4*870 / 0xFFF	, 60},
-   { (ADC_VREF_4*892 / 0xFFF	, 55},
-   { (ADC_VREF_4*911 / 0xFFF	, 50},
-   { (ADC_VREF_4*929 / 0xFFF	, 45},
-   { (ADC_VREF_4*944 / 0xFFF	, 40},
-   { (ADC_VREF_4*959 / 0xFFF	, 35},
-   { (ADC_VREF_4*971 / 0xFFF	, 30},
-   { (ADC_VREF_4*981 / 0xFFF	, 25},
-   { (ADC_VREF_4*989 / 0xFFF	, 20},
-   { (ADC_VREF_4*994 / 0xFFF	, 15},
-   { (ADC_VREF_4*1001 / 0xFFF	, 10},
-   { (ADC_VREF_4*1005 / 0xFFF	, 5},
-   { (ADC_VREF_4*1021 / 0xFFF	, 0} //safety
+   { (ADC_VREF_4*46) / 0xFFF	, 270},
+   { (ADC_VREF_4*50) / 0xFFF	, 265},
+   { (ADC_VREF_4*54) / 0xFFF	, 260},
+   { (ADC_VREF_4*58) / 0xFFF	, 255},
+   { (ADC_VREF_4*62) / 0xFFF	, 250},
+   { (ADC_VREF_4*67) / 0xFFF	, 245},
+   { (ADC_VREF_4*72) / 0xFFF	, 240},
+   { (ADC_VREF_4*79) / 0xFFF	, 235},
+   { (ADC_VREF_4*85) / 0xFFF	, 230},
+   { (ADC_VREF_4*91) / 0xFFF	, 225},
+   { (ADC_VREF_4*99) / 0xFFF	, 220},
+   { (ADC_VREF_4*107) / 0xFFF	, 215},
+   { (ADC_VREF_4*116) / 0xFFF	, 210},
+   { (ADC_VREF_4*126) / 0xFFF	, 205},
+   { (ADC_VREF_4*136) / 0xFFF	, 200},
+   { (ADC_VREF_4*149) / 0xFFF	, 195},
+   { (ADC_VREF_4*160) / 0xFFF	, 190},
+   { (ADC_VREF_4*175) / 0xFFF	, 185},
+   { (ADC_VREF_4*191) / 0xFFF	, 180},
+   { (ADC_VREF_4*209) / 0xFFF	, 175},
+   { (ADC_VREF_4*224) / 0xFFF	, 170},
+   { (ADC_VREF_4*246) / 0xFFF	, 165},
+   { (ADC_VREF_4*267) / 0xFFF	, 160},
+   { (ADC_VREF_4*293) / 0xFFF	, 155},
+   { (ADC_VREF_4*316) / 0xFFF	, 150},
+   { (ADC_VREF_4*340) / 0xFFF	, 145},
+   { (ADC_VREF_4*364) / 0xFFF	, 140},
+   { (ADC_VREF_4*396) / 0xFFF	, 135},
+   { (ADC_VREF_4*425) / 0xFFF	, 130},
+   { (ADC_VREF_4*460) / 0xFFF	, 125},
+   { (ADC_VREF_4*489) / 0xFFF	, 120},
+   { (ADC_VREF_4*526) / 0xFFF	, 115},
+   { (ADC_VREF_4*558) / 0xFFF	, 110},
+   { (ADC_VREF_4*591) / 0xFFF	, 105},
+   { (ADC_VREF_4*628) / 0xFFF	, 100},
+   { (ADC_VREF_4*660) / 0xFFF	, 95},
+   { (ADC_VREF_4*696) / 0xFFF	, 90},
+   { (ADC_VREF_4*733) / 0xFFF	, 85},
+   { (ADC_VREF_4*761) / 0xFFF	, 80},
+   { (ADC_VREF_4*794) / 0xFFF	, 75},
+   { (ADC_VREF_4*819) / 0xFFF	, 70},
+   { (ADC_VREF_4*847) / 0xFFF	, 65},
+   { (ADC_VREF_4*870) / 0xFFF	, 60},
+   { (ADC_VREF_4*892) / 0xFFF	, 55},
+   { (ADC_VREF_4*911) / 0xFFF	, 50},
+   { (ADC_VREF_4*929) / 0xFFF	, 45},
+   { (ADC_VREF_4*944) / 0xFFF	, 40},
+   { (ADC_VREF_4*959) / 0xFFF	, 35},
+   { (ADC_VREF_4*971) / 0xFFF	, 30},
+   { (ADC_VREF_4*981) / 0xFFF	, 25},
+   { (ADC_VREF_4*989) / 0xFFF	, 20},
+   { (ADC_VREF_4*994) / 0xFFF	, 15},
+   { (ADC_VREF_4*1001) / 0xFFF	, 10},
+   { (ADC_VREF_4*1005) / 0xFFF	, 5},
+   { (ADC_VREF_4*1021) / 0xFFF	, 0} //safety
 
 };
-#endif
-
-
-
-#if THERMISTORHEATER == 1
-#define NUMTEMPS NUMTEMPS_1
-#define temptable temptable_1
-#elif THERMISTORHEATER == 2
-#define NUMTEMPS NUMTEMPS_2
-#define temptable temptable_2
-#elif THERMISTORHEATER == 3
-#define NUMTEMPS NUMTEMPS_3
-#define temptable temptable_3
-#elif THERMISTORHEATER == 4
-#define NUMTEMPS NUMTEMPS_4
-#define temptable temptable_4
-#elif THERMISTORHEATER == 5
-#define NUMTEMPS NUMTEMPS_5
-#define temptable temptable_5
-#elif THERMISTORHEATER == 6
-#define NUMTEMPS NUMTEMPS_6
-#define temptable temptable_6
-#elif THERMISTORHEATER == 7
-#define NUMTEMPS NUMTEMPS_7
-#define temptable temptable_7
-#elif defined HEATER_USES_THERMISTOR
-#error No heater thermistor table specified
-#endif
-#if THERMISTORBED == 1
-#define BNUMTEMPS NUMTEMPS_1
-#define bedtemptable temptable_1
-#elif THERMISTORBED == 2
-#define BNUMTEMPS NUMTEMPS_2
-#define bedtemptable temptable_2
-#elif THERMISTORBED == 3
-#define BNUMTEMPS NUMTEMPS_3
-#define bedtemptable temptable_3
-#elif THERMISTORBED == 4
-#define BNUMTEMPS NUMTEMPS_4
-#define bedtemptable temptable_4
-#elif THERMISTORBED == 5
-#define BNUMTEMPS NUMTEMPS_5
-#define bedtemptable temptable_5
-#elif THERMISTORBED == 6
-#define BNUMTEMPS NUMTEMPS_6
-#define bedtemptable temptable_6
-#elif THERMISTORBED == 7
-#define BNUMTEMPS NUMTEMPS_7
-#define bedtemptable temptable_7
-#elif defined BED_USES_THERMISTOR
-#error No bed thermistor table specified
-#endif
 
 #endif //THERMISTORTABLES_H_
