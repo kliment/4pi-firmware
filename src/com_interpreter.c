@@ -79,6 +79,10 @@
 
 // M400 - Finish all moves
 
+// M350 - Set microstepping steps (M350 X16 Y16 Z16 E16 B16)
+// M906 - Set motor current (mV) (M906 X1000 Y1000 Z1000 E1000 B1000) or set all (M906 S1000)
+// M907 - Set motor current (raw) (M907 X128 Y128 Z128 E128 B128) or set all (M907 S128)
+
 // M500 - stores paramters in EEPROM
 // M501 - reads parameters from EEPROM (if you need to reset them after you changed them temporarily).
 // M502 - reverts to the default "factory settings". You still need to store them in EEPROM afterwards if you want to.
@@ -755,17 +759,6 @@ void process_commands()
 			  motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
 		    }
 		  }
-      }
-      break;	  
-      case 908: // M908 P[channel] S[value] set digipot directly
-      {
-        unsigned char channel = 4;
-        unsigned char value = 128;
-
-        if(code_seen('P')) channel = code_value();
-        channel = constrain(channel, 0, 4);
-        if(code_seen('S')) value = code_value();
-        AD5206_setchan(channel, value);
       }
       break;	  
 
