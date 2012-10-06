@@ -168,7 +168,7 @@ void motor_setup(){
     int i;
     for(i=0;i<5;i++)
         motor_setopts(i,axis_ustep[i],axis_current[i]);
-    printf("done setting up motors\n");
+    printf("done setting up motors\r\n\n");
 }
 
 void motor_enaxis(unsigned char axis, unsigned char en){
