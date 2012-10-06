@@ -1,6 +1,10 @@
 #include <board.h>
 #include <pio/pio.h>
 #include <stdio.h>
+#include "init_configuration.h"
+
+unsigned char axis_current[5] = _AXIS_CURRENT;
+unsigned char axis_ustep[5] = _AXIS_USTEP;
 
 const Pin MOSI={1 <<  14, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
 const Pin SCK={1 <<  15, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
@@ -74,6 +78,30 @@ void AD5206_setup(){
     
 }
 
+unsigned char microstep_mode(unsigned char usteps){
+	unsigned char mode;
+
+	switch(usteps){
+		case 1:
+			mode=0;
+			break;
+		case 2:
+			mode=1;
+			break;
+		case 4:
+			mode=2;
+			break;
+		case 16:
+			mode=3;
+			break;
+		default:
+			mode=3;
+			break;
+	}
+	return(mode);
+}
+
+	
 void motor_setopts(unsigned char axis, unsigned char ustepbits, unsigned char current){
     Pin MS1;
     Pin MS2;
@@ -123,6 +151,9 @@ void motor_setopts(unsigned char axis, unsigned char ustepbits, unsigned char cu
             PIO_Clear(&MS2);
     }
     AD5206_setchan(channel,current);
+
+	printf("Setting channel %u to current value %u and ustep value %u\r\n",channel, current, ustepbits);
+	
 }
 
 void motor_setup(){
@@ -136,7 +167,7 @@ void motor_setup(){
     AD5206_setup();
     int i;
     for(i=0;i<5;i++)
-        motor_setopts(i,3,128);
+        motor_setopts(i,axis_ustep[i],axis_current[i]);
     printf("done setting up motors\n");
 }
 

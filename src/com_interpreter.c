@@ -103,6 +103,7 @@
 #include "heaters.h"
 #include "planner.h"
 #include "stepper_control.h"
+#include "motoropts.h"
 
 
 extern void motor_enaxis(unsigned char axis, unsigned char en);
@@ -667,6 +668,104 @@ void process_commands()
       case 400: // M400 finish all moves
       {
       	st_synchronize();	
+      }
+      break;
+	  case 350: // Set microstepping mode (1=full step, 2=1/2 step, 4=1/4 step, 16=1/16 step).
+	            //Warning: Steps per unit remains unchanged. 
+                // M350 X[value] Y[value] Z[value] E[value] B[value] 
+                // M350 S[value] set all motors
+	  {
+		  for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+		  {
+			if(code_seen(axis_codes[cnt_c])) 
+			{
+			  axis_ustep[cnt_c] = microstep_mode(code_value());
+			  motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+			}
+		  }
+		  if(code_seen('B'))
+		  {
+		    axis_ustep[4] = microstep_mode(code_value());
+			motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+		  }
+		  if(code_seen('S'))
+		  {
+		    for(cnt_c=0; cnt_c<5; cnt_c++)
+			{
+			  axis_ustep[cnt_c] = microstep_mode(code_value());
+			  motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+		    }
+		  }
+	  }
+	  break;
+      case 906: // set motor current value in mA using axis codes
+                // M906 X[mA] Y[mA] Z[mA] E[mA] B[mA] 
+                // M906 S[mA] set all motors current 
+      {
+        unsigned int current;
+		
+		  for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+		  {
+			if(code_seen(axis_codes[cnt_c])) 
+			{
+			  current = constrain(code_value(),0,1900);
+			  axis_current[cnt_c] = (current*100)/742;
+			  motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+			}
+		  }
+		  if(code_seen('B'))
+		  {
+			current = constrain(code_value(),0,1900);
+		    axis_current[4] = (current*100)/742;
+			motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+		  }
+		  if(code_seen('S'))
+		  {
+		    for(cnt_c=0; cnt_c<5; cnt_c++)
+			{
+			  current = constrain(code_value(),0,1900);
+			  axis_current[cnt_c] = (current*100)/742;
+			  motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+		    }
+		  }
+      }
+      break;	  
+      case 907: // set motor current value (0-255) using axis codes
+                // M907 X[value] Y[value] Z[value] E[value] B[value] 
+                // M907 S[value] set all motors current 
+      {
+		  for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+		  {
+			if(code_seen(axis_codes[cnt_c])) 
+			{
+			  axis_current[cnt_c] = code_value();
+			  motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+			}
+		  }
+		  if(code_seen('B'))
+		  {
+		    axis_current[4] = code_value();
+			motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+		  }
+		  if(code_seen('S'))
+		  {
+		    for(cnt_c=0; cnt_c<5; cnt_c++)
+			{
+			  axis_current[cnt_c] = code_value();
+			  motor_setopts(cnt_c,axis_ustep[cnt_c],axis_current[cnt_c]);
+		    }
+		  }
+      }
+      break;	  
+      case 908: // M908 P[channel] S[value] set digipot directly
+      {
+        unsigned char channel = 4;
+        unsigned char value = 128;
+
+        if(code_seen('P')) channel = code_value();
+        channel = constrain(channel, 0, 4);
+        if(code_seen('S')) value = code_value();
+        AD5206_setchan(channel, value);
       }
       break;	  
 

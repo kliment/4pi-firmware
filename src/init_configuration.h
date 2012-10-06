@@ -39,6 +39,8 @@
 // X, Y, Z, E steps per unit
 #define _AXIS_STEP_PER_UNIT {80, 80, 3200/1.25,700}
 
+#define _AXIS_CURRENT {128, 128, 128, 128, 128}
+#define _AXIS_USTEP {3, 3, 3, 3, 3}
 
 //-----------------------------------------------------------------------
 //// Endstop Settings
