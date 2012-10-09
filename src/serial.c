@@ -39,6 +39,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include "util.h"
+#include "serial.h"
 
 //------------------------------------------------------------------------------
 //      Definitions
@@ -62,7 +64,6 @@ unsigned char USBState = STATE_IDLE;
 /// Buffer for storing incoming USB data.
 static unsigned char usbBuffer[DATABUFFERSIZE];
 unsigned char isSerialConnected = 0;
-unsigned volatile char flag=0;
 //------------------------------------------------------------------------------
 //         VBus monitoring (optional)
 //------------------------------------------------------------------------------
@@ -169,8 +170,6 @@ static void UsbDataReceived(unsigned int unused,
     if (status == USBD_STATUS_SUCCESS) {
 
 	
-	//if(received)
-		flag=1;
 	int i=0;
 	if(callback)
 		//printf("calling callback\r\n");
@@ -194,34 +193,49 @@ static void UsbDataReceived(unsigned int unused,
 //volatile char _samserial_buffer[128];
 void samserial_print(const char* c)
 {
-    char _buf[128];
-    strncpy(_buf,c,128);
-    _buf[127]='\0';
-    
-    if(flag && isSerialConnected){
-        //flag=0;
-        printf(_buf);
-        printf("BUFLEN:%d\r\n",strlen(_buf));
-        if(CDCDSerialDriver_Write((void *)_buf,strlen(_buf), 0, 0)!= USBD_STATUS_SUCCESS)
-            printf("FAIL\r\n");
-        //CDCDSerialDriver_Write((void *)_buf,(strlen(_buf)%60), 0, 0);
-    }
-
+	usb_printf(c);
 }
 
-void usb_printf (char * format, ...)
+volatile char bufferInUse = 0;
+char printBuffer[256];
+
+static void UsbWriteCompleted(unsigned int unused,
+                            unsigned char status,
+                            unsigned int received,
+                            unsigned int remaining)
 {
-  char buffer[256];
-  unsigned int str_len = 0;
-  va_list args;
-  va_start (args, format);
-  str_len = vsprintf (buffer,format, args);
-  
-  if(flag && isSerialConnected)
-		if(CDCDSerialDriver_Write((void *)buffer,str_len, 0, 0)!= USBD_STATUS_SUCCESS)
-			printf("USB FAIL\r\n");
-  
-  va_end (args);
+	bufferInUse = 0;
+}
+
+void usb_printf(const char * format, ...)
+{
+	if (!isSerialConnected)
+		return;
+	
+	unsigned int timeout=1000;
+	while(bufferInUse && timeout--)
+	{
+		delay_ms(1);
+	}
+	
+	if (bufferInUse)
+	{
+		printf("usb_printf timeout\r\n");
+		return;
+	}
+	
+	unsigned int str_len = 0;
+	va_list args;
+	va_start (args, format);
+	str_len = vsprintf (printBuffer,format, args);
+	va_end (args);
+
+	bufferInUse = 1; 
+	if(CDCDSerialDriver_Write((void *)printBuffer,str_len, UsbWriteCompleted, 0)!= USBD_STATUS_SUCCESS)
+	{		
+		printf("USB FAIL\r\n");
+		bufferInUse = 0;
+	}
 }
 
 
