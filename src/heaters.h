@@ -137,3 +137,6 @@ extern signed short target_hotend1;
 
 extern heater_struct heaters[];
 extern heater_bed_struct bed_heater;
+
+void PID_autotune(heater_struct *hotend, float PIDAT_test_temp);
+

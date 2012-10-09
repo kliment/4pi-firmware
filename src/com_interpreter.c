@@ -664,9 +664,9 @@ void process_commands()
       break;
       case 303: // M303 PID autotune
       {
-        //float help_temp = 150.0;
-        //if (code_seen('S')) help_temp=code_value();
-        //PID_autotune(help_temp);
+        float help_temp = 150.0;
+        if (code_seen('S')) help_temp=code_value();
+        PID_autotune(&heaters[tmp_extruder], help_temp);
       }
       break;
       case 400: // M400 finish all moves
