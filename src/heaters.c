@@ -453,9 +453,6 @@ void heater_PID_control(heater_struct *hotend)
 	}
 	#endif
 
-    if(autotune_active)
-		return;
-	
 	error = hotend->target_temp - hotend->akt_temp;
 	//printf("ERR: %d ", error);
 	delta_temp = hotend->akt_temp - hotend->prev_temp;
@@ -465,6 +462,8 @@ void heater_PID_control(heater_struct *hotend)
 	
 	const signed short H0 = min(HEATER_DUTY_FOR_SETPOINT(hotend->target_temp),HEATER_CURRENT);
 	heater_duty = H0 + hotend->pTerm;
+
+	//printf("P: %d ", hotend->pTerm);
 
 	if(abs(error) < 30)
 	{
@@ -490,7 +489,7 @@ void heater_PID_control(heater_struct *hotend)
 	//printf("D: %d ", hotend->dTerm);
 	
 	heater_duty += hotend->dTerm;
-	//printf("PWM: %d \n", heater_duty);
+	//printf("PWM: %d \r\n", heater_duty);
 	
 	heater_duty = constrain(heater_duty, 0, HEATER_CURRENT);
 	
@@ -580,9 +579,10 @@ void manage_heaters(void)
 	
 	if(hotend_timer == 0)
 	{
-		//Call every 200 ms
+		//Call every 500 ms
 		//heater_on_off_control(&heaters[0]);
-		heater_PID_control(&heaters[0]);
+    if(!autotune_active)
+		  heater_PID_control(&heaters[0]);
 		g_pwm_value[0] = heaters[0].pwm;
 		g_pwm_io_adr[0] = heaters[0].io_adr;
 		g_pwm_aktiv[0] = heaters[0].soft_pwm_aktiv;
@@ -597,7 +597,8 @@ void manage_heaters(void)
 	else if(hotend_timer == 1)
 	{
 		heater_on_off_control(&heaters[1]);
-		//heater_PID_control(&heaters[1]);
+    //if(!autotune_active)
+		//  heater_PID_control(&heaters[1]);
 		g_pwm_value[1] = heaters[1].pwm;
 		g_pwm_io_adr[1] = heaters[1].io_adr;
 		g_pwm_aktiv[1] = heaters[1].soft_pwm_aktiv;
@@ -647,7 +648,8 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
   float PIDAT_Ku = 0, PIDAT_Tu = 0;
   float PIDAT_Kp = 0, PIDAT_Ki = 0, PIDAT_Kd = 0;
   
-  #define PIDAT_TIME_FACTOR ((100 * 256) / 1000)  // Heater Check Interval is 100mS
+//  #define PIDAT_TIME_FACTOR ((500 * 256) / 1000)  // Heater PID Control Interval is 500mS
+  #define PIDAT_TIME_FACTOR 256
   
   usb_printf("PID Autotune start\r\n");
   printf("PID Autotune channel %u\r\n",hotend->ad_cannel);
@@ -672,7 +674,8 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
     {
       PIDAT_T_check_AI_val = timestamp;
       
-      PIDAT_input_ave += hotend->akt_temp;
+      //PIDAT_input_ave += hotend->akt_temp;
+      PIDAT_input_ave += analog2temp_convert(adc_read(hotend->ad_cannel),hotend->thermistor_type);
       PIDAT_count_input++;
     }
     
@@ -714,8 +717,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
             else 
         PIDAT_d = PIDAT_bias;
 
-            usb_printf(" bias: %d  d: %d  min: %d  max: %d \r\n",PIDAT_bias,(unsigned int)PIDAT_d,(unsigned int)PIDAT_min,(unsigned int)PIDAT_max);
-            printf(" bias: %d  d: %d  min: %d  max: %d \r\n",PIDAT_bias,(unsigned int)PIDAT_d,(unsigned int)PIDAT_min,(unsigned int)PIDAT_max);
+            usb_printf(" bias: %d  d: %d  min: %d  max: %d \r\n",(int)PIDAT_bias,(int)PIDAT_d,(int)PIDAT_min,(int)PIDAT_max);
             
             if(PIDAT_cycles > 2) 
             {
@@ -723,30 +725,25 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
               PIDAT_Tu = ((float)(PIDAT_t_low + PIDAT_t_high)/1000.0);
               
               usb_printf(" Ku: %d  Tu: %d \r\n",(int)PIDAT_Ku,(int)PIDAT_Tu);
-              printf(" Ku: %d  Tu: %d \r\n",(int)PIDAT_Ku,(int)PIDAT_Tu);
 
               PIDAT_Kp = 0.60*PIDAT_Ku;
               PIDAT_Ki = 2*PIDAT_Kp/PIDAT_Tu;
               PIDAT_Kd = PIDAT_Kp*PIDAT_Tu/8;
 
               usb_printf(" Clasic PID \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n", (unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
-              printf(" Clasic PID \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n", (unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
 
               PIDAT_Kp = 0.30*PIDAT_Ku;
               PIDAT_Ki = PIDAT_Kp/PIDAT_Tu;
               PIDAT_Kd = PIDAT_Kp*PIDAT_Tu/3;
 
               usb_printf(" Some overshoot \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n",(unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
-              printf(" Some overshoot \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n",(unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
 
-/*
               PIDAT_Kp = 0.20*PIDAT_Ku;
               PIDAT_Ki = 2*PIDAT_Kp/PIDAT_Tu;
               PIDAT_Kd = PIDAT_Kp*PIDAT_Tu/3;
 
-              usb_printf(" No overshoot \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n",PIDAT_Kp*256,(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
-              printf(" No overshoot \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n",PIDAT_Kp*256,(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
-*/
+              usb_printf(" No overshoot \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n",(unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
+
             }
           }
           PIDAT_PWM_val = (PIDAT_bias + PIDAT_d) >> 1;
@@ -772,7 +769,6 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
     {
       PIDAT_temp_millis = timestamp;
       usb_printf("ok T: %u  @:%u \r\n",(unsigned char)PIDAT_input,(unsigned char)PIDAT_PWM_val);       
-      printf("ok T: %u  @:%u \r\n",(unsigned char)PIDAT_input,(unsigned char)PIDAT_PWM_val);       
     }
     
     if(((timestamp - PIDAT_t1) + (timestamp - PIDAT_t2)) > (10L*60L*1000L*2L)) 
@@ -786,7 +782,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
     
     if(PIDAT_cycles > 5) 
     {
-      usb_printf("PID Autotune finished! Set new values in init_configuration.h \r\n");
+      usb_printf("PID Autotune finished! Set new values with M301 \r\n");
       hotend->target_temp = 0;
       hotend->pwm = 0;
 	    autotune_active = false;
