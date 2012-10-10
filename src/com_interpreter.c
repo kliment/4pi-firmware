@@ -180,7 +180,7 @@ unsigned char get_byte_from_UART(unsigned char *zeichen)
 void ClearToSend()
 {
 	previous_millis_cmd = timestamp;
-	usb_printf("ok\r\n");
+	usb_printf("\r\nok ");
 }
 
 //-----------------------------------------------------
@@ -189,7 +189,7 @@ void ClearToSend()
 void FlushSerialRequestResend()
 {
 	uart_rd_pointer = uart_wr_pointer;
-	usb_printf("Resend:%u ok\r\n",gcode_LastN + 1);
+	usb_printf("Resend:%u \r\nok ",gcode_LastN + 1);
 }
 
 //-----------------------------------------------------
@@ -272,7 +272,7 @@ void get_command()
               if(savetosd)
                 break;
               #endif
-              usb_printf("ok\r\n");
+              //usb_printf("ok\r\n");
             break;
             
             default:
@@ -443,9 +443,9 @@ void process_commands()
         break;
       case 105: // M105
 		  	if(tmp_extruder < MAX_EXTRUDER)
-				usb_printf("ok T:%u @%u B:%u\r\n",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
+				usb_printf("T:%u @%u B:%u\r\nok ",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
 			else
-				usb_printf("ok T:%u @%u B:%u\r\n",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
+				usb_printf("T:%u @%u B:%u\r\nok ",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
         return;
         //break;
       case 109: // M109 - Wait for extruder heater to reach target.
@@ -473,7 +473,7 @@ void process_commands()
 		#endif
 				if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
 				{
-					usb_printf("ok T:%u\r\n",heaters[tmp_extruder].akt_temp);
+					usb_printf("T:%u\r\nok ",heaters[tmp_extruder].akt_temp);
 					codenum = timestamp;
 				}
 				#ifdef TEMP_RESIDENCY_TIME
@@ -556,14 +556,14 @@ void process_commands()
         }
         break;
       case 93: // M93 show current axis steps.
-		usb_printf("ok X:%d Y:%d Z:%d E:%d\r\n",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
-		//printf("ok X:%d Y:%d Z:%d E:%d\r\n",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
+		usb_printf("X:%d Y:%d Z:%d E:%d",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
+		//printf("X:%d Y:%d Z:%d E:%d\r\n",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
         break;
 	  case 114: // M114 Display current position
-		usb_printf("X:%d Y:%d Z:%d E:%d\r\n",(int)current_position[0],(int)current_position[1],(int)current_position[2],(int)current_position[3]);
+		usb_printf("X:%d Y:%d Z:%d E:%d",(int)current_position[0],(int)current_position[1],(int)current_position[2],(int)current_position[3]);
         break;
       case 115: // M115
-        usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n",MAX_EXTRUDER);
+        usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d",MAX_EXTRUDER);
         break;
 	  case 119: // M119 show endstop state
 		#if (X_MIN_ACTIV > -1)
@@ -623,7 +623,7 @@ void process_commands()
       case 206: // M206 additional homing offset
         if(code_seen('D'))
         {
-          usb_printf("Addhome X:%g Y:%g Z:%g\r\n",add_homing[0],add_homing[1],add_homing[2]);
+          usb_printf("Addhome X:%g Y:%g Z:%g",add_homing[0],add_homing[1],add_homing[2]);
         }
 
         for(cnt_c=0; cnt_c < 3; cnt_c++) 
@@ -778,17 +778,17 @@ void process_commands()
     if(tmp_extruder >= MAX_EXTRUDER) 
 	{
 		//No more extruder
-		usb_printf("Only 2 Extruder possible\r\n");
+		usb_printf("Only 2 Extruder possible");
     }
     else 
 	{
 		active_extruder = tmp_extruder;
-		usb_printf("T%d\r\n",active_extruder);
+		usb_printf("T%d",active_extruder);
     }
   }
   else
   {
-       usb_printf("Unknown command: %s \r\n",cmdbuffer[bufindr]);
+       usb_printf("Unknown command: %s ",cmdbuffer[bufindr]);
   }
   
   ClearToSend();
