@@ -34,6 +34,7 @@
 #include "arc_func.h"
 #include "planner.h"
 #include "stepper_control.h"
+#include "motoropts.h"
 
 //INIT the Stepper Interrupt
 void TC0_IrqHandler(void);
@@ -60,11 +61,12 @@ unsigned char INVERT_Z_DIR = _INVERT_Z_DIR;
 unsigned char INVERT_E_DIR = _INVERT_E_DIR;
 
 //Motor opts
+/*
 extern void motor_enaxis(unsigned char axis, unsigned char en);
 extern void motor_setdir(unsigned char axis, unsigned char dir);
 extern void motor_step(unsigned char axis);
 extern void motor_unstep();
-
+*/
 
 #ifdef ENDSTOPS_ONLY_FOR_HOMING
 	unsigned char check_endstops = 0;

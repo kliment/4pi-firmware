@@ -154,6 +154,7 @@ C_OBJECTS += USBInterfaceRequest.o
 C_OBJECTS += USBGenericRequest.o
 C_OBJECTS += USBGetDescriptorRequest.o
 C_OBJECTS += USBSetConfigurationRequest.o
+C_OBJECTS += util.o
 C_OBJECTS += stdio.o
 C_OBJECTS += systick.o
 C_OBJECTS += serial.o
