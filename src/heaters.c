@@ -712,10 +712,11 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
             PIDAT_bias += (PIDAT_d*(PIDAT_t_high - PIDAT_t_low))/(PIDAT_t_low + PIDAT_t_high);
             PIDAT_bias = constrain(PIDAT_bias, 20 ,HEATER_CURRENT - 20);
             if(PIDAT_bias > (HEATER_CURRENT/2))
-        PIDAT_d = (HEATER_CURRENT - 1) - PIDAT_bias;
-            else 
-        PIDAT_d = PIDAT_bias;
-
+            {
+              PIDAT_d = (HEATER_CURRENT - 1) - PIDAT_bias;
+            } else {
+              PIDAT_d = PIDAT_bias;
+            }
             usb_printf(" bias: %d  d: %d  min: %d  max: %d \r\n",(int)PIDAT_bias,(int)PIDAT_d,(int)PIDAT_min,(int)PIDAT_max);
             
             if(PIDAT_cycles > 2) 
@@ -794,3 +795,86 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
 }
 //---------------- END AUTOTUNE PID ------------------------------
 
+
+//-------------------- EVALUATE HEATER -----------------------------
+//
+// Calculate heater performance
+//
+//------------------------------------------------------------------
+
+void Heater_Eval(heater_struct *hotend)
+{
+  unsigned long temp_millis = timestamp;
+  unsigned long T_check;
+  unsigned int pwm;
+  float input = 25;
+  float input_ave;
+  unsigned int points[2][20];
+  unsigned int count = 0;
+
+  usb_printf("Find equation of temperature to heater pwm \r\n\n");
+
+  autotune_active = true;  // disable PID while running
+
+  #ifdef BED_USES_THERMISTOR
+    bed_heater.target_temp = 0;
+    heater_switch(HEATER_BED, 0);
+    LED_switch(3,0);
+  #endif
+
+  for(pwm = 5; pwm < HEATER_CURRENT; pwm+=5) 
+  {
+    hotend->pwm = pwm;
+    input_ave = 0;
+    T_check = timestamp;
+    while((unsigned int)input != (unsigned int)input_ave)
+    {
+      if((timestamp - T_check) > 500 )
+      {
+        T_check = timestamp;
+        input = analog2temp_convert(adc_read(hotend->ad_cannel),hotend->thermistor_type);
+        input_ave += (input - input_ave)/16;
+      }
+      if( input > 225 ) break;
+      if(timestamp - temp_millis > 2000) 
+      {
+        temp_millis = timestamp;
+        usb_printf("ok T: %u  A:%u P:%u\r\n",(unsigned int)input,(unsigned int)input_ave,pwm);       
+      }
+    }
+    if( input > 225 ) break;
+    points[0][count] = (unsigned char)input;
+    points[1][count] = pwm;
+    printf("{%u,%u} ",points[0][count],points[1][count]);
+    if( count++ > 20 ) break;
+  }
+  printf("\r\n\n");
+  hotend->target_temp = 0;
+  hotend->pwm = 0;
+  autotune_active = false;
+  
+  unsigned int x_sum = 0;
+  unsigned int y_sum = 0;
+  unsigned long xy_sum = 0;
+  unsigned long x2_sum = 0;
+  int slope;
+  int intercept;
+  unsigned char i;
+  
+  for(i=0; i<count; i++)
+  {
+    x_sum += points[0][i];
+    y_sum += points[1][i];
+    xy_sum += points[0][i] * points[1][i];
+    x2_sum += points[0][i] * points[0][i];
+  }
+  printf("count = %d, x_sum = %u, y_sum = %u, xy_sum = %u, x2_sum = %u \r\n",count,x_sum,y_sum,(unsigned int)xy_sum,(unsigned int)x2_sum);
+
+  slope = (int)((float)(((count * xy_sum) - (x_sum * y_sum)) * 256) / ((count * x2_sum) - (x_sum * x_sum)) + 0.5);
+  intercept = ((y_sum - (((float)(slope * x_sum)/256.0)) + 0.5) / (count));
+  
+  usb_printf("HEATER_SLOPE = %d, HEATER_INTERCEPT = %d \r\n", slope, intercept);  
+  usb_printf("Heater evaluation finished \r\n");
+  usb_printf("Enter above values in init_configuration.h \r\n");
+  return;
+}

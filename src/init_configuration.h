@@ -163,10 +163,13 @@
 
 	// magic formula 1, to get approximate "zero error" PWM duty. Take few measurements with low PWM duty and make linear fit to get the formula
 	// for my makergear hot-end: linear fit {50,10},{60,20},{80,30},{105,50},{176,100},{128,64},{208,128}
-	//#define HEATER_DUTY_FOR_SETPOINT(setpoint) ((int)((187L*(long)setpoint)>>8)-27)
+  //#define HEATER_SLOPE (long)(0.730395 * 256)
+  //#define HEATER_INTERCEPT -27
   // hp__ heater cartridge
-  // http://www.wolframalpha.com/input/?i=linear+fit+%7B200%2C16%7D%2C%7B150%2C10%7D%2C%7B100%2C5%7D  
-	#define HEATER_DUTY_FOR_SETPOINT(setpoint) ((int)((28L*(long)setpoint)>>8)-6)  
+  // http://www.wolframalpha.com/input/?i=linear+fit+%7B200%2C16%7D%2C%7B150%2C10%7D%2C%7B100%2C5%7D
+  #define HEATER_SLOPE 29  // slope * 256
+  #define HEATER_INTERCEPT -5
+	#define HEATER_DUTY_FOR_SETPOINT(setpoint) ((int)((HEATER_SLOPE*(long)setpoint)>>8)+HEATER_INTERCEPT)  
 	// magic formula 2, to make led brightness approximately linear
 	#define LED_PWM_FOR_BRIGHTNESS(brightness) ((64*brightness-1384)/(300-brightness))
 	
@@ -181,7 +184,7 @@
 #endif
 
 // Change this value (range 1-255) to limit the current to the nozzle
-#define HEATER_CURRENT 50
+#define HEATER_CURRENT 255
 
 // How often should the heater check for new temp readings, in milliseconds
 #define HEATER_CHECK_INTERVAL 250

@@ -672,6 +672,14 @@ void process_commands()
         }
       }
       break;
+      case 304: // M304 Evaluate heater performance
+      {
+        if(tmp_extruder < MAX_EXTRUDER)
+		    {
+          Heater_Eval(&heaters[tmp_extruder]);
+        }
+      }
+      break;
       case 400: // M400 finish all moves
       {
       	st_synchronize();	
