@@ -76,6 +76,7 @@
 
 // M301 - Set PID parameters P I and D
 // M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
+// M304 - Calculate slope and y-intercept for HEATER_DUTY_FOR_SETPOINT formula.
 
 // M400 - Finish all moves
 

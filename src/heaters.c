@@ -798,7 +798,8 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
 
 //-------------------- EVALUATE HEATER -----------------------------
 //
-// Calculate heater performance
+// Calculate slope and y-intercept for HEATER_DUTY_FOR_SETPOINT formula.
+// Setting these constants correctly will greatly improve PID performance.
 //
 //------------------------------------------------------------------
 
@@ -878,3 +879,4 @@ void Heater_Eval(heater_struct *hotend)
   usb_printf("Enter above values in init_configuration.h \r\n");
   return;
 }
+//---------------- END EVALUATE HEATER ------------------------------
