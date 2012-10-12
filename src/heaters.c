@@ -628,7 +628,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
   float PIDAT_max = 0.0;
   float PIDAT_min = 250.0;
  
-  unsigned char PIDAT_PWM_val = HEATER_CURRENT/2;
+  unsigned char PIDAT_PWM_val = HEATER_CURRENT;
   
   unsigned char PIDAT_cycles = 0;
   unsigned char PIDAT_heating = true;
@@ -648,8 +648,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
   float PIDAT_Ku = 0, PIDAT_Tu = 0;
   float PIDAT_Kp = 0, PIDAT_Ki = 0, PIDAT_Kd = 0;
   
-//  #define PIDAT_TIME_FACTOR ((500 * 256) / 1000)  // Heater PID Control Interval is 500mS
-  #define PIDAT_TIME_FACTOR 256
+  #define PIDAT_TIME_FACTOR ((HEATER_CHECK_INTERVAL * 256) / 1000)
   
   usb_printf("PID Autotune start\r\n");
   printf("PID Autotune channel %u\r\n",hotend->ad_cannel);
@@ -674,8 +673,8 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
     {
       PIDAT_T_check_AI_val = timestamp;
       
-      //PIDAT_input_ave += hotend->akt_temp;
       PIDAT_input_ave += analog2temp_convert(adc_read(hotend->ad_cannel),hotend->thermistor_type);
+
       PIDAT_count_input++;
     }
     
@@ -693,7 +692,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
         if(timestamp - PIDAT_t2 > 5000) 
         { 
           PIDAT_heating = false;
-          PIDAT_PWM_val = (PIDAT_bias - PIDAT_d) >> 1;
+          PIDAT_PWM_val = (PIDAT_bias - PIDAT_d);
           PIDAT_t1 = timestamp;
           PIDAT_t_high = PIDAT_t1 - PIDAT_t2;
           PIDAT_max = PIDAT_test_temp;
@@ -721,19 +720,22 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
             
             if(PIDAT_cycles > 2) 
             {
-              PIDAT_Ku = (4.0*PIDAT_d)/(3.14159*(PIDAT_max-PIDAT_min)/2.0);
+              PIDAT_Ku = (4.0*PIDAT_d)/(3.14159*(PIDAT_max-PIDAT_min));
               PIDAT_Tu = ((float)(PIDAT_t_low + PIDAT_t_high)/1000.0);
               
               usb_printf(" Ku: %d  Tu: %d \r\n",(int)PIDAT_Ku,(int)PIDAT_Tu);
+
+            // reference http://en.wikipedia.org/wiki/Ziegler%E2%80%93Nichols_method
 
               PIDAT_Kp = 0.60*PIDAT_Ku;
               PIDAT_Ki = 2*PIDAT_Kp/PIDAT_Tu;
               PIDAT_Kd = PIDAT_Kp*PIDAT_Tu/8;
 
+              printf(" P:%u, I:%u, D:%u\r\n",(unsigned)(PIDAT_Kp*1000),(unsigned)(PIDAT_Ki*1000),(unsigned)(PIDAT_Kd*1000));
               usb_printf(" Clasic PID \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n", (unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
 
-              PIDAT_Kp = 0.30*PIDAT_Ku;
-              PIDAT_Ki = PIDAT_Kp/PIDAT_Tu;
+              PIDAT_Kp = 0.33*PIDAT_Ku;
+              PIDAT_Ki = 2*PIDAT_Kp/PIDAT_Tu;
               PIDAT_Kd = PIDAT_Kp*PIDAT_Tu/3;
 
               usb_printf(" Some overshoot \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n",(unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
@@ -746,7 +748,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
 
             }
           }
-          PIDAT_PWM_val = (PIDAT_bias + PIDAT_d) >> 1;
+          PIDAT_PWM_val = (PIDAT_bias + PIDAT_d);
           PIDAT_cycles++;
           PIDAT_min = PIDAT_test_temp;
         }
