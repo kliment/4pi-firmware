@@ -803,7 +803,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
 //
 //------------------------------------------------------------------
 
-void Heater_Eval(heater_struct *hotend)
+void Heater_Eval(heater_struct *hotend, unsigned int step)
 {
   unsigned long temp_millis = timestamp;
   unsigned long T_check;
@@ -823,7 +823,7 @@ void Heater_Eval(heater_struct *hotend)
     LED_switch(3,0);
   #endif
 
-  for(pwm = 5; pwm < HEATER_CURRENT; pwm+=5) 
+  for(pwm = step; pwm < HEATER_CURRENT; pwm+=step) 
   {
     hotend->pwm = pwm;
     input_ave = 0;
@@ -836,14 +836,14 @@ void Heater_Eval(heater_struct *hotend)
         input = analog2temp_convert(adc_read(hotend->ad_cannel),hotend->thermistor_type);
         input_ave += (input - input_ave)/16;
       }
-      if( input > 225 ) break;
+      if( input > 195 ) break;
       if(timestamp - temp_millis > 2000) 
       {
         temp_millis = timestamp;
-        usb_printf("ok T: %u  A:%u P:%u\r\n",(unsigned int)input,(unsigned int)input_ave,pwm);       
+        usb_printf("ok T:%u  A:%u  @:%u\r\n",(unsigned int)input,(unsigned int)input_ave,pwm);       
       }
     }
-    if( input > 225 ) break;
+    if( input > 195) break;
     points[0][count] = (unsigned char)input;
     points[1][count] = pwm;
     printf("{%u,%u} ",points[0][count],points[1][count]);
@@ -874,7 +874,9 @@ void Heater_Eval(heater_struct *hotend)
   slope = (int)((float)(((count * xy_sum) - (x_sum * y_sum)) * 256) / ((count * x2_sum) - (x_sum * x_sum)) + 0.5);
   intercept = ((y_sum - (((float)(slope * x_sum)/256.0)) + 0.5) / (count));
   
+  usb_printf("%u samples collected \r\n",count);
   usb_printf("HEATER_SLOPE = %d, HEATER_INTERCEPT = %d \r\n", slope, intercept);  
+  usb_printf("Recommended HEATER_CURRENT: %u \r\n",constrain((((long)slope*(long)350)>>8)+intercept,5,255));
   usb_printf("Heater evaluation finished \r\n");
   usb_printf("Enter above values in init_configuration.h \r\n");
   return;

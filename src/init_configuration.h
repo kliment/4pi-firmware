@@ -29,8 +29,8 @@
 //// AD595
 // 50 get Temperatur with AD595
 
-#define THERMISTORHEATER 11
-#define THERMISTORBED 1
+#define THERMISTORHEATER 17
+#define THERMISTORBED 11
 
 
 //-----------------------------------------------------------------------
@@ -165,10 +165,8 @@
 	// for my makergear hot-end: linear fit {50,10},{60,20},{80,30},{105,50},{176,100},{128,64},{208,128}
   //#define HEATER_SLOPE (long)(0.730395 * 256)
   //#define HEATER_INTERCEPT -27
-  // hp__ heater cartridge
-  // http://www.wolframalpha.com/input/?i=linear+fit+%7B200%2C16%7D%2C%7B150%2C10%7D%2C%7B100%2C5%7D
-  #define HEATER_SLOPE 29  // slope * 256
-  #define HEATER_INTERCEPT -5
+  #define HEATER_SLOPE 109  // slope * 256
+  #define HEATER_INTERCEPT -9
 	#define HEATER_DUTY_FOR_SETPOINT(setpoint) ((int)((HEATER_SLOPE*(long)setpoint)>>8)+HEATER_INTERCEPT)  
 	// magic formula 2, to make led brightness approximately linear
 	#define LED_PWM_FOR_BRIGHTNESS(brightness) ((64*brightness-1384)/(300-brightness))

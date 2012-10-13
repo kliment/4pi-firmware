@@ -77,6 +77,8 @@
 // M301 - Set PID parameters P I and D
 // M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
 // M304 - Calculate slope and y-intercept for HEATER_DUTY_FOR_SETPOINT formula.
+//         Caution - this can take a long time to complete and will heat the hotend 
+//                   to 200 degrees.
 
 // M400 - Finish all moves
 
@@ -677,7 +679,9 @@ void process_commands()
       {
         if(tmp_extruder < MAX_EXTRUDER)
 		    {
-          Heater_Eval(&heaters[tmp_extruder]);
+          unsigned int step = 10.0;
+          if (code_seen('S')) step=code_value();
+          Heater_Eval(&heaters[tmp_extruder], step);
         }
       }
       break;
