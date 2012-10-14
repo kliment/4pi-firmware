@@ -16,9 +16,6 @@
 
 
 
-extern unsigned char axis_current[];
-extern unsigned char axis_ustep[];
-
 void motor_enaxis(unsigned char axis, unsigned char en);
 void motor_setdir(unsigned char axis, unsigned char dir);
 void motor_step(unsigned char axis);

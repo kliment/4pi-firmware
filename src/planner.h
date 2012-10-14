@@ -1,10 +1,27 @@
+
+/*
+ Planner for smooth moves
+ 
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ 
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ */
+
+
 #define X_AXIS  0
 #define Y_AXIS  1
 #define Z_AXIS  2
 #define E_AXIS  3
 #define E1_AXIS 4		//for Stepper Control
-
-#define NUM_AXIS 4
 
 #define disable_x()  motor_enaxis(0, 0)
 #define disable_y()  motor_enaxis(1, 0)
@@ -94,18 +111,8 @@ block_t *plan_get_current_block();
 
 extern char axis_relative_modes[];
 extern unsigned long minsegmenttime;
-extern float max_feedrate[]; // set the max speeds
-extern float axis_steps_per_unit[];
-extern unsigned long max_acceleration_units_per_sq_second[]; // Use M201 to override by software
-extern float minimumfeedrate;
-extern float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
-extern float retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
-extern float max_xy_jerk; //speed than can be stopped at once, if i understand correctly.
-extern float max_z_jerk;
-extern float max_e_jerk;
-extern float mintravelfeedrate;
+
 extern unsigned long axis_steps_per_sqr_second[];
-extern float move_acceleration;
 
 extern float destination[];
 extern float current_position[];
@@ -113,7 +120,6 @@ extern float add_homing[];
 extern char axis_codes[];
 extern char axis_relative_modes[];
 extern float offset[];
-extern unsigned char is_homing;
 
 extern unsigned short virtual_steps_x;
 extern unsigned short virtual_steps_y;
