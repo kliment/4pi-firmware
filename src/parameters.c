@@ -21,6 +21,7 @@
 
 #include "init_configuration.h"
 #include "parameters.h"
+#include "serial.h"
 
 unsigned short calc_crc16(void);
 
@@ -32,10 +33,13 @@ void init_parameters(void)
 	unsigned char cnt_c = 0;
 	
 	pa.chk_sum = 0;
-	pa.version[0] = 'F';
-	pa.version[1] = '0';
-	pa.version[2] = '0';
-	pa.version[3] = '1';
+	
+	char ver[4] = FLASH_VERSION;
+	
+	for(cnt_c = 0;cnt_c < 3;cnt_c++)
+	{
+		pa.version[cnt_c] = ver[cnt_c];
+	}
 	
 	float f_tmp1[NUM_AXIS] = _MAX_FEEDRATE;
 	float f_tmp2[NUM_AXIS] = _AXIS_STEP_PER_UNIT;
@@ -71,6 +75,19 @@ void init_parameters(void)
 	pa.disable_z_en = _DISABLE_Z_EN;
 	pa.disable_e_en = _DISABLE_E_EN;
 
+	//X_HOME_DIR
+	//Y_HOME_DIR
+	//Z_HOME_DIR
+	
+	//stepper_control.c
+	pa.x_endstop_invert = _X_ENDSTOP_INVERT;
+	pa.y_endstop_invert = _Y_ENDSTOP_INVERT;
+	pa.z_endstop_invert = _Z_ENDSTOP_INVERT;
+
+	pa.invert_x_dir = _INVERT_X_DIR;
+	pa.invert_y_dir = _INVERT_Y_DIR;
+	pa.invert_z_dir = _INVERT_Z_DIR;
+	pa.invert_e_dir = _INVERT_E_DIR;
 	
 	unsigned char uc_temp1[5] = _AXIS_CURRENT;
 	unsigned char uc_temp2[5] = _AXIS_USTEP;
@@ -101,6 +118,52 @@ void init_parameters(void)
 	
 }
 
+void FLASH_StoreSettings(void) 
+{
+
+}
+
+void FLASH_PrintSettings(void) 
+{
+	usb_printf("Version: %s \r\n",&pa.version[0]);
+	usb_printf("Homing Feedrate mm/min \r\n   X%d Y%d Z%d\r\n",(int)pa.homing_feedrate[0],(int)pa.homing_feedrate[1],(int)pa.homing_feedrate[2]);
+	usb_printf("Steps per unit:\r\n M92 X%d Y%d Z%d E%d\r\n",(int)pa.axis_steps_per_unit[0],(int)pa.axis_steps_per_unit[1],(int)pa.axis_steps_per_unit[2],(int)pa.axis_steps_per_unit[3]);
+	usb_printf("Maximum feedrates (mm/s):\r\n  M202 X%d Y%d Z%d E%d \r\n",(int)pa.max_feedrate[0],(int)pa.max_feedrate[1],(int)pa.max_feedrate[2],(int)pa.max_feedrate[3]);
+	usb_printf("Maximum Acceleration (mm/s2):\r\n  M201 X%d Y%d Z%d E%d\r\n",(int)pa.max_acceleration_units_per_sq_second[0],(int)pa.max_acceleration_units_per_sq_second[1],(int)pa.max_acceleration_units_per_sq_second[2],(int)pa.max_acceleration_units_per_sq_second[3]);
+	usb_printf("Acceleration: S=acceleration, T=retract acceleration\r\n  M204 S%d T%d\r\n",(int)pa.move_acceleration,(int)pa.retract_acceleration);
+	
+	usb_printf("Advanced variables (mm/s): S=Min feedrate, T=Min travel feedrate, X=max xY jerk,  Z=max Z jerk, E=max E jerk\r\n");
+	usb_printf("M205 S%d T%d X%d Z%d E%d\r\n",(int)pa.minimumfeedrate,(int)pa.mintravelfeedrate,(int)pa.max_xy_jerk,(int)pa.max_z_jerk,(int)pa.max_e_jerk);
+
+	usb_printf("Maximum Area unit:\r\nMxxx X%d Y%d Z%d\r\n",(int)pa.x_max_length,(int)pa.y_max_length,(int)pa.z_max_length);
+	usb_printf("Disable axis when unused:\r\nMxxx X%d Y%d Z%d E%d\r\n",pa.disable_x_en,pa.disable_y_en,pa.disable_z_en,pa.disable_e_en);
+	usb_printf("Software Endstop:\r\nMxxx MIN %d MAX %d\r\n",pa.min_software_endstops,pa.max_software_endstops);
+	
+	usb_printf("Endstop invert:\r\nMxxx X%d Y%d Z%d\r\n",pa.x_endstop_invert,pa.y_endstop_invert,pa.z_endstop_invert);
+	usb_printf("Axis invert:\r\nMxxx X%d Y%d Z%d E%d\r\n",pa.invert_x_dir,pa.invert_y_dir,pa.invert_z_dir,pa.invert_e_dir);
+	
+	usb_printf("PID Heater 1:\r\n  M301 P%d I%d D%d\r\n",(int)pa.heater_pTerm[0],(int)pa.heater_iTerm[0],(int)pa.heater_dTerm[0]);
+	usb_printf("PID Heater 2:\r\n  M301 P%d I%d D%d\r\n",(int)pa.heater_pTerm[1],(int)pa.heater_iTerm[1],(int)pa.heater_dTerm[1]);
+	
+	usb_printf("Heater Sensor:\r\n Mxxx Sensor1: %d Sensor2: %d Heatbed: %d\r\n",pa.heater_thermistor_type[0],pa.heater_thermistor_type[1],pa.bed_thermistor_type);
+	usb_printf("Heater PWM: \r\n Mxxx Heater1: %d Heater2: %d\r\n",pa.heater_pwm_en[0],pa.heater_pwm_en[1]);
+	
+	usb_printf("Motor Current \r\n M907 X%d Y%d Z%d E%d B%d \r\n",pa.axis_current[0],pa.axis_current[1],pa.axis_current[2],pa.axis_current[3],pa.axis_current[4]);
+	usb_printf("Motor Microstepping \r\n M350 X%d Y%d Z%d E%d B%d \r\n",pa.axis_ustep[0],pa.axis_ustep[1],pa.axis_ustep[2],pa.axis_ustep[3],pa.axis_ustep[4]);
+	
+}
+
+void FLASH_LoadSettings(void) 
+{
+	
+	char ver[4] = FLASH_VERSION;
+	
+	if(strncmp(ver,pa.version,3)==0)
+	{
+		
+	}
+
+}
 
 
 
@@ -151,8 +214,6 @@ unsigned short calc_crc16(void)
 	printf("CRC16: 0x%04X \n\r", crc);
 	
 	return (crc);
-	
-	
 	
 }
 
