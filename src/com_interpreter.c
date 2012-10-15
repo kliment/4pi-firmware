@@ -180,7 +180,7 @@ unsigned char get_byte_from_UART(unsigned char *zeichen)
 void ClearToSend()
 {
 	previous_millis_cmd = timestamp;
-	usb_printf("\r\nok ");
+	usb_printf("ok\r\n");
 }
 
 //-----------------------------------------------------
@@ -189,7 +189,7 @@ void ClearToSend()
 void FlushSerialRequestResend()
 {
 	uart_rd_pointer = uart_wr_pointer;
-	usb_printf("Resend:%u \r\nok ",gcode_LastN + 1);
+	usb_printf("Resend:%u ok\r\n",gcode_LastN + 1);
 }
 
 //-----------------------------------------------------
@@ -214,7 +214,7 @@ void get_command()
           gcode_N = (strtol(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL, 10));
           if(gcode_N != gcode_LastN+1 && (strstr(cmdbuffer[bufindw], "M110") == NULL) )
           {
-            usb_printf("Serial Error: Line Number is not Last Line Number+1, Last Line:%u\r\n",gcode_LastN);
+            usb_printf("Serial Error: Line Number is not Last Line Number+1, Last Line:%u",gcode_LastN);
             FlushSerialRequestResend();
             serial_count = 0;
             return;
@@ -229,7 +229,7 @@ void get_command()
   
             if( (int)(strtod(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL)) != checksum)
             {
-              usb_printf("Error: checksum mismatch, Last Line:%u\r\n",gcode_LastN);
+              usb_printf("Error: checksum mismatch, Last Line:%u",gcode_LastN);
               FlushSerialRequestResend();
               serial_count = 0;
               return;
@@ -238,7 +238,7 @@ void get_command()
           }
           else 
           {
-            usb_printf("Error: No Checksum with line number, Last Line:%u\r\n",gcode_LastN);
+            usb_printf("Error: No Checksum with line number, Last Line:%u",gcode_LastN);
             FlushSerialRequestResend();
             serial_count = 0;
             return;
@@ -251,7 +251,7 @@ void get_command()
         {
           if((strstr(cmdbuffer[bufindw], "*") != NULL))
           {
-            usb_printf("Error: No Line Number with checksum, Last Line:%u\r\n",gcode_LastN);
+            usb_printf("Error: No Line Number with checksum, Last Line:%u",gcode_LastN);
             serial_count = 0;
             return;
           }
@@ -272,7 +272,7 @@ void get_command()
               if(savetosd)
                 break;
               #endif
-              //usb_printf("ok\r\n");
+              usb_printf("ok\r\n");
             break;
             
             default:
@@ -443,9 +443,9 @@ void process_commands()
         break;
       case 105: // M105
 		  	if(tmp_extruder < MAX_EXTRUDER)
-				usb_printf("T:%u @%u B:%u\r\nok ",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
+				usb_printf("ok T:%u @%u B:%u",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
 			else
-				usb_printf("T:%u @%u B:%u\r\nok ",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
+				usb_printf("ok T:%u @%u B:%u",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
         return;
         //break;
       case 109: // M109 - Wait for extruder heater to reach target.
@@ -473,7 +473,7 @@ void process_commands()
 		#endif
 				if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
 				{
-					usb_printf("T:%u\r\nok ",heaters[tmp_extruder].akt_temp);
+					usb_printf("ok T:%u",heaters[tmp_extruder].akt_temp);
 					codenum = timestamp;
 				}
 				#ifdef TEMP_RESIDENCY_TIME
@@ -499,9 +499,9 @@ void process_commands()
 			if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
 			{
 				if(tmp_extruder < MAX_EXTRUDER)
-					usb_printf("T:%u B:%u\r\n",heaters[tmp_extruder].akt_temp,bed_heater.akt_temp);
+					usb_printf("T:%u B:%u",heaters[tmp_extruder].akt_temp,bed_heater.akt_temp);
 				else
-					usb_printf("T:%u B:%u\r\n",heaters[0].akt_temp,bed_heater.akt_temp);
+					usb_printf("T:%u B:%u",heaters[0].akt_temp,bed_heater.akt_temp);
 				
 				codenum = timestamp; 
 			}
@@ -556,14 +556,14 @@ void process_commands()
         }
         break;
       case 93: // M93 show current axis steps.
-		usb_printf("X:%d Y:%d Z:%d E:%d",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
-		//printf("X:%d Y:%d Z:%d E:%d\r\n",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
+		usb_printf("ok X:%d Y:%d Z:%d E:%d",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
+		//printf("ok X:%d Y:%d Z:%d E:%d",(int)axis_steps_per_unit[0],(int)axis_steps_per_unit[1],(int)axis_steps_per_unit[2],(int)axis_steps_per_unit[3]);
         break;
 	  case 114: // M114 Display current position
 		usb_printf("X:%d Y:%d Z:%d E:%d",(int)current_position[0],(int)current_position[1],(int)current_position[2],(int)current_position[3]);
         break;
       case 115: // M115
-        usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d",MAX_EXTRUDER);
+        usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n",MAX_EXTRUDER);
         break;
 	  case 119: // M119 show endstop state
 		#if (X_MIN_ACTIV > -1)
@@ -585,7 +585,7 @@ void process_commands()
 			read_endstops[5] = (PIO_Get(&Z_MAX_PIN) ^ Z_ENDSTOP_INVERT) + 48
       	#endif
       
-        usb_printf("Xmin:%c Ymin:%c Zmin:%c / Xmax:%c Ymax:%c Zmax:%c\r\n",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
+        usb_printf("Xmin:%c Ymin:%c Zmin:%c / Xmax:%c Ymax:%c Zmax:%c",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
 		break;
 	  case 201: // M201  Set maximum acceleration in units/s^2 for print moves (M201 X1000 Y1000)
 
@@ -778,7 +778,7 @@ void process_commands()
     if(tmp_extruder >= MAX_EXTRUDER) 
 	{
 		//No more extruder
-		usb_printf("Only 2 Extruder possible");
+		usb_printf("Only 2 Extruder possible\r\n");
     }
     else 
 	{
@@ -788,7 +788,7 @@ void process_commands()
   }
   else
   {
-       usb_printf("Unknown command: %s ",cmdbuffer[bufindr]);
+       usb_printf("Unknown command: %s \r\n",cmdbuffer[bufindr]);
   }
   
   ClearToSend();
