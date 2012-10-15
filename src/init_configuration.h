@@ -75,10 +75,10 @@
 // Disables axis when it's not being used.
 //-----------------------------------------------------------------------
 
-#define _DISABLE_X 	false
-#define _DISABLE_Y 	false
-#define _DISABLE_Z 	true
-#define _DISABLE_E 	false
+#define _DISABLE_X_EN 	false
+#define _DISABLE_Y_EN 	false
+#define _DISABLE_Z_EN 	true
+#define _DISABLE_E_EN 	false
 
 //-----------------------------------------------------------------------
 // Inverting axis direction

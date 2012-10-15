@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "parameters.h"
 #include "serial.h"
 #include "samadc.h"
 #include "com_interpreter.h"
@@ -112,6 +113,10 @@ int main()
 
     // If they are present, configure Vbus & Wake-up pins
     //PIO_InitializeInterrupts(0);
+	
+	//-------- Init parameters --------------
+	printf("INIT Parameters\n\r");
+	init_parameters();
 	
     //-------- Init UART --------------
 	printf("USB Seriel INIT\n\r");

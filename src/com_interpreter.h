@@ -22,8 +22,6 @@
  #define MAX_CMD_SIZE 96
  #define BUFSIZE 6
 
- #define MAX_EXTRUDER 2
-
  unsigned char get_byte_from_UART(unsigned char *zeichen);
 
  void usb_characterhandler(unsigned char c);

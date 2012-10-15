@@ -25,15 +25,15 @@
 #include <math.h>
 #include <string.h>
 
+#include "parameters.h"
 #include "init_configuration.h"
 #include "com_interpreter.h"
 #include "arc_func.h"
 #include "planner.h"
 #include "heaters.h"
 #include "stepper_control.h"
+#include "motoropts.h"
 
-
-extern void motor_enaxis(unsigned char axis, unsigned char en);
 
 
 float destination[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
@@ -50,19 +50,7 @@ unsigned char home_all_axis = 1;
 
 unsigned long minsegmenttime = 20000;
 
-float max_feedrate[NUM_AXIS]=_MAX_FEEDRATE; // set the max speeds
-float homing_feedrate[3] = _HOMING_FEEDRATE;
-float axis_steps_per_unit[NUM_AXIS] = _AXIS_STEP_PER_UNIT;
-unsigned long max_acceleration_units_per_sq_second[NUM_AXIS] = _MAX_ACCELERATION_UNITS_PER_SQ_SECOND; // Use M201 to override by software
-float minimumfeedrate = DEFAULT_MINIMUMFEEDRATE;
-float acceleration = _ACCELERATION;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
-float retract_acceleration = _RETRACT_ACCELERATION; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
-float max_xy_jerk = _MAX_XY_JERK; //speed than can be stopped at once, if i understand correctly.
-float max_z_jerk = _MAX_Z_JERK;
-float max_e_jerk = _MAX_Z_JERK;
-float mintravelfeedrate = DEFAULT_MINTRAVELFEEDRATE;
 unsigned long axis_steps_per_sqr_second[NUM_AXIS] ;
-float move_acceleration = _ACCELERATION;         // Normal acceleration mm/s^2
 
 extern volatile signed short extrudemultiply; // Sets extrude multiply factor (in percent)
 
@@ -70,20 +58,7 @@ unsigned short virtual_steps_x = 0;
 unsigned short virtual_steps_y = 0;
 unsigned short virtual_steps_z = 0;
 
-unsigned char min_software_endstops = _MIN_SOFTWARE_ENDSTOPS;
-unsigned char max_software_endstops = _MAX_SOFTWARE_ENDSTOPS;
-
-signed short x_max_length = _X_MAX_LENGTH;
-signed short y_max_length = _Y_MAX_LENGTH;
-signed short z_max_length = _Z_MAX_LENGTH;
-
 const int dropsegments=5; //everything with less than this number of steps will be ignored as move and joined with the next movement
-
-const unsigned char DISABLE_X = _DISABLE_X;
-const unsigned char DISABLE_Y = _DISABLE_Y;
-const unsigned char DISABLE_Z = _DISABLE_Z;
-const unsigned char DISABLE_E = _DISABLE_E;
-
 
 extern volatile unsigned long timestamp;
 
@@ -120,7 +95,7 @@ void get_coordinates()
 		if(next_feedrate > 0.0) feedrate = next_feedrate;
 	}
 
-	printf("new POS:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
+	//printf("new POS:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
 }
 
 void get_arc_coordinates()
@@ -155,18 +130,18 @@ void prepare_move()
 
 	if(!is_homing)
 	{
-		if (min_software_endstops) 
+		if (pa.min_software_endstops) 
 		{
 			if (destination[X_AXIS] < 0) destination[X_AXIS] = 0.0;
 			if (destination[Y_AXIS] < 0) destination[Y_AXIS] = 0.0;
 			if (destination[Z_AXIS] < 0) destination[Z_AXIS] = 0.0;
 		}
 
-		if (max_software_endstops) 
+		if (pa.max_software_endstops) 
 		{
-			if (destination[X_AXIS] > x_max_length) destination[X_AXIS] = x_max_length;
-			if (destination[Y_AXIS] > y_max_length) destination[Y_AXIS] = y_max_length;
-			if (destination[Z_AXIS] > z_max_length) destination[Z_AXIS] = z_max_length;
+			if (destination[X_AXIS] > pa.x_max_length) destination[X_AXIS] = pa.x_max_length;
+			if (destination[Y_AXIS] > pa.y_max_length) destination[Y_AXIS] = pa.y_max_length;
+			if (destination[Z_AXIS] > pa.z_max_length) destination[Z_AXIS] = pa.z_max_length;
 		}
 	}
 
@@ -268,21 +243,21 @@ void homing_routine(unsigned char axis)
 			min_pin = X_MIN_ACTIV;
 			max_pin = X_MAX_ACTIV;
 			home_dir = X_HOME_DIR;
-			max_length = x_max_length;
+			max_length = pa.x_max_length;
 			home_bounce = 10;
 		break;
 		case Y_AXIS:
 			min_pin = Y_MIN_ACTIV;
 			max_pin = Y_MAX_ACTIV;
 			home_dir = Y_HOME_DIR;
-			max_length = y_max_length;
+			max_length = pa.y_max_length;
 			home_bounce = 10;
 		break;
 		case Z_AXIS:
 			min_pin = Z_MIN_ACTIV;
 			max_pin = Z_MAX_ACTIV;
 			home_dir = Z_HOME_DIR;
-			max_length = z_max_length;
+			max_length = pa.z_max_length;
 			home_bounce = 4;
 		break;
 		default:
@@ -295,7 +270,7 @@ void homing_routine(unsigned char axis)
 		current_position[axis] = (-1.5) * max_length * home_dir;
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = 0;
-		feedrate = homing_feedrate[axis];
+		feedrate = pa.homing_feedrate[axis];
 		prepare_move();
 		st_synchronize();
 
@@ -308,7 +283,7 @@ void homing_routine(unsigned char axis)
 		current_position[axis] = (home_bounce * home_dir)*(-1);
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = 0;
-		feedrate = homing_feedrate[axis]/2;
+		feedrate = pa.homing_feedrate[axis]/2;
 		prepare_move();
 		st_synchronize();
 
@@ -656,7 +631,7 @@ void plan_init()
   
 	for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
 	{
-		axis_steps_per_sqr_second[cnt_c] = max_acceleration_units_per_sq_second[cnt_c] * axis_steps_per_unit[cnt_c];
+		axis_steps_per_sqr_second[cnt_c] = pa.max_acceleration_units_per_sq_second[cnt_c] * pa.axis_steps_per_unit[cnt_c];
 	}
 	
 	block_buffer_head = 0;
@@ -736,10 +711,10 @@ void check_axes_activity()
 		}
 	}
 
-	if((DISABLE_X) && (x_active == 0)) disable_x();
-	if((DISABLE_Y) && (y_active == 0)) disable_y();
-	if((DISABLE_Z) && (z_active == 0)) disable_z();
-	if((DISABLE_E) && (e_active == 0)) {disable_e(); disable_e1();}
+	if((pa.disable_x_en) && (x_active == 0)) disable_x();
+	if((pa.disable_y_en) && (y_active == 0)) disable_y();
+	if((pa.disable_z_en) && (z_active == 0)) disable_z();
+	if((pa.disable_e_en) && (e_active == 0)) {disable_e(); disable_e1();}
 }
 
 
@@ -769,10 +744,10 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 		// Calculate target position in absolute steps
 		//this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
 		long target[4];
-		target[X_AXIS] = lround(x*axis_steps_per_unit[X_AXIS]);
-		target[Y_AXIS] = lround(y*axis_steps_per_unit[Y_AXIS]);
-		target[Z_AXIS] = lround(z*axis_steps_per_unit[Z_AXIS]);     
-		target[E_AXIS] = lround(e*axis_steps_per_unit[E_AXIS]);
+		target[X_AXIS] = lround(x*pa.axis_steps_per_unit[X_AXIS]);
+		target[Y_AXIS] = lround(y*pa.axis_steps_per_unit[Y_AXIS]);
+		target[Z_AXIS] = lround(z*pa.axis_steps_per_unit[Z_AXIS]);     
+		target[E_AXIS] = lround(e*pa.axis_steps_per_unit[E_AXIS]);
 
 	// Prepare to set up new block
 	block_t *block = &block_buffer[block_buffer_head];
@@ -815,7 +790,7 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 		}
 		else
 		{
-			max_E_feedrate_calc = max_feedrate[E_AXIS]; 
+			max_E_feedrate_calc = pa.max_feedrate[E_AXIS]; 
 		}
 	}
 
@@ -853,11 +828,11 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 
 	if (block->steps_e == 0)
 	{
-		if(feed_rate<mintravelfeedrate) feed_rate=mintravelfeedrate;
+		if(feed_rate<pa.mintravelfeedrate) feed_rate=pa.mintravelfeedrate;
 	}
 	else
 	{
-		if(feed_rate<minimumfeedrate) feed_rate=minimumfeedrate;
+		if(feed_rate<pa.minimumfeedrate) feed_rate=pa.minimumfeedrate;
 	} 
 
 	// slow down when the buffer starts to empty, rather than wait at the corner for a buffer refill
@@ -867,11 +842,11 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 	#endif
 
 	float delta_mm[4];
-	delta_mm[X_AXIS] = (target[X_AXIS]-position[X_AXIS])/axis_steps_per_unit[X_AXIS];
-	delta_mm[Y_AXIS] = (target[Y_AXIS]-position[Y_AXIS])/axis_steps_per_unit[Y_AXIS];
-	delta_mm[Z_AXIS] = (target[Z_AXIS]-position[Z_AXIS])/axis_steps_per_unit[Z_AXIS];
-	//delta_mm[E_AXIS] = (target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS];
-	delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[E_AXIS])*extrudemultiply/100.0;
+	delta_mm[X_AXIS] = (target[X_AXIS]-position[X_AXIS])/pa.axis_steps_per_unit[X_AXIS];
+	delta_mm[Y_AXIS] = (target[Y_AXIS]-position[Y_AXIS])/pa.axis_steps_per_unit[Y_AXIS];
+	delta_mm[Z_AXIS] = (target[Z_AXIS]-position[Z_AXIS])/pa.axis_steps_per_unit[Z_AXIS];
+	//delta_mm[E_AXIS] = (target[E_AXIS]-position[E_AXIS])/pa.axis_steps_per_unit[E_AXIS];
+	delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/pa.axis_steps_per_unit[E_AXIS])*extrudemultiply/100.0;
 
 	if ( block->steps_x <= dropsegments && block->steps_y <= dropsegments && block->steps_z <= dropsegments )
 	{
@@ -917,8 +892,8 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 	for(cnt_c=0; cnt_c < 3; cnt_c++) 
 	{
 		current_speed[cnt_c] = delta_mm[cnt_c] * inverse_second;
-		if(fabs(current_speed[cnt_c]) > max_feedrate[cnt_c])
-			speed_factor = min(speed_factor, max_feedrate[cnt_c] / fabs(current_speed[cnt_c]));
+		if(fabs(current_speed[cnt_c]) > pa.max_feedrate[cnt_c])
+			speed_factor = min(speed_factor, pa.max_feedrate[cnt_c] / fabs(current_speed[cnt_c]));
 	}
 
 		current_speed[E_AXIS] = delta_mm[E_AXIS] * inverse_second;
@@ -941,11 +916,11 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 	float steps_per_mm = block->step_event_count/block->millimeters;
 	if(block->steps_x == 0 && block->steps_y == 0 && block->steps_z == 0)
 	{
-		block->acceleration_st = ceil(retract_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
+		block->acceleration_st = ceil(pa.retract_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
 	}
 	else
 	{
-		block->acceleration_st = ceil(move_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
+		block->acceleration_st = ceil(pa.move_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
 		// Limit acceleration per axis
 		if(((float)block->acceleration_st * (float)block->steps_x / (float)block->step_event_count) > axis_steps_per_sqr_second[X_AXIS])
 			block->acceleration_st = axis_steps_per_sqr_second[X_AXIS];
@@ -1004,14 +979,14 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 	#endif
 	
 	// Start with a safe speed
-	float vmax_junction = max_xy_jerk/2; 
+	float vmax_junction = pa.max_xy_jerk/2; 
 	float vmax_junction_factor = 1.0; 
 
-	if(fabs(current_speed[Z_AXIS]) > max_z_jerk/2) 
-		vmax_junction = min(vmax_junction, max_z_jerk/2);
+	if(fabs(current_speed[Z_AXIS]) > pa.max_z_jerk/2) 
+		vmax_junction = min(vmax_junction, pa.max_z_jerk/2);
 
-	if(fabs(current_speed[E_AXIS]) > max_e_jerk/2) 
-		vmax_junction = min(vmax_junction, max_e_jerk/2);
+	if(fabs(current_speed[E_AXIS]) > pa.max_e_jerk/2) 
+		vmax_junction = min(vmax_junction, pa.max_e_jerk/2);
 
 	if(G92_reset_previous_speed == 1)
 	{
@@ -1028,19 +1003,19 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 		//    if((fabs(previous_speed[X_AXIS]) > 0.0001) || (fabs(previous_speed[Y_AXIS]) > 0.0001)) {
 		vmax_junction = block->nominal_speed;
 		//    }
-		if (jerk > max_xy_jerk)
+		if (jerk > pa.max_xy_jerk)
 		{
-			vmax_junction_factor = (max_xy_jerk/jerk);
+			vmax_junction_factor = (pa.max_xy_jerk/jerk);
 		} 
 
-		if(fabs(current_speed[Z_AXIS] - previous_speed[Z_AXIS]) > max_z_jerk)
+		if(fabs(current_speed[Z_AXIS] - previous_speed[Z_AXIS]) > pa.max_z_jerk)
 		{
-			vmax_junction_factor= min(vmax_junction_factor, (max_z_jerk/fabs(current_speed[Z_AXIS] - previous_speed[Z_AXIS])));
+			vmax_junction_factor= min(vmax_junction_factor, (pa.max_z_jerk/fabs(current_speed[Z_AXIS] - previous_speed[Z_AXIS])));
 		} 
 
-		if(fabs(current_speed[E_AXIS] - previous_speed[E_AXIS]) > max_e_jerk)
+		if(fabs(current_speed[E_AXIS] - previous_speed[E_AXIS]) > pa.max_e_jerk)
 		{
-			vmax_junction_factor = min(vmax_junction_factor, (max_e_jerk/fabs(current_speed[E_AXIS] - previous_speed[E_AXIS])));
+			vmax_junction_factor = min(vmax_junction_factor, (pa.max_e_jerk/fabs(current_speed[E_AXIS] - previous_speed[E_AXIS])));
 		} 
 		vmax_junction = min(previous_nominal_speed, vmax_junction * vmax_junction_factor); // Limit speed to max previous speed
 	}
@@ -1121,10 +1096,10 @@ short calc_plannerpuffer_fill(void)
 
 void plan_set_position(float x, float y, float z, float e)
 {
-	position[X_AXIS] = lround(x*axis_steps_per_unit[X_AXIS]);
-	position[Y_AXIS] = lround(y*axis_steps_per_unit[Y_AXIS]);
-	position[Z_AXIS] = lround(z*axis_steps_per_unit[Z_AXIS]);     
-	position[E_AXIS] = lround(e*axis_steps_per_unit[E_AXIS]);  
+	position[X_AXIS] = lround(x*pa.axis_steps_per_unit[X_AXIS]);
+	position[Y_AXIS] = lround(y*pa.axis_steps_per_unit[Y_AXIS]);
+	position[Z_AXIS] = lround(z*pa.axis_steps_per_unit[Z_AXIS]);     
+	position[E_AXIS] = lround(e*pa.axis_steps_per_unit[E_AXIS]);  
 
 	virtual_steps_x = 0;
 	virtual_steps_y = 0;
