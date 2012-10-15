@@ -570,24 +570,24 @@ void process_commands()
         usb_printf("FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n",MAX_EXTRUDER);
         break;
 	  case 119: // M119 show endstop state
-		#if (X_MIN_ACTIV > -1)
-			read_endstops[0] = (PIO_Get(&X_MIN_PIN) ^ X_ENDSTOP_INVERT) + 48;
-      	#endif
-      	#if (Y_MIN_ACTIV > -1)
-			read_endstops[1] = (PIO_Get(&Y_MIN_PIN) ^ Y_ENDSTOP_INVERT) + 48;
-      	#endif
-      	#if (Z_MIN_ACTIV > -1)
-			read_endstops[2] = (PIO_Get(&Z_MIN_PIN) ^ Z_ENDSTOP_INVERT) + 48;
-      	#endif
-      	#if (X_MAX_ACTIV > -1)
-			read_endstops[3] = (PIO_Get(&X_MAX_PIN) ^ X_ENDSTOP_INVERT) + 48;
-      	#endif
-      	#if (Y_MAX_ACTIV > -1)
-			read_endstops[4] = (PIO_Get(&Y_MAX_PIN) ^ Y_ENDSTOP_INVERT) + 48;
-      	#endif
-      	#if (Z_MAX_ACTIV > -1)
-			read_endstops[5] = (PIO_Get(&Z_MAX_PIN) ^ Z_ENDSTOP_INVERT) + 48; 
-      	#endif
+		if(pa.x_min_endstop_aktiv > -1)
+			read_endstops[0] = (PIO_Get(&X_MIN_PIN) ^ pa.x_endstop_invert) + 48;
+      	
+      	if(pa.y_min_endstop_aktiv > -1)
+			read_endstops[1] = (PIO_Get(&Y_MIN_PIN) ^ pa.y_endstop_invert) + 48;
+      	
+		if(pa.z_min_endstop_aktiv > -1)
+			read_endstops[2] = (PIO_Get(&Z_MIN_PIN) ^ pa.z_endstop_invert) + 48;
+      	
+      	if(pa.x_max_endstop_aktiv > -1)
+			read_endstops[3] = (PIO_Get(&X_MAX_PIN) ^ pa.x_endstop_invert) + 48;
+      	
+      	if(pa.y_max_endstop_aktiv > -1)
+			read_endstops[4] = (PIO_Get(&Y_MAX_PIN) ^ pa.y_endstop_invert) + 48;
+      	
+      	if(pa.z_max_endstop_aktiv > -1)
+			read_endstops[5] = (PIO_Get(&Z_MAX_PIN) ^ pa.z_endstop_invert) + 48; 
+      	
       
         usb_printf("Xmin:%c Ymin:%c Zmin:%c / Xmax:%c Ymax:%c Zmax:%c",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
 		break;
@@ -719,6 +719,18 @@ void process_commands()
 		  }
 	  }
 	  break;
+	  case 503:	//M503 show settings
+		FLASH_PrintSettings();
+		break;
+		
+	  case 510:
+				
+		if(code_seen(axis_codes[0])) pa.invert_x_dir = code_value();
+		if(code_seen(axis_codes[1])) pa.invert_y_dir = code_value();
+		if(code_seen(axis_codes[2])) pa.invert_z_dir = code_value();
+		if(code_seen(axis_codes[3])) pa.invert_e_dir = code_value();
+		break;
+		
       case 906: // set motor current value in mA using axis codes
                 // M906 X[mA] Y[mA] Z[mA] E[mA] B[mA] 
                 // M906 S[mA] set all motors current 

@@ -28,16 +28,7 @@
  extern const Pin Y_MAX_PIN;
  extern const Pin Z_MAX_PIN;
  
- extern unsigned char X_ENDSTOP_INVERT;
- extern unsigned char Y_ENDSTOP_INVERT;
- extern unsigned char Z_ENDSTOP_INVERT;
- 
- extern unsigned char INVERT_X_DIR;
- extern unsigned char INVERT_Y_DIR;
- extern unsigned char INVERT_Z_DIR;
- extern unsigned char INVERT_E_DIR;
-
- 
+  
  
  void ConfigureTc0_Stepper(void);
  void stepper_setup(void);

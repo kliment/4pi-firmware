@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "parameters.h"
 #include "init_configuration.h"
 #include "com_interpreter.h"
 #include "arc_func.h"
@@ -51,22 +52,6 @@ const Pin X_MAX_PIN={1 <<  15, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PU
 const Pin Y_MAX_PIN={1 <<  17, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PULLUP};
 const Pin Z_MAX_PIN={1 <<  18, AT91C_BASE_PIOC, AT91C_ID_PIOC, PIO_INPUT, PIO_PULLUP};
 
-unsigned char X_ENDSTOP_INVERT = _X_ENDSTOP_INVERT;
-unsigned char Y_ENDSTOP_INVERT = _Y_ENDSTOP_INVERT;
-unsigned char Z_ENDSTOP_INVERT = _Z_ENDSTOP_INVERT;
-
-unsigned char INVERT_X_DIR = _INVERT_X_DIR;
-unsigned char INVERT_Y_DIR = _INVERT_Y_DIR;
-unsigned char INVERT_Z_DIR = _INVERT_Z_DIR;
-unsigned char INVERT_E_DIR = _INVERT_E_DIR;
-
-//Motor opts
-/*
-extern void motor_enaxis(unsigned char axis, unsigned char en);
-extern void motor_setdir(unsigned char axis, unsigned char dir);
-extern void motor_step(unsigned char axis);
-extern void motor_unstep();
-*/
 
 #ifdef ENDSTOPS_ONLY_FOR_HOMING
 	unsigned char check_endstops = 0;
@@ -274,143 +259,161 @@ void TC0_IrqHandler(void)
 
 		// Set direction and check limit switches
 		if ((out_bits & (1<<X_AXIS)) != 0) {   // -direction
-			motor_setdir(X_AXIS, INVERT_X_DIR);
+			motor_setdir(X_AXIS, pa.invert_x_dir);
 			CHECK_ENDSTOPS
 			{
-				#if X_MIN_ACTIV > -1
-				unsigned char x_min_endstop=(PIO_Get(&X_MIN_PIN) != X_ENDSTOP_INVERT);	//read IO
-				if(x_min_endstop && old_x_min_endstop && (current_block->steps_x > 0)) 
+				if(pa.x_min_endstop_aktiv > -1)
 				{
-					if(!is_homing)
-						endstop_x_hit=1;
-					else  
-						step_events_completed = current_block->step_event_count;
+					unsigned char x_min_endstop=(PIO_Get(&X_MIN_PIN) != pa.x_endstop_invert);	//read IO
+					if(x_min_endstop && old_x_min_endstop && (current_block->steps_x > 0)) 
+					{
+						if(!is_homing)
+							endstop_x_hit=1;
+						else  
+							step_events_completed = current_block->step_event_count;
+					}
+					else
+					{
+						endstop_x_hit=0;
+					}
+					old_x_min_endstop = x_min_endstop;
 				}
 				else
 				{
 					endstop_x_hit=0;
 				}
-				old_x_min_endstop = x_min_endstop;
-				#else
-				endstop_x_hit=0;
-				#endif
 			}
 		}
 		else { // +direction 
-			motor_setdir(X_AXIS, !INVERT_X_DIR);
+			motor_setdir(X_AXIS, !pa.invert_x_dir);
 			CHECK_ENDSTOPS 
 			{
-				#if X_MAX_ACTIV > -1
-				unsigned char x_max_endstop=(PIO_Get(&X_MAX_PIN)  != X_ENDSTOP_INVERT);	//read IO
-				if(x_max_endstop && old_x_max_endstop && (current_block->steps_x > 0))
+				if(pa.x_max_endstop_aktiv > -1)
 				{
-					if(!is_homing)
-						endstop_x_hit=1;
-					else    
-						step_events_completed = current_block->step_event_count;
+					unsigned char x_max_endstop=(PIO_Get(&X_MAX_PIN)  != pa.x_endstop_invert);	//read IO
+					if(x_max_endstop && old_x_max_endstop && (current_block->steps_x > 0))
+					{
+						if(!is_homing)
+							endstop_x_hit=1;
+						else    
+							step_events_completed = current_block->step_event_count;
+					}
+					else
+					{
+						endstop_x_hit=0;
+					}
+					old_x_max_endstop = x_max_endstop;
 				}
 				else
 				{
 					endstop_x_hit=0;
 				}
-				old_x_max_endstop = x_max_endstop;
-				#else
-				endstop_x_hit=0;
-				#endif
 			}
 		}
 
 		if ((out_bits & (1<<Y_AXIS)) != 0) {   // -direction
-			motor_setdir(Y_AXIS, INVERT_Y_DIR);
+			motor_setdir(Y_AXIS, pa.invert_y_dir);
 			CHECK_ENDSTOPS
 			{
-				#if Y_MIN_ACTIV > -1
-				unsigned char y_min_endstop=(PIO_Get(&Y_MIN_PIN) != Y_ENDSTOP_INVERT);	//read IO
-				if(y_min_endstop && old_y_min_endstop && (current_block->steps_y > 0))
+				if(pa.y_min_endstop_aktiv > -1)
 				{
-					if(!is_homing)
-						endstop_y_hit=1;
+					unsigned char y_min_endstop=(PIO_Get(&Y_MIN_PIN) != pa.y_endstop_invert);	//read IO
+					if(y_min_endstop && old_y_min_endstop && (current_block->steps_y > 0))
+					{
+						if(!is_homing)
+							endstop_y_hit=1;
+						else
+							step_events_completed = current_block->step_event_count;
+					}
 					else
-						step_events_completed = current_block->step_event_count;
+					{
+						endstop_y_hit=0;
+					}
+					old_y_min_endstop = y_min_endstop;
 				}
 				else
 				{
-					endstop_y_hit=0;
+					endstop_y_hit=0;  
 				}
-				old_y_min_endstop = y_min_endstop;
-				#else
-				endstop_y_hit=0;  
-				#endif
 			}
 		}
 		else { // +direction
-			motor_setdir(Y_AXIS, !INVERT_Y_DIR);
+			motor_setdir(Y_AXIS, !pa.invert_y_dir);
 			CHECK_ENDSTOPS
 			{
-				#if Y_MAX_ACTIV > -1
-				unsigned char y_max_endstop=(PIO_Get(&Y_MAX_PIN) != Y_ENDSTOP_INVERT);	//read IO
-				if(y_max_endstop && old_y_max_endstop && (current_block->steps_y > 0))
+				if(pa.y_max_endstop_aktiv > -1)
 				{
-					if(!is_homing)
-						endstop_y_hit=1;
-					else  
-						step_events_completed = current_block->step_event_count;
+					unsigned char y_max_endstop=(PIO_Get(&Y_MAX_PIN) != pa.y_endstop_invert);	//read IO
+					if(y_max_endstop && old_y_max_endstop && (current_block->steps_y > 0))
+					{
+						if(!is_homing)
+							endstop_y_hit=1;
+						else  
+							step_events_completed = current_block->step_event_count;
+					}
+					else
+					{
+						endstop_y_hit=0;
+					}
+					old_y_max_endstop = y_max_endstop;
 				}
 				else
 				{
-					endstop_y_hit=0;
+					endstop_y_hit=0;  
 				}
-				old_y_max_endstop = y_max_endstop;
-				#else
-				endstop_y_hit=0;  
-				#endif
 			}
 		}
 
 		if ((out_bits & (1<<Z_AXIS)) != 0) {   // -direction
-			motor_setdir(Z_AXIS, INVERT_Z_DIR);
+			motor_setdir(Z_AXIS, pa.invert_z_dir);
 			CHECK_ENDSTOPS
 			{
-				#if Z_MIN_ACTIV > -1
-				unsigned char z_min_endstop=(PIO_Get(&Z_MIN_PIN) != Z_ENDSTOP_INVERT);	//read IO
-				if(z_min_endstop && old_z_min_endstop && (current_block->steps_z > 0))
+				if(pa.z_min_endstop_aktiv > -1)
 				{
-					if(!is_homing)  
-						endstop_z_hit=1;
-					else  
-						step_events_completed = current_block->step_event_count;
+					unsigned char z_min_endstop=(PIO_Get(&Z_MIN_PIN) != pa.z_endstop_invert);	//read IO
+					if(z_min_endstop && old_z_min_endstop && (current_block->steps_z > 0))
+					{
+						if(!is_homing)  
+							endstop_z_hit=1;
+						else  
+							step_events_completed = current_block->step_event_count;
+					}
+					else
+					{
+						endstop_z_hit=0;
+					}
+					old_z_min_endstop = z_min_endstop;
 				}
 				else
 				{
-					endstop_z_hit=0;
+					endstop_z_hit=0;  
 				}
-				old_z_min_endstop = z_min_endstop;
-				#else
-				endstop_z_hit=0;  
-				#endif
 			}
 		}
 		else { // +direction
-			motor_setdir(Z_AXIS, !INVERT_Z_DIR);
+			motor_setdir(Z_AXIS, !pa.invert_z_dir);
 			CHECK_ENDSTOPS
 			{
-				#if Z_MAX_ACTIV > -1
-				unsigned char z_max_endstop=(PIO_Get(&Z_MAX_PIN) != Z_ENDSTOP_INVERT);	//read IO
-				if(z_max_endstop && old_z_max_endstop && (current_block->steps_z > 0))
+				if(pa.z_max_endstop_aktiv > -1)
 				{
-					if(!is_homing)
-						endstop_z_hit=1;
-					else  
-						step_events_completed = current_block->step_event_count;
+					unsigned char z_max_endstop=(PIO_Get(&Z_MAX_PIN) != pa.z_endstop_invert);	//read IO
+					if(z_max_endstop && old_z_max_endstop && (current_block->steps_z > 0))
+					{
+						if(!is_homing)
+							endstop_z_hit=1;
+						else  
+							step_events_completed = current_block->step_event_count;
+					}
+					else
+					{
+						endstop_z_hit=0;
+					}
+					old_z_max_endstop = z_max_endstop;
 				}
 				else
 				{
-					endstop_z_hit=0;
+					endstop_z_hit=0;  
 				}
-				old_z_max_endstop = z_max_endstop;
-				#else
-				endstop_z_hit=0;  
-				#endif
 			}
 		}
 
@@ -420,16 +423,16 @@ void TC0_IrqHandler(void)
 		if ((out_bits & (1<<E_AXIS)) != 0) // -direction
 		{  
 			if(current_block->active_extruder == 1)
-				motor_setdir(E1_AXIS, INVERT_E_DIR);
+				motor_setdir(E1_AXIS, pa.invert_e_dir);
 			else
-				motor_setdir(E_AXIS, INVERT_E_DIR);
+				motor_setdir(E_AXIS, pa.invert_e_dir);
 		}
 		else // +direction
 		{ 
 			if(current_block->active_extruder == 1)
-				motor_setdir(E1_AXIS, !INVERT_E_DIR);
+				motor_setdir(E1_AXIS, !pa.invert_e_dir);
 			else
-				motor_setdir(E_AXIS, !INVERT_E_DIR);
+				motor_setdir(E_AXIS, !pa.invert_e_dir);
 		}
 		#endif //!ADVANCE
 

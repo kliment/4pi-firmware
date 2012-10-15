@@ -43,11 +43,24 @@
 	unsigned char min_software_endstops;
 	unsigned char max_software_endstops;
 	
+	//Homing direction
+	signed short x_home_dir;
+	signed short y_home_dir;
+	signed short z_home_dir;
+	
 	//Invert endstop signal
 	volatile unsigned char x_endstop_invert;
 	volatile unsigned char y_endstop_invert;
 	volatile unsigned char z_endstop_invert;
-
+	
+	//Digital Input for Endstop switch aktiv
+	volatile signed short x_min_endstop_aktiv;
+	volatile signed short x_max_endstop_aktiv;
+	volatile signed short y_min_endstop_aktiv;
+	volatile signed short y_max_endstop_aktiv;
+	volatile signed short z_min_endstop_aktiv;
+	volatile signed short z_max_endstop_aktiv;
+	
 	//Invert axis direction 
 	volatile unsigned char invert_x_dir;
 	volatile unsigned char invert_y_dir;
@@ -80,6 +93,9 @@
 	signed short heater_pTerm[MAX_EXTRUDER];
 	signed short heater_iTerm[MAX_EXTRUDER];
 	signed short heater_dTerm[MAX_EXTRUDER];
+	
+	signed short heater_slope[MAX_EXTRUDER]; 
+	signed short heater_intercept[MAX_EXTRUDER];
  
 } parameter_struct;
 
