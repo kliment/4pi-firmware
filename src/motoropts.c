@@ -2,9 +2,9 @@
 #include <pio/pio.h>
 #include <stdio.h>
 #include "init_configuration.h"
+#include "parameters.h"
 
-unsigned char axis_current[5] = _AXIS_CURRENT;
-unsigned char axis_ustep[5] = _AXIS_USTEP;
+
 
 const Pin MOSI={1 <<  14, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
 const Pin SCK={1 <<  15, AT91C_BASE_PIOA, AT91C_ID_PIOA, PIO_OUTPUT_0, PIO_PULLUP};
@@ -167,7 +167,7 @@ void motor_setup(){
     AD5206_setup();
     int i;
     for(i=0;i<5;i++)
-        motor_setopts(i,axis_ustep[i],axis_current[i]);
+        motor_setopts(i,pa.axis_ustep[i],pa.axis_current[i]);
     printf("done setting up motors\r\n\n");
 }
 

@@ -25,6 +25,7 @@
 #include <math.h>
 
 #include "init_configuration.h"
+#include "parameters.h"
 #include "samadc.h"
 #include "heaters.h"
 #include "thermistortables.h"
@@ -306,33 +307,33 @@ void init_heaters_values(void)
 	g_pwm_io_adr[0] = HEATER_HOTEND_1;
 	heaters[0].ad_cannel = 3;
 	heaters[0].pwm = 0;
-	heaters[0].soft_pwm_aktiv = HEATER_1_PWM;
-	heaters[0].PID_Kp = PID_PGAIN;
-	heaters[0].PID_I = PID_IGAIN;
-	heaters[0].PID_Kd = PID_DGAIN;
+	heaters[0].soft_pwm_aktiv = pa.heater_pwm_en[0];
+	heaters[0].PID_Kp = pa.heater_pTerm[0];
+	heaters[0].PID_I = pa.heater_iTerm[0];
+	heaters[0].PID_Kd = pa.heater_dTerm[0];
 	heaters[0].temp_iState = 0;
 	heaters[0].prev_temp = 0;
 	heaters[0].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (signed short)heaters[0].PID_I;
 	heaters[0].temp_iState_min = heaters[0].temp_iState_max * (-1);
-	heaters[0].thermistor_type = THERMISTORHEATER;
+	heaters[0].thermistor_type = pa.heater_thermistor_type[0];
 
 	heaters[1].io_adr = HEATER_HOTEND_2;
 	g_pwm_io_adr[1] = HEATER_HOTEND_2;
 	heaters[1].ad_cannel = 1;
 	heaters[1].pwm = 0;
-	heaters[1].soft_pwm_aktiv = HEATER_2_PWM;
-	heaters[1].PID_Kp = PID_PGAIN;
-	heaters[1].PID_I = PID_IGAIN;
-	heaters[1].PID_Kd = PID_DGAIN;
+	heaters[1].soft_pwm_aktiv = pa.heater_pwm_en[1];
+	heaters[1].PID_Kp = pa.heater_pTerm[1];
+	heaters[1].PID_I = pa.heater_iTerm[1];
+	heaters[1].PID_Kd = pa.heater_dTerm[1];
 	heaters[1].temp_iState = 0;
 	heaters[1].prev_temp = 0;
 	heaters[1].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (signed short)heaters[1].PID_I;
 	heaters[1].temp_iState_min = heaters[1].temp_iState_max * (-1);
-	heaters[1].thermistor_type = THERMISTORHEATER;
+	heaters[1].thermistor_type = pa.heater_thermistor_type[1];
 	
 	bed_heater.target_temp = 0;
 	bed_heater.akt_temp = 0;
-	bed_heater.thermistor_type = THERMISTORBED;
+	bed_heater.thermistor_type = pa.bed_thermistor_type;
 	
 	
 }
