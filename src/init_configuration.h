@@ -29,7 +29,7 @@
 //// AD595
 // 50 get Temperatur with AD595
 
-#define THERMISTORHEATER 17
+#define THERMISTORHEATER 11
 #define THERMISTORBED 11
 
 

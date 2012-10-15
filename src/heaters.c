@@ -834,7 +834,7 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
       {
         T_check = timestamp;
         input = analog2temp_convert(adc_read(hotend->ad_cannel),hotend->thermistor_type);
-        input_ave += (input - input_ave)/16;
+        input_ave += (input - input_ave)/25;
       }
       if( input > 195 ) break;
       if(timestamp - temp_millis > 2000) 
@@ -874,10 +874,9 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
   slope = (int)((float)(((count * xy_sum) - (x_sum * y_sum)) * 256) / ((count * x2_sum) - (x_sum * x_sum)) + 0.5);
   intercept = ((y_sum - (((float)(slope * x_sum)/256.0)) + 0.5) / (count));
   
-  usb_printf("%u samples collected \r\n",count);
   usb_printf("HEATER_SLOPE = %d, HEATER_INTERCEPT = %d \r\n", slope, intercept);  
-  usb_printf("Recommended HEATER_CURRENT: %u \r\n",constrain((((long)slope*(long)350)>>8)+intercept,5,255));
   usb_printf("Heater evaluation finished \r\n");
+  usb_printf("Recommended HEATER_CURRENT: %u \r\n",constrain(((((long)slope*(long)200)>>8)+intercept)*4,5,255));
   usb_printf("Enter above values in init_configuration.h \r\n");
   return;
 }
