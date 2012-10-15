@@ -242,21 +242,21 @@ void homing_routine(unsigned char axis)
 		case X_AXIS:
 			min_pin = X_MIN_ACTIV;
 			max_pin = X_MAX_ACTIV;
-			home_dir = X_HOME_DIR;
+			home_dir = pa.x_home_dir;
 			max_length = pa.x_max_length;
 			home_bounce = 10;
 		break;
 		case Y_AXIS:
 			min_pin = Y_MIN_ACTIV;
 			max_pin = Y_MAX_ACTIV;
-			home_dir = Y_HOME_DIR;
+			home_dir = pa.y_home_dir;
 			max_length = pa.y_max_length;
 			home_bounce = 10;
 		break;
 		case Z_AXIS:
 			min_pin = Z_MIN_ACTIV;
 			max_pin = Z_MAX_ACTIV;
-			home_dir = Z_HOME_DIR;
+			home_dir = pa.z_home_dir;
 			max_length = pa.z_max_length;
 			home_bounce = 4;
 		break;
