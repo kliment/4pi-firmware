@@ -58,7 +58,9 @@ volatile unsigned long timestamp = 1;
 //----------------------------------------------------------
 void SysTick_Handler(void)
 {
-    timestamp++;
+	
+	timestamp++;
+	
     if(timestamp%10==0)
         adc_sample();
     
@@ -70,16 +72,11 @@ void SysTick_Handler(void)
     //temp3 = chan 2
     
     //if(timestamp%1000==0)//every 1 second
-        //samserial_print("blip\r\n");
-    //    for(i=1;i<9;i++)
-    //        printf("Channel %u : %u mV\n", i,adc_read(i));
-    
+	//{
+	//  for(i=1;i<9;i++)
+    //  	printf("Channel %u : %u mV\n", i,adc_read(i));
+    //}
 
-    if(timestamp%5000==0)
-    {
-	    //printf("Temp 0 / 1: %u mV / %u mV \n", adc_read(5), adc_read(3));
-
-    }
     
     if(timestamp%5==0) //every 5 ms
     {
@@ -87,17 +84,11 @@ void SysTick_Handler(void)
 			get_command();
     }
 	
+	
 	if(timestamp%250==0) //every 100 ms
     {
 		manage_heaters();
     }
-	
-	//Had to wait 10ms to avoid crash ????
-	if(timestamp > 10)
-	{
-		//heater_soft_pwm();
-	}
-	
 	    
 }
 
@@ -155,6 +146,7 @@ int main()
 	printf("Configuring Timer 1 PWM.\n\r");
 	ConfigureTc_1();
 
+	//-------- Init Planner Values --------------
 	printf("Plan Init\n\r");
 	plan_init();
 	
@@ -165,22 +157,17 @@ int main()
 	{
   		//uncomment to use//sprinter_mainloop();
     	//main loop events go here
-		
-		if(timestamp%2==0) //every 2 ms
-		{
-			//stepper_timer();
-		}
     	
     	if(buflen > 0)
 		{
 			
 			//-------- Check and execute G-CODE --------------
 			process_commands();
-			
+
 			//-------- Increment G-Code FIFO  --------------
 			buflen = (buflen-1);
-		    bufindr++;
-		    if(bufindr == BUFSIZE) bufindr = 0;
+			bufindr++;
+			if(bufindr == BUFSIZE) bufindr = 0;
 			
 		}
 		  
