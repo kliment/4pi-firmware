@@ -168,6 +168,7 @@ void FLASH_PrintSettings(void)
 	
 	usb_printf("Heater Sensor:\r\n Mxxx Sensor1: %d Sensor2: %d Heatbed: %d\r\n",pa.heater_thermistor_type[0],pa.heater_thermistor_type[1],pa.bed_thermistor_type);
 	usb_printf("Heater PWM: \r\n Mxxx Heater1: %d Heater2: %d\r\n",pa.heater_pwm_en[0],pa.heater_pwm_en[1]);
+	usb_printf("Heater Max pwm: \r\n Mxxx Heater1: %d Heater2: %d\r\n",pa.heater_max_pwm[0],pa.heater_max_pwm[1]);
 	
 	usb_printf("S=HEATER_SLOPE I=HEATER_INTERCEPT \r\n Mxxx Heater1 I%d S%d Heater2 I%d S%d\r\n",pa.heater_slope[0],pa.heater_intercept[0],pa.heater_slope[1],pa.heater_intercept[1]);
 	

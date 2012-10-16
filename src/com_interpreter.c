@@ -184,7 +184,7 @@ unsigned char get_byte_from_UART(unsigned char *zeichen)
 void ClearToSend()
 {
 	previous_millis_cmd = timestamp;
-	usb_printf(" ok\r\n");
+	usb_printf("ok\r\n");
 }
 
 //-----------------------------------------------------
@@ -276,7 +276,8 @@ void get_command()
               if(savetosd)
                 break;
               #endif
-              //usb_printf("ok\r\n");
+              //G0 - G3 dont use ClearToSend() so the ok is send here
+              usb_printf("ok\r\n");
             break;
             
             default:
