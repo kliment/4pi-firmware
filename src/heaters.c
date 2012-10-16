@@ -316,6 +316,9 @@ void init_heaters_values(void)
 	heaters[0].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (signed short)heaters[0].PID_I;
 	heaters[0].temp_iState_min = heaters[0].temp_iState_max * (-1);
 	heaters[0].thermistor_type = pa.heater_thermistor_type[0];
+	heaters[0].slope = pa.heater_slope[0];
+	heaters[0].intercept = pa.heater_intercept[0];
+	heaters[0].max_pwm = pa.heater_max_pwm[0];
 
 	heaters[1].io_adr = HEATER_HOTEND_2;
 	g_pwm_io_adr[1] = HEATER_HOTEND_2;
@@ -330,6 +333,9 @@ void init_heaters_values(void)
 	heaters[1].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (signed short)heaters[1].PID_I;
 	heaters[1].temp_iState_min = heaters[1].temp_iState_max * (-1);
 	heaters[1].thermistor_type = pa.heater_thermistor_type[1];
+	heaters[1].slope = pa.heater_slope[1];
+	heaters[1].intercept = pa.heater_intercept[1];
+	heaters[1].max_pwm = pa.heater_max_pwm[1];
 	
 	bed_heater.target_temp = 0;
 	bed_heater.akt_temp = 0;
@@ -461,7 +467,7 @@ void heater_PID_control(heater_struct *hotend)
 	hotend->prev_temp = hotend->akt_temp;
 	hotend->pTerm = (signed short)(((long)hotend->PID_Kp * error) / 256);
 	
-	const signed short H0 = min(HEATER_DUTY_FOR_SETPOINT(hotend->target_temp),HEATER_CURRENT);
+  const signed short H0 = min(((((long)hotend->slope*(long)hotend->target_temp)>>8)+hotend->intercept),hotend->max_pwm);
 	heater_duty = H0 + hotend->pTerm;
 
 	//printf("P: %d ", hotend->pTerm);
@@ -492,7 +498,7 @@ void heater_PID_control(heater_struct *hotend)
 	heater_duty += hotend->dTerm;
 	//printf("PWM: %d \r\n", heater_duty);
 	
-	heater_duty = constrain(heater_duty, 0, HEATER_CURRENT);
+	heater_duty = constrain(heater_duty, 0, hotend->max_pwm);
 	
 
 
@@ -629,7 +635,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
   float PIDAT_max = 0.0;
   float PIDAT_min = 250.0;
  
-  unsigned char PIDAT_PWM_val = HEATER_CURRENT;
+  unsigned char PIDAT_PWM_val = hotend->max_pwm;
   
   unsigned char PIDAT_cycles = 0;
   unsigned char PIDAT_heating = true;
@@ -643,8 +649,8 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
   long PIDAT_t_high = 0;
   long PIDAT_t_low = 0;
 
-  long PIDAT_bias = HEATER_CURRENT/2;  
-  long PIDAT_d  =  HEATER_CURRENT/2;
+  long PIDAT_bias = hotend->max_pwm/2;  
+  long PIDAT_d  =  hotend->max_pwm/2;
   
   float PIDAT_Ku = 0, PIDAT_Tu = 0;
   float PIDAT_Kp = 0, PIDAT_Ki = 0, PIDAT_Kd = 0;
@@ -700,7 +706,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
         }
       }
       
-      if(PIDAT_heating == false && PIDAT_input < PIDAT_test_temp) 
+      if((PIDAT_heating == false) && (PIDAT_input < PIDAT_test_temp)) 
       {
         if(timestamp - PIDAT_t1 > 5000) 
         {
@@ -711,10 +717,10 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
           if(PIDAT_cycles > 0) 
           {
             PIDAT_bias += (PIDAT_d*(PIDAT_t_high - PIDAT_t_low))/(PIDAT_t_low + PIDAT_t_high);
-            PIDAT_bias = constrain(PIDAT_bias, 20 ,HEATER_CURRENT - 20);
-            if(PIDAT_bias > (HEATER_CURRENT/2))
+            PIDAT_bias = constrain(PIDAT_bias, 20 ,hotend->max_pwm - 20);
+            if(PIDAT_bias > (hotend->max_pwm/2))
             {
-              PIDAT_d = (HEATER_CURRENT - 1) - PIDAT_bias;
+              PIDAT_d = (hotend->max_pwm - 1) - PIDAT_bias;
             } else {
               PIDAT_d = PIDAT_bias;
             }
@@ -756,7 +762,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
         }
       } 
       
-    constrain(PIDAT_PWM_val, 0, HEATER_CURRENT);
+    constrain(PIDAT_PWM_val, 0, hotend->max_pwm);
     hotend->pwm = (unsigned char)PIDAT_PWM_val;
     }
 
@@ -799,7 +805,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
 
 //-------------------- EVALUATE HEATER -----------------------------
 //
-// Calculate slope and y-intercept for HEATER_DUTY_FOR_SETPOINT formula.
+// Calculate slope and y-intercept for setpoint pwm formula.
 // Setting these constants correctly will greatly improve PID performance.
 //
 //------------------------------------------------------------------
@@ -824,7 +830,7 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
     LED_switch(3,0);
   #endif
 
-  for(pwm = step; pwm < HEATER_CURRENT; pwm+=step) 
+  for(pwm = step; pwm < hotend->max_pwm; pwm+=step) 
   {
     hotend->pwm = pwm;
     input_ave = 0;
@@ -859,8 +865,8 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
   unsigned int y_sum = 0;
   unsigned long xy_sum = 0;
   unsigned long x2_sum = 0;
-  int slope;
-  int intercept;
+  signed short slope;
+  signed short intercept;
   unsigned char i;
   
   for(i=0; i<count; i++)
@@ -875,9 +881,13 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
   slope = (int)((float)(((count * xy_sum) - (x_sum * y_sum)) * 256) / ((count * x2_sum) - (x_sum * x_sum)) + 0.5);
   intercept = ((y_sum - (((float)(slope * x_sum)/256.0)) + 0.5) / (count));
   
-  usb_printf("HEATER_SLOPE = %d, HEATER_INTERCEPT = %d \r\n", slope, intercept);  
+  hotend->slope = slope;
+  hotend->intercept = intercept;
+  hotend->max_pwm = (signed short)min((((long)slope*(long)200>>8)+intercept)*4,255);
+
+  usb_printf("EXTRUDER_SLOPE = %d, EXTRUDER_INTERCEPT = %d \r\n", (unsigned)slope, (unsigned)intercept);  
   usb_printf("Heater evaluation finished \r\n");
-  usb_printf("Recommended HEATER_CURRENT: %u \r\n",constrain(((((long)slope*(long)200)>>8)+intercept)*4,5,255));
+  usb_printf("Recommended EXTRUDER_MAX_PWM: %u \r\n",(unsigned)hotend->max_pwm);
   usb_printf("Enter above values in init_configuration.h \r\n");
   return;
 }

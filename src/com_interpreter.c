@@ -184,7 +184,7 @@ unsigned char get_byte_from_UART(unsigned char *zeichen)
 void ClearToSend()
 {
 	previous_millis_cmd = timestamp;
-	usb_printf("ok\r\n");
+	usb_printf(" ok\r\n");
 }
 
 //-----------------------------------------------------
@@ -450,8 +450,8 @@ void process_commands()
 				usb_printf("ok T:%u @%u B:%u",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
 			else
 				usb_printf("ok T:%u @%u B:%u",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
-        return;
-        //break;
+        //return;
+        break;
       case 109: // M109 - Wait for extruder heater to reach target.
 		if(tmp_extruder < MAX_EXTRUDER)
 		{

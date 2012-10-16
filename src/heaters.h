@@ -118,6 +118,9 @@ typedef struct {
 	
 	signed short thermistor_type;
 	
+	signed short slope;
+	signed short intercept;
+	signed short max_pwm;
 
 } heater_struct;
 
