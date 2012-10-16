@@ -122,7 +122,7 @@ void init_parameters(void)
 	pa.heater_dTerm[1] = PID_DGAIN;
 	
 	pa.heater_slope[0] = HEATER_0_SLOPE; 
-	pa.F20000_intercept[0] = HEATER_0_INTERCEPT;
+	pa.heater_intercept[0] = HEATER_0_INTERCEPT;
 	pa.heater_max_pwm[0] = HEATER_0_MAX_PWM;
 	
 	pa.heater_slope[1] = HEATER_1_SLOPE; 
