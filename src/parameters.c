@@ -121,13 +121,13 @@ void init_parameters(void)
 	pa.heater_iTerm[1] = PID_IGAIN;
 	pa.heater_dTerm[1] = PID_DGAIN;
 	
-	pa.heater_slope[0] = EXTRUDER0_SLOPE; 
-	pa.heater_intercept[0] = EXTRUDER0_INTERCEPT;
-	pa.heater_max_pwm[0] = EXTRUDER0_MAX_PWM;
+	pa.heater_slope[0] = HEATER_0_SLOPE; 
+	pa.F20000_intercept[0] = HEATER_0_INTERCEPT;
+	pa.heater_max_pwm[0] = HEATER_0_MAX_PWM;
 	
-	pa.heater_slope[1] = EXTRUDER1_SLOPE; 
-	pa.heater_intercept[1] = EXTRUDER1_INTERCEPT;
-	pa.heater_max_pwm[1] = EXTRUDER1_MAX_PWM;
+	pa.heater_slope[1] = HEATER_1_SLOPE; 
+	pa.heater_intercept[1] = HEATER_1_INTERCEPT;
+	pa.heater_max_pwm[1] = HEATER_1_MAX_PWM;
 
 	
 

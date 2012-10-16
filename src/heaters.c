@@ -885,9 +885,9 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
   hotend->intercept = intercept;
   hotend->max_pwm = (signed short)min((((long)slope*(long)200>>8)+intercept)*4,255);
 
-  usb_printf("EXTRUDER_SLOPE = %d, EXTRUDER_INTERCEPT = %d \r\n", (unsigned)slope, (unsigned)intercept);  
+  usb_printf("HEATER_SLOPE = %d, HEATER_INTERCEPT = %d \r\n", (unsigned)slope, (unsigned)intercept);  
   usb_printf("Heater evaluation finished \r\n");
-  usb_printf("Recommended EXTRUDER_MAX_PWM: %u \r\n",(unsigned)hotend->max_pwm);
+  usb_printf("Recommended HEATER_MAX_PWM: %u \r\n",(unsigned)hotend->max_pwm);
   usb_printf("Enter above values in init_configuration.h \r\n");
   return;
 }

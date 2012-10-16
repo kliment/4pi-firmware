@@ -163,10 +163,10 @@
 
 	// magic formula 1, to get approximate "zero error" PWM duty. Take few measurements with low PWM duty and make linear fit to get the formula
 	// for my makergear hot-end: linear fit {50,10},{60,20},{80,30},{105,50},{176,100},{128,64},{208,128}
-  #define EXTRUDER0_SLOPE 87
-  #define EXTRUDER0_INTERCEPT -3
-  #define EXTRUDER1_SLOPE 24  // slope * 256
-  #define EXTRUDER1_INTERCEPT -2
+  #define HEATER_0_SLOPE 87
+  #define HEATER_0_INTERCEPT -3
+  #define HEATER_1_SLOPE 24  // slope * 256
+  #define HEATER_1_INTERCEPT -2
 //	#define HEATER_DUTY_FOR_SETPOINT(setpoint) ((int)((HEATER_SLOPE*(long)setpoint)>>8)+HEATER_INTERCEPT)  
 	// magic formula 2, to make led brightness approximately linear
 	#define LED_PWM_FOR_BRIGHTNESS(brightness) ((64*brightness-1384)/(300-brightness))
@@ -182,8 +182,8 @@
 #endif
 
 // Change this value (range 1-255) to limit the current to the nozzle
-#define EXTRUDER0_MAX_PWM 255
-#define EXTRUDER1_MAX_PWM 50
+#define HEATER_0_MAX_PWM 255
+#define HEATER_1_MAX_PWM 50
 
 // How often should the heater check for new temp readings, in milliseconds
 #define HEATER_CHECK_INTERVAL 250
