@@ -18,7 +18,9 @@
 #include <board.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include <memories/flash/flashd.h>
 #include "init_configuration.h"
 #include "parameters.h"
 #include "serial.h"
@@ -32,6 +34,9 @@ void init_parameters(void)
 {
 	unsigned char cnt_c = 0;
 	
+	// Initialize flash driver
+    FLASHD_Initialize(BOARD_MCK);
+		
 	pa.chk_sum = 0;
 	
 	char ver[4] = FLASH_VERSION;
@@ -40,6 +45,8 @@ void init_parameters(void)
 	{
 		pa.version[cnt_c] = ver[cnt_c];
 	}
+	
+	pa.version[3] = 0;
 	
 	float f_tmp1[NUM_AXIS] = _MAX_FEEDRATE;
 	float f_tmp2[NUM_AXIS] = _AXIS_STEP_PER_UNIT;
@@ -128,16 +135,93 @@ void init_parameters(void)
 	pa.heater_slope[1] = HEATER_1_SLOPE; 
 	pa.heater_intercept[1] = HEATER_1_INTERCEPT;
 	pa.heater_max_pwm[1] = HEATER_1_MAX_PWM;
-
-	
-
-	pa.chk_sum = calc_crc16();
-	
 	
 }
 
 void FLASH_StoreSettings(void) 
 {
+	unsigned int lastPageAddress;
+    volatile unsigned char *pLastPageData;
+	unsigned char error;
+	unsigned short pa_size = 0;
+	unsigned char  *pa_ptr;
+	unsigned short cnt_s=0;
+	unsigned short w_err = 0;
+	unsigned char pageLocked;
+
+
+	pa_size = sizeof(pa);
+	pa_ptr = (unsigned char*)&pa;
+	
+	//Make CRC16 Checksum before Save
+	pa.chk_sum = calc_crc16();
+	
+	// Performs on last page (to avoid overriding existing program).
+    lastPageAddress = AT91C_IFLASH1 + AT91C_IFLASH1_SIZE - AT91C_IFLASH1_PAGE_SIZE;
+    pLastPageData = (volatile unsigned char *) lastPageAddress;
+		
+	// Check that associated region is locked
+    pageLocked = FLASHD_IsLocked(lastPageAddress, lastPageAddress + pa_size);
+	
+    if(pageLocked)
+	{
+		printf("Page Locked %d\n\r",pageLocked);
+		
+		error = FLASHD_Unlock(lastPageAddress, lastPageAddress + pa_size, 0, 0);
+		if(error)
+		{
+			printf("Unlock error\n\r");
+			usb_printf("Flash Error\n\r");
+			return;
+		}
+		else
+		{
+			printf("Unlocking page\n\r");
+		}
+	}
+		
+		
+	//Write Data to flash
+	error = FLASHD_Write(lastPageAddress, pa_ptr, pa_size);
+	if(error)
+	{
+		printf("Flash Write error %d\n\r",error);
+	}
+	
+	//Check Data in Flash
+	for(cnt_s=0;cnt_s < pa_size;cnt_s++)
+	{
+		if((*pLastPageData++) != (*pa_ptr++))
+		{
+			printf("Write err %d\n\r",cnt_s);
+			w_err++;
+		}
+	}
+	
+	
+	if(w_err > 0)
+	{
+		//Verify Error 
+		printf("Flash Error\n\r");
+		usb_printf("Flash Error\n\r");
+	}
+	else
+	{
+		//Flash content is good, lock the page
+		printf("Locking page\n\r");
+		error = FLASHD_Lock(lastPageAddress, lastPageAddress + pa_size, 0, 0);
+		if(error)
+		{
+			printf("Lock Error %d\n\r",error);
+		}
+		else
+		{
+			printf("Flash write OK\n\r");
+			usb_printf("Flash write OK\n\r");
+		}
+	}
+	
+	
 
 }
 
@@ -181,10 +265,61 @@ void FLASH_LoadSettings(void)
 {
 	
 	char ver[4] = FLASH_VERSION;
+	unsigned short cnt_s = 0;
+	unsigned int lastPageAddress;
+    volatile unsigned char *pLastPageData;
 	
+	unsigned short pa_size = 0;
+	volatile unsigned char  *pa_ptr;
+	unsigned short help_crc = 0;
+
+
+	pa_size = sizeof(pa);
+	pa_ptr = (volatile unsigned char*)&pa;
+	
+	// Performs tests on last page (to avoid overriding existing program).
+    lastPageAddress = AT91C_IFLASH1 + AT91C_IFLASH1_SIZE - AT91C_IFLASH1_PAGE_SIZE;
+    pLastPageData = (volatile unsigned char *) lastPageAddress;
+	
+	//Read Data from Flash
+	for(cnt_s = 0;cnt_s < pa_size;cnt_s++)
+	{
+		*pa_ptr++ = *pLastPageData++;
+		
+		/*
+		printf("0x%02X ",*pLastPageData);
+		if((cnt_s+1)%16 == 0)
+			printf("\n\r");
+		*/
+	}
+	
+	printf("Read Parameters from flash\n\r");
+	
+	
+	//Check the CRC16
+	help_crc = calc_crc16();
+	if(pa.chk_sum != help_crc)
+	{
+		printf("CRC NOT OK\n\r");
+		usb_printf("Flash Error CRC  Load Initvalues\n\r");
+		//Error --> load init Parameters
+		init_parameters();
+		return;
+		
+	}
+	
+	//Check the Parameter Version
 	if(strncmp(ver,pa.version,3)==0)
 	{
-		
+		printf("VER OK\n\r");
+		usb_printf("Load Paramaters from Flash OK\n\r");
+	}
+	else
+	{
+		printf("VER NOT OK\n\r");
+		usb_printf("Flash Error Version  Load Initvalues\n\r");
+		//Error --> load init Parameters
+		init_parameters();
 	}
 
 }

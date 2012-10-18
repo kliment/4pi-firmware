@@ -199,7 +199,7 @@ const CDCDSerialDriverConfigurationDescriptors configurationDescriptors = {
         CDCGenericDescriptor_INTERFACE,
         CDCGenericDescriptor_CALLMANAGEMENT,
         CDCCallManagementDescriptor_SELFCALLMANAGEMENT,
-        0 // No associated data interface
+        1 // Interface #1
     },
     // Class-specific abstract control management functional descriptor
     {
