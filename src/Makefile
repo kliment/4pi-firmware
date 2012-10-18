@@ -86,6 +86,7 @@ INCLUDES += -I$(AT91LIB)/boards/$(BOARD)
 INCLUDES += -I$(AT91LIB)/peripherals
 INCLUDES += -I$(AT91LIB)/components
 INCLUDES += -I$(AT91LIB)/usb/device
+INCLUDES += -I$(AT91LIB)/memories
 INCLUDES += -I$(AT91LIB)
 INCLUDES += -I$(EXT_LIBS)
 
@@ -110,6 +111,7 @@ USB = $(AT91LIB)/usb
 UTILITY = $(AT91LIB)/utility
 PERIPH = $(AT91LIB)/peripherals
 BOARDS = $(AT91LIB)/boards
+MEMORY = $(AT91LIB)/memories
 
 VPATH += $(USB)/device/cdc-serial
 VPATH += $(USB)/device/core
@@ -130,6 +132,10 @@ VPATH += $(BOARDS)/$(BOARD)
 VPATH += $(BOARDS)/$(BOARD)/$(CHIP)
 VPATH += $(EXT_LIBS)/cmsis
 VPATH += $(PERIPH)/systick
+VPATH += $(PERIPH)/eefc
+VPATH += $(MEMORY)/flash
+
+
 
 # Objects built from C source files
 C_OBJECTS += main.o
@@ -182,6 +188,8 @@ C_OBJECTS += arc_func.o
 C_OBJECTS += planner.o
 C_OBJECTS += stepper_control.o
 C_OBJECTS += parameters.o
+C_OBJECTS += eefc.o
+C_OBJECTS += flashd_eefc.o
 
 
 

@@ -109,6 +109,10 @@ int main()
 	printf("INIT Parameters\n\r");
 	init_parameters();
 	
+	//-------- Load parameters from Flash --------------
+	printf("Load parameters from Flash\n\r");
+	FLASH_LoadSettings();
+	
     //-------- Init UART --------------
 	printf("USB Seriel INIT\n\r");
 	samserial_init();

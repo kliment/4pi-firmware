@@ -235,7 +235,7 @@ void manage_inactivity(char debug)
 //-----------------------------------------------------
 void homing_routine(unsigned char axis)
 {
-  signed short min_pin, max_pin, home_dir, max_length=0, home_bounce=0;
+  signed short min_pin=0, max_pin=0, home_dir=0, max_length=0, home_bounce=0;
 
 	switch(axis)
 	{

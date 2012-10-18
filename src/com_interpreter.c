@@ -720,6 +720,16 @@ void process_commands()
 		  }
 	  }
 	  break;
+
+	  case 500: // M500 - stores paramters in EEPROM
+		FLASH_StoreSettings();
+	  break;
+	  case 501: // M501 - reads parameters from EEPROM (if you need to reset them after you changed them temporarily).
+		FLASH_LoadSettings();
+	  break;
+	  case 502:	// M502 - reverts to the default "factory settings". You still need to store them in EEPROM afterwards if you want to.
+		init_parameters();
+	  break;
 	  case 503:	//M503 show settings
 		FLASH_PrintSettings();
 		break;
