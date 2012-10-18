@@ -37,7 +37,7 @@
 //// Calibration variables
 //-----------------------------------------------------------------------
 // X, Y, Z, E steps per unit
-#define _AXIS_STEP_PER_UNIT {80, 80, 3200/1.25,700}
+#define _AXIS_STEP_PER_UNIT {80, 80, 3200/0.8,700}
 
 #define _AXIS_CURRENT {128, 128, 128, 128, 128}
 #define _AXIS_USTEP {3, 3, 3, 3, 3}
@@ -120,7 +120,7 @@
 #define _MAX_XY_JERK 20.0
 #define _MAX_Z_JERK 0.4
 #define _MAX_E_JERK 5.0
-#define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {1000,1000,50,5000}    // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
+#define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,50,5000}    // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
 
 //For the retract (negative Extruder) move this maxiumum Limit of Feedrate is used
 //The next positive Extruder move use also this Limit, 
