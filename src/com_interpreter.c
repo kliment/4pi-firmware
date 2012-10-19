@@ -448,9 +448,9 @@ void process_commands()
         break;
       case 105: // M105
 		  	if(tmp_extruder < MAX_EXTRUDER)
-				usb_printf("ok T:%u @%u B:%u",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
+				usb_printf("ok T:%u @%u B:%u ",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
 			else
-				usb_printf("ok T:%u @%u B:%u",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
+				usb_printf("ok T:%u @%u B:%u ",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
         //return;
         break;
       case 109: // M109 - Wait for extruder heater to reach target.
@@ -636,6 +636,12 @@ void process_commands()
           if(code_seen(axis_codes[cnt_c])) add_homing[cnt_c] = code_value();
         }
       break;  	
+      case 207: //M207 Homing Feedrate mm/min Xnnn Ynnn Znnn
+        for(cnt_c=0; cnt_c < 3; cnt_c++) 
+        {
+          if(code_seen(axis_codes[cnt_c])) pa.homing_feedrate[cnt_c] = code_value();
+        }
+      break;
 	  case 220: // M220 S<factor in percent>- set speed factor override percentage
       {
         if(code_seen('S')) 
@@ -737,14 +743,81 @@ void process_commands()
 		FLASH_PrintSettings();
 		break;
 		
-	  case 510:
+	  case 510: // M510 Axis invert
 				
-		if(code_seen(axis_codes[0])) pa.invert_x_dir = code_value();
-		if(code_seen(axis_codes[1])) pa.invert_y_dir = code_value();
-		if(code_seen(axis_codes[2])) pa.invert_z_dir = code_value();
-		if(code_seen(axis_codes[3])) pa.invert_e_dir = code_value();
+		if(code_seen(axis_codes[0])) pa.invert_x_dir = (code_value()==0?0:1);
+		if(code_seen(axis_codes[1])) pa.invert_y_dir = (code_value()==0?0:1);
+		if(code_seen(axis_codes[2])) pa.invert_z_dir = (code_value()==0?0:1);		  if(code_seen(axis_codes[3])) pa.invert_e_dir = (code_value()==0?0:1);
 		break;
 		
+	  case 520: // M520 Maximum Area unit
+				
+		if(code_seen(axis_codes[0])) pa.x_max_length = code_value();
+		if(code_seen(axis_codes[1])) pa.y_max_length = code_value();
+		if(code_seen(axis_codes[2])) pa.z_max_length = code_value();
+		break;
+		
+	  case 521: // M521 Disable axis when unused
+	  				
+		if(code_seen(axis_codes[0])) pa.disable_x_en = (code_value()==0?0:1);
+		if(code_seen(axis_codes[1])) pa.disable_y_en = (code_value()==0?0:1);
+		if(code_seen(axis_codes[2])) pa.disable_z_en = (code_value()==0?0:1);
+		if(code_seen(axis_codes[3])) pa.disable_e_en = (code_value()==0?0:1);
+		break;
+		
+	  case 522: // M522 Software Endstop
+	  				
+  	if(code_seen('I')) pa.min_software_endstops = (code_value()==0?0:1);
+  	if(code_seen('A')) pa.max_software_endstops = (code_value()==0?0:1);
+		break;
+		
+	  case 523: // M523 MIN Endstop
+	  				
+  	if(code_seen('X')) pa.x_min_endstop_aktiv = (code_value()==1?1:-1);
+  	if(code_seen('Y')) pa.y_min_endstop_aktiv = (code_value()==1?1:-1);
+  	if(code_seen('Z')) pa.z_min_endstop_aktiv = (code_value()==1?1:-1);
+		break;
+		
+	  case 524: // M524 MAX Endstop
+	  				
+  	if(code_seen('X')) pa.x_max_endstop_aktiv = (code_value()==1?1:-1);
+  	if(code_seen('Y')) pa.y_max_endstop_aktiv = (code_value()==1?1:-1);
+  	if(code_seen('Z')) pa.z_max_endstop_aktiv = (code_value()==1?1:-1);
+		break;
+		
+	  case 525: // M525 Homing Direction
+	  				
+  	if(code_seen('X')) pa.x_home_dir = (code_value()==1?1:-1);
+  	if(code_seen('Y')) pa.y_home_dir = (code_value()==1?1:-1);
+  	if(code_seen('Z')) pa.z_home_dir = (code_value()==1?1:-1);
+		break;
+		
+	  case 526: // M526 Endstop Invert
+	  				
+  	if(code_seen('X')) pa.x_endstop_invert = (code_value()==0?0:1);
+  	if(code_seen('Y')) pa.y_endstop_invert = (code_value()==0?0:1);
+  	if(code_seen('Z')) pa.z_endstop_invert = (code_value()==0?0:1);
+		break;
+		
+    case 530: // M530 Heater Sensor
+    {
+    if(tmp_extruder < MAX_EXTRUDER)
+		  {
+			  if(code_seen('E')) heaters[tmp_extruder].thermistor_type = pa.heater_thermistor_type[tmp_extruder] = code_value();
+		  }
+  	if(code_seen('B')) bed_heater.thermistor_type = pa.bed_thermistor_type = code_value();
+    }
+    break;
+    
+    case 531: // M531 Heater PWM
+    {
+    if(tmp_extruder < MAX_EXTRUDER)
+		  {
+			  if(code_seen('E')) heaters[tmp_extruder].pwm = pa.heater_pwm_en[tmp_extruder] = (code_value()==0?0:1);
+		  }
+    }
+    break;
+    
       case 906: // set motor current value in mA using axis codes
                 // M906 X[mA] Y[mA] Z[mA] E[mA] B[mA] 
                 // M906 S[mA] set all motors current 
