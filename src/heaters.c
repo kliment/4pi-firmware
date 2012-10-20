@@ -762,7 +762,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
         }
       } 
       
-    constrain(PIDAT_PWM_val, 0, hotend->max_pwm);
+    PIDAT_PWM_val = constrain(PIDAT_PWM_val, 0, hotend->max_pwm);
     hotend->pwm = (unsigned char)PIDAT_PWM_val;
     }
 
