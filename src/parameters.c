@@ -171,7 +171,7 @@ void FLASH_StoreSettings(void)
 		if(error)
 		{
 			printf("Unlock error\n\r");
-			usb_printf("Flash Error\n\r");
+			usb_printf("Flash Error\r\n");
 			return;
 		}
 		else
@@ -203,7 +203,7 @@ void FLASH_StoreSettings(void)
 	{
 		//Verify Error 
 		printf("Flash Error\n\r");
-		usb_printf("Flash Error\n\r");
+		usb_printf("Flash Error\r\n");
 	}
 	else
 	{
@@ -217,7 +217,7 @@ void FLASH_StoreSettings(void)
 		else
 		{
 			printf("Flash write OK\n\r");
-			usb_printf("Flash write OK\n\r");
+			usb_printf("Flash write OK\r\n");
 		}
 	}
 	
@@ -310,7 +310,7 @@ void FLASH_LoadSettings(void)
 	if(pa.chk_sum != help_crc)
 	{
 		printf("CRC NOT OK\n\r");
-		usb_printf("Flash Error CRC  Load Initvalues\n\r");
+		usb_printf("Flash Error CRC  Load Initvalues\r\n");
 		//Error --> load init Parameters
 		init_parameters();
 		return;
@@ -321,12 +321,12 @@ void FLASH_LoadSettings(void)
 	if(strncmp(ver,pa.version,3)==0)
 	{
 		printf("VER OK\n\r");
-		usb_printf("Load Paramaters from Flash OK\n\r");
+		usb_printf("Load Paramaters from Flash OK\r\n");
 	}
 	else
 	{
 		printf("VER NOT OK\n\r");
-		usb_printf("Flash Error Version  Load Initvalues\n\r");
+		usb_printf("Flash Error Version  Load Initvalues\r\n");
 		//Error --> load init Parameters
 		init_parameters();
 	}
