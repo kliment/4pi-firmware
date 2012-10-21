@@ -165,7 +165,7 @@ int main()
 	plan_init();
 	
 	//-------- Check for SD card presence -------
-	sdcard_handle_state();
+//	sdcard_handle_state();
 	
 	//motor_enaxis(0,1);
     //motor_enaxis(1,1);
