@@ -16,6 +16,8 @@
 #include "com_interpreter.h"
 #include "stepper_control.h"
 #include "planner.h"
+
+#include "sdcard.h"
 //#include "heaters.h"
 
 
@@ -92,6 +94,14 @@ void SysTick_Handler(void)
 	    
 }
 
+void do_periodic()
+{
+	if (timestamp % 2000 == 0)
+	{
+		sdcard_handle_state();
+	}
+	
+}
 
 
 int main()
@@ -154,6 +164,8 @@ int main()
 	printf("Plan Init\n\r");
 	plan_init();
 	
+	//-------- Check for SD card presence -------
+	sdcard_handle_state();
 	
 	//motor_enaxis(0,1);
     //motor_enaxis(1,1);
@@ -161,6 +173,8 @@ int main()
 	{
   		//uncomment to use//sprinter_mainloop();
     	//main loop events go here
+
+		do_periodic();
     	
     	if(buflen > 0)
 		{
