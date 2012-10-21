@@ -85,8 +85,8 @@ SECTIONS
         _ezero = .;
     } >sram0
 
-    /* Stack in the end of SRAM0 */
-    _estack = 0x20007FFC;
+    /* Stack in the end of SRAM0, double-word aligned */
+    _estack = 0x20007FF8;
 }
 end = .;
 PROVIDE(__HEAP_START = end );
