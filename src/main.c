@@ -54,6 +54,7 @@ extern void samserial_setcallback(void (*c)(unsigned char));
 //--------------------------
 /// Global timestamp in milliseconds since start of application.
 volatile unsigned long timestamp = 1;
+
   
 //----------------------------------------------------------
 //SYSTICK --> INTERRUPT call every 1ms 
@@ -93,10 +94,13 @@ void SysTick_Handler(void)
     }
 	    
 }
-
+unsigned long oldtimestamp=1;
 void do_periodic()
 {
-	if (timestamp % 2000 == 0)
+	if (timestamp==oldtimestamp)
+		return;
+	oldtimestamp=timestamp;
+	if (timestamp % 500 == 0)
 	{
 		sdcard_handle_state();
 	}
