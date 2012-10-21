@@ -27,6 +27,8 @@
  * ----------------------------------------------------------------------------
  */
 
+
+
 //------------------------------------------------------------------------------
 /// \unit
 ///
@@ -48,7 +50,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-
 //------------------------------------------------------------------------------
 //         Local Definitions
 //------------------------------------------------------------------------------
@@ -78,6 +79,8 @@ signed int PutChar(char *pStr, char c)
     *pStr = c;
     return 1;
 }
+
+
 
 //------------------------------------------------------------------------------
 // Writes a string inside the given string.
@@ -219,6 +222,36 @@ signed int PutSignedInt(
 }
 
 //------------------------------------------------------------------------------
+// Writes a float inside the given string, using the provided fill & width
+// parameters.
+// Returns the size of the written integer.
+// \param pStr  Storage string.
+// \param fill  Fill character.
+// \param width  Minimum width.
+// \param value  Float value.
+//------------------------------------------------------------------------------
+signed int PutFloat(
+    char *pStr,
+    char fill,
+    signed int width,
+    double value)
+{
+    int num=0;
+    int c;
+    int whole ;
+    int fraction ;
+    whole = abs((int)value);
+    fraction = abs((int)((fabs(value)-fabs(whole)) * 1000 + 0.5f));
+    if (value<0.0f)
+        num+=PutChar(pStr+num, '-');
+    num+=PutUnsignedInt(pStr+num,fill,1,(int)(whole));
+    num+=PutChar(pStr+num, '.');
+    num+=PutUnsignedInt(pStr+num,fill,1,(int)(fraction));
+    return num;
+}
+
+
+//------------------------------------------------------------------------------
 // Writes an hexadecimal value into a string, using the given fill, width &
 // capital parameters.
 // Returns the number of char written.
@@ -344,12 +377,14 @@ signed int vsnprintf(char *pStr, size_t length, const char *pFormat, va_list ap)
 
                 width = length - size;
             }
-        
+            //signed int PutFloat(char *pStr,char fill,signed int width,double value);
+
             // Parse type
             switch (*pFormat) {
             case 'd': 
             case 'i': num = PutSignedInt(pStr, fill, width, va_arg(ap, signed int)); break;
             case 'u': num = PutUnsignedInt(pStr, fill, width, va_arg(ap, unsigned int)); break;
+            case 'f': num = PutFloat(pStr, fill, width, va_arg(ap, double)); break;
             case 'x': num = PutHexa(pStr, fill, width, 0, va_arg(ap, unsigned int)); break;
             case 'X': num = PutHexa(pStr, fill, width, 1, va_arg(ap, unsigned int)); break;
             case 's': num = PutString(pStr, va_arg(ap, char *)); break;
@@ -509,4 +544,25 @@ signed int puts(const char *pStr)
 {
     return fputs(pStr, stdout);
 }
+
+char* ftostr( char* buffer, double value)
+{
+    int whole ;
+    int fraction ;
+    char sign[2] = "" ;
+
+    if( value < 0 )
+    {
+        value = -value ;
+        sign[0] = '-' ;
+        sign[1] = '\0' ;
+    }
+
+    whole = (int)value ;
+    fraction = (int)((value - whole) * 1000 + 0.5f) ;
+    sprintf( buffer, "%s%d.%d", sign, whole, fraction) ;
+
+    return buffer ;
+}
+
 
