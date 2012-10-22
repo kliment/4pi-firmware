@@ -210,6 +210,7 @@ C_OBJECTS += MEDSdcard.o
 C_OBJECTS += sdmmc_mci.o
 
 #fatfs
+C_OBJECTS += diskio.o
 C_OBJECTS += ff.o
 C_OBJECTS += unicode.o
 

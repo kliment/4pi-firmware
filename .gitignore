@@ -4,3 +4,4 @@
 src/bin
 src/obj
 src/.settings
+src/flash.sh

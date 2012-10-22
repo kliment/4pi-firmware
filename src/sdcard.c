@@ -60,6 +60,7 @@ void sdcard_handle_state()
 		if (has_card)
 		{
 			printf("sdcard: card inserted\n\r");
+			sdcard_mount();
 		}
 		else
 		{
