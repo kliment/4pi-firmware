@@ -59,11 +59,11 @@ void sdcard_handle_state()
 	{
 		if (has_card)
 		{
-			printf("sdcard: card inserted\n");
+			printf("sdcard: card inserted\n\r");
 		}
 		else
 		{
-			printf("sdcard: card removed\n");
+			printf("sdcard: card removed\n\r");
 			sdcard_unmount();
 			is_mounted = 0;
 		}
