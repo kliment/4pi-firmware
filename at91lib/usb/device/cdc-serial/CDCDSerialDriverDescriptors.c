@@ -61,9 +61,9 @@
 /// - CDCDSerialDriverDescriptors_RELEASE
 
 /// Device product ID.
-#define CDCDSerialDriverDescriptors_PRODUCTID       0x6119
+#define CDCDSerialDriverDescriptors_PRODUCTID       0x6019
 /// Device vendor ID (Atmel).
-#define CDCDSerialDriverDescriptors_VENDORID        0x03EB
+#define CDCDSerialDriverDescriptors_VENDORID        0x1d50
 /// Device release number.
 #define CDCDSerialDriverDescriptors_RELEASE         0x0100
 //------------------------------------------------------------------------------
@@ -319,7 +319,7 @@ const CDCDSerialDriverConfigurationDescriptors otherSpeedDescriptorsFS = {
         CDCGenericDescriptor_INTERFACE,
         CDCGenericDescriptor_CALLMANAGEMENT,
         CDCCallManagementDescriptor_SELFCALLMANAGEMENT,
-        0 // No associated data interface
+        1 //interface #1
     },
     // Class-specific abstract control management functional descriptor
     {
@@ -431,7 +431,7 @@ const CDCDSerialDriverConfigurationDescriptors configurationDescriptorsHS = {
         CDCGenericDescriptor_INTERFACE,
         CDCGenericDescriptor_CALLMANAGEMENT,
         CDCCallManagementDescriptor_SELFCALLMANAGEMENT,
-        0 // No associated data interface
+        1 //interface #1
     },
     // Class-specific abstract control management functional descriptor
     {
@@ -542,7 +542,7 @@ const CDCDSerialDriverConfigurationDescriptors otherSpeedDescriptorsHS = {
         CDCGenericDescriptor_INTERFACE,
         CDCGenericDescriptor_CALLMANAGEMENT,
         CDCCallManagementDescriptor_SELFCALLMANAGEMENT,
-        0 // No associated data interface
+        1 //interface #1
     },
     // Class-specific abstract control management functional descriptor
     {
@@ -610,21 +610,11 @@ const CDCDSerialDriverConfigurationDescriptors otherSpeedDescriptorsHS = {
 /// Product string descriptor
 const unsigned char productStringDescriptor[] = {
 
-    USBStringDescriptor_LENGTH(13),
+    USBStringDescriptor_LENGTH(3),
     USBGenericDescriptor_STRING,
-    USBStringDescriptor_UNICODE('A'),
-    USBStringDescriptor_UNICODE('T'),
-    USBStringDescriptor_UNICODE('9'),
-    USBStringDescriptor_UNICODE('1'),
-    USBStringDescriptor_UNICODE('U'),
-    USBStringDescriptor_UNICODE('S'),
-    USBStringDescriptor_UNICODE('B'),
-    USBStringDescriptor_UNICODE('S'),
-    USBStringDescriptor_UNICODE('e'),
-    USBStringDescriptor_UNICODE('r'),
-    USBStringDescriptor_UNICODE('i'),
-    USBStringDescriptor_UNICODE('a'),
-    USBStringDescriptor_UNICODE('l')
+    USBStringDescriptor_UNICODE('4'),
+    USBStringDescriptor_UNICODE('p'),
+    USBStringDescriptor_UNICODE('i')
 };
 
 /// List of string descriptors used by the device
