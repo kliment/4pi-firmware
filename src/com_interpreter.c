@@ -732,7 +732,9 @@ void process_commands()
 
       case 44: //M44 - boots from ROM on next reset - needs password "IKnowWhatIAmDoing"
         if (code_seen_str("IKnowWhatIAmDoing"))
-                FLASH_BootFromROM();
+            FLASH_BootFromROM();
+        else
+            FLASH_BootFromFLASH();
       break;
 	  case 500: // M500 - stores paramters in EEPROM
 		FLASH_StoreSettings();
