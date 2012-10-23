@@ -479,6 +479,29 @@ static int gcode_process_command()
 						bed_heater.target_temp = get_uint('S');
 
 					break;
+				case 190: // M190 - Wait for bed heater to reach target temperature.
+				{
+					if (has_code('S'))
+						bed_heater.target_temp = get_float('S');
+
+					uint32_t codenum = timestamp; 
+					while(bed_heater.akt_temp < bed_heater.target_temp) 
+					{
+						if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
+						{
+							if(active_extruder < MAX_EXTRUDER)
+							{
+								sendReply("T:%u B:%u",heaters[active_extruder].akt_temp,bed_heater.akt_temp);
+							}
+							else
+							{
+								sendReply("T:%u B:%u",heaters[0].akt_temp,bed_heater.akt_temp);
+							}
+							codenum = timestamp; 
+						}
+					}
+					break;
+				}
 				case 201: // M201	 Set maximum acceleration in units/s^2 for print moves (M201 X1000 Y1000)
 				{
 					int cnt_c;
