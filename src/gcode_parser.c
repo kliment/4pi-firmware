@@ -139,6 +139,23 @@ static uint8_t get_command()
 	return parserState.parsePos[0];
 }
 
+static char* trim_line(const char* line)
+{
+	int i;
+	char command_chars[] = {'G','M','T'};
+	
+	while(*line)
+	{
+		for (i=0;i<sizeof(command_chars);i++)
+		{
+			if (*line == command_chars[i])
+				return line;
+		}
+		line++;
+	}
+	return line;
+}
+
 static uint8_t calculate_checksum(const char* pLine)
 {
 	uint8_t checksum = 0;
@@ -167,7 +184,7 @@ static int gcode_process_command()
 			{
 				
 				default:
-					sendReply("Unknown G-Command: %d\n\r",get_int('G'));
+					sendReply("Unknown G%d\n\r",get_int('G'));
 					return NO_REPLY;
 			}
 			break;
@@ -177,7 +194,7 @@ static int gcode_process_command()
 			switch(get_int('M'))
 			{
 				case 44:
-					if (strcmp(get_str(' '),"IKNOWWHATIAMDOING") == 0)
+					if (strcmp(get_str(' '),"IKnowWhatIAmDoing") == 0)
 					{
 						FLASH_BootFromROM();
 						sendReply("bootloader enabled\n\r")
@@ -193,6 +210,9 @@ static int gcode_process_command()
 //					else
 						sendReply("ok T:%u @%u B:%u ",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
 					return NO_REPLY;
+				case 110:
+					parserState.last_N = get_int('N');
+					break;
 				case 115: // M115
 					usb_printf("ok FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n",MAX_EXTRUDER);
 					return NO_REPLY;
@@ -209,10 +229,8 @@ static int gcode_process_command()
 					FLASH_PrintSettings();
 					break;
 				default:
-					sendReply("Unknown M-Command: %d\n\r",get_int('M'));
+					sendReply("Unknown M%d\n\r",get_int('M'));
 					return NO_REPLY;
-
-
 			}
 			break;
 		}
@@ -235,7 +253,7 @@ static void gcode_line_received()
 			
 			if (parserState.line_N != parserState.last_N+1)
 			{
-				sendReply("Resend:%u ok\r\n",parserState.last_N+1);
+				sendReply("rs %u line number incorrect\r\n",parserState.last_N+1);
 				return;
 			}
 
@@ -244,19 +262,33 @@ static void gcode_line_received()
 			{
 				if (get_uint('*') != calculate_checksum(parserState.commandBuffer))
 				{
-					sendReply("Resend:%u ok\r\n",parserState.last_N+1);
+					sendReply("rs %u incorrect checksum\r\n",parserState.last_N+1);
 					return;
 				}
+				*ptr = 0;
 			}
-
-			parserState.parsePos = strchr(parserState.commandBuffer,' ')+1;
+			else
+			{
+				sendReply("No checksum with line number\n\r");
+				return;
+			}
+			
 		}
-		
+		else if (strchr(parserState.commandBuffer,'*') != NULL)
+		{
+			sendReply("No line number with checksum\n\r");
+			return;
+		}
+
+		parserState.parsePos = trim_line(parserState.commandBuffer);
+
+		DEBUG("original line: '%s'\n\r",parserState.commandBuffer);
 		DEBUG("gcode line: '%s'\n\r",parserState.parsePos);
 		if (gcode_process_command() == SEND_REPLY)
 		{
 			sendReply("ok\r\n");
 		}
+		parserState.last_N = parserState.line_N;
 	}
 	
 }
@@ -265,7 +297,6 @@ void gcode_init(ReplyFunction replyFunc)
 {
 	ringbuffer_init(&uartBuffer);
 	memset(&parserState,0,sizeof(ParserState));
-	parserState.last_N = -1;
 	parserState.replyFunc = replyFunc;
 	
 	samserial_setcallback(gcode_datareceived);
@@ -275,7 +306,7 @@ void gcode_update()
 {
 	while (ringbuffer_numAvailable(&uartBuffer) > 0)
 	{
-		uint8_t chr = toupper(ringbuffer_get(&uartBuffer));
+		uint8_t chr = ringbuffer_get(&uartBuffer);
 		
 		switch(chr)
 		{
