@@ -78,6 +78,8 @@ void AD5206_setup(){
     
 }
 
+
+
 unsigned char microstep_mode(unsigned char usteps){
 	unsigned char mode;
 
@@ -100,6 +102,14 @@ unsigned char microstep_mode(unsigned char usteps){
 	}
 	return(mode);
 }
+
+//convert microstep mode to usteps
+unsigned char microstep_usteps(unsigned char mode)
+{
+	const unsigned char usteps[] = { 1,2,4,16 };
+	return usteps[mode];
+}
+
 
 	
 void motor_setopts(unsigned char axis, unsigned char ustepbits, unsigned char current){

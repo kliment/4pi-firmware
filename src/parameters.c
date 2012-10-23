@@ -266,7 +266,7 @@ void FLASH_PrintSettings(void)
 	usb_printf("Heater 2 (S)lope, (I)ntercept \r\n  M301 S%d I%d\r\n",pa.heater_slope[0],pa.heater_intercept[0]);
 	
 	usb_printf("Motor Current \r\n  M907 X%d Y%d Z%d E%d B%d \r\n",pa.axis_current[0],pa.axis_current[1],pa.axis_current[2],pa.axis_current[3],pa.axis_current[4]);
-	usb_printf("Motor Microstepping \r\n  M350 X%d Y%d Z%d E%d B%d \r\n",pa.axis_ustep[0],pa.axis_ustep[1],pa.axis_ustep[2],pa.axis_ustep[3],pa.axis_ustep[4]);
+	usb_printf("Motor Microstepping \r\n  M350 X%d Y%d Z%d E%d B%d \r\n",microstep_usteps(pa.axis_ustep[0]),microstep_usteps(pa.axis_ustep[1]),microstep_usteps(pa.axis_ustep[2]),microstep_usteps(pa.axis_ustep[3]),microstep_usteps(pa.axis_ustep[4]));
 	
 }
 
