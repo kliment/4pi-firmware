@@ -78,15 +78,7 @@ void SysTick_Handler(void)
 	//{
 	//  for(i=1;i<9;i++)
     //  	printf("Channel %u : %u mV\n", i,adc_read(i));
-    //}
-
-    
-    if(timestamp%5==0) //every 5 ms
-    {
-		if(buflen < (BUFSIZE-1))
-			get_command();
-    }
-	
+    //	
 	
 	if(timestamp%250==0) //every 100 ms
     {
@@ -180,6 +172,9 @@ int main()
 
 		do_periodic();
     	
+		if(buflen < (BUFSIZE-1))
+			get_command();
+
     	if(buflen > 0)
 		{
 			
