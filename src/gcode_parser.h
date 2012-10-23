@@ -17,11 +17,18 @@
 #ifndef GCODE_PARSER_H_4G4XUC96
 #define GCODE_PARSER_H_4G4XUC96
 
+#include <inttypes.h>
+
 typedef void (*ReplyFunction)(const char* format,...);
 
 void gcode_init(ReplyFunction replyFunc);
 void gcode_update();
 
+int32_t get_int(char chr);
+uint32_t get_uint(char chr);
+float get_float(char chr);
+const char* get_str(char chr);
+int has_code(char chr);
 
 
 #endif /* end of include guard: GCODE_PARSER_H_4G4XUC96 */

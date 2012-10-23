@@ -13,7 +13,6 @@
 #include "parameters.h"
 #include "serial.h"
 #include "samadc.h"
-#include "com_interpreter.h"
 #include "stepper_control.h"
 #include "planner.h"
 #include "gcode_parser.h"
@@ -104,7 +103,6 @@ int main()
 {
 	
     TRACE_CONFIGURE(DBGU_STANDARD, 115200, BOARD_MCK);
-    printf("-- USB Device CDC Serial Project %s --\n\r", SOFTPACK_VERSION);
     printf("-- %s\n\r", BOARD_NAME);
     printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
 
@@ -126,10 +124,6 @@ int main()
 	//-------- Init ADC without Autostart --------------
 	printf("Init ADC\n\r");
     initadc(0);
-	
-	//-------- On USB recived byte call this function --------------
-	printf("Init Callback for USB\n\r");
-    samserial_setcallback(&usb_characterhandler);
 	
 	//-------- Init Motor driver --------------
 	printf("Init Motors\n\r");
