@@ -385,7 +385,9 @@ unsigned short calc_crc16(void)
 	
 }
 
-
+void FLASH_BootFromROM(void){
+    FLASHD_ClearGPNVM(1);
+}
 
 
 
