@@ -24,6 +24,7 @@
 #include "init_configuration.h"
 #include "parameters.h"
 #include "serial.h"
+#include "motoropts.h"
 
 unsigned short calc_crc16(void);
 

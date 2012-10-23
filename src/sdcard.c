@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "sdcard.h"
+#include "serial.h"
 
 #define MAX_LUNS            1
 #define DRV_DISK            0
@@ -75,7 +76,7 @@ unsigned char sdcard_iscapturing()
 int sdcard_getchar(unsigned char* chr)
 {
 	FRESULT res;
-	DWORD read;
+	UINT read;
 
 	if (!replay_mode && !replay_pause)
 		return 0;
