@@ -14,25 +14,23 @@
  
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>. */
- 
- 
- 
- #define MAX_STEP_FREQUENCY 30000
- 
- 
- 
- extern const Pin X_MIN_PIN;
- extern const Pin Y_MIN_PIN;
- extern const Pin Z_MIN_PIN;
- extern const Pin X_MAX_PIN;
- extern const Pin Y_MAX_PIN;
- extern const Pin Z_MAX_PIN;
+#ifndef STEPPER_CONTROL_H_3FACLIDQ
+#define STEPPER_CONTROL_H_3FACLIDQ
+
+#include <pio/pio.h>
+
+#define MAX_STEP_FREQUENCY 30000
+
+extern const Pin X_MIN_PIN;
+extern const Pin Y_MIN_PIN;
+extern const Pin Z_MIN_PIN;
+extern const Pin X_MAX_PIN;
+extern const Pin Y_MAX_PIN;
+extern const Pin Z_MAX_PIN;
+
+void ConfigureTc0_Stepper(void);
+void stepper_setup(void);
+void enable_endstops(unsigned char check);
  
   
- 
- void ConfigureTc0_Stepper(void);
- void stepper_setup(void);
- void enable_endstops(unsigned char check);
- 
- 
- 
+#endif /* end of include guard: STEPPER_CONTROL_H_3FACLIDQ */
