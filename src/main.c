@@ -16,7 +16,7 @@
 #include "com_interpreter.h"
 #include "stepper_control.h"
 #include "planner.h"
-
+#include "gcode_parser.h"
 #include "sdcard.h"
 //#include "heaters.h"
 
@@ -160,6 +160,9 @@ int main()
 	printf("Plan Init\n\r");
 	plan_init();
 	
+	printf("G-Code parser init\n\r");
+	gcode_init(usb_printf);
+	
 	//-------- Check for SD card presence -------
 //	sdcard_handle_state();
 	
@@ -171,7 +174,9 @@ int main()
     	//main loop events go here
 
 		do_periodic();
-    	
+
+		gcode_update();
+/*    	
 		if(buflen < (BUFSIZE-1))
 			get_command();
 
@@ -187,7 +192,7 @@ int main()
 			if(bufindr == BUFSIZE) bufindr = 0;
 			
 		}
-		  
+*/		  
     }
 }
 

@@ -203,6 +203,7 @@ C_OBJECTS += parameters.o
 C_OBJECTS += eefc.o
 C_OBJECTS += flashd_eefc.o
 C_OBJECTS += sdcard.o
+C_OBJECTS += gcode_parser.o
 
 #media
 C_OBJECTS += Media.o
