@@ -102,8 +102,8 @@ typedef struct
 {
 	int comment_mode : 1;
 	int commandLen;
-	long last_N;
-	long line_N;
+	uint32_t last_N;
+	uint32_t line_N;
 	char commandBuffer[BUFFER_SIZE];
 	char* parsePos;
 	ReplyFunction replyFunc;
@@ -220,6 +220,8 @@ static int gcode_process_command()
 					}
 					break;
 				}
+				case 21:
+					break;
 				case 28: //G28 Home all Axis one at a time
 					saved_feedrate = feedrate;
 					saved_feedmultiply = feedmultiply;
@@ -439,7 +441,6 @@ static int gcode_process_command()
 					}
 					break;
 				case 110:
-					parserState.last_N = get_int('N');
 					break;
 				case 114: // M114 Display current position
 					sendReply("X:%f Y:%f Z:%f E:%f",current_position[0],current_position[1],current_position[2],current_position[3]);
@@ -580,13 +581,14 @@ static void gcode_line_received()
 	{
 		if (parserState.commandBuffer[0] == 'N')
 		{
-			parserState.line_N = get_uint('N');
+			int32_t line = get_int('N');
 			
-			if (parserState.line_N != parserState.last_N+1)
+			if (line != parserState.last_N+1 && (!has_code('M') || get_uint('M') != 110))
 			{
 				sendReply("rs %u line number incorrect\r\n",parserState.last_N+1);
 				return;
 			}
+			parserState.line_N = line;
 
 			char* ptr;
 			if ((ptr = strchr(parserState.parsePos,'*')) != NULL)
@@ -603,7 +605,7 @@ static void gcode_line_received()
 				sendReply("No checksum with line number\n\r");
 				return;
 			}
-			
+			parserState.last_N = parserState.line_N;			
 		}
 		else if (strchr(parserState.commandBuffer,'*') != NULL)
 		{
@@ -613,14 +615,12 @@ static void gcode_line_received()
 
 		parserState.parsePos = trim_line(parserState.commandBuffer);
 
-//		DEBUG("original line: '%s'\n\r",parserState.commandBuffer);
 //		DEBUG("gcode line: '%s'\n\r",parserState.parsePos);
 		if (gcode_process_command() == SEND_REPLY)
 		{
 			sendReply("ok\r\n");
 			previous_millis_cmd = timestamp;
 		}
-		parserState.last_N = parserState.line_N;
 	}
 	
 }
@@ -643,6 +643,7 @@ void gcode_update()
 		switch(chr)
 		{
 			case ';':
+			case '(':
 				parserState.comment_mode = true;
 				break;
 			case '\n':
