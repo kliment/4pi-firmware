@@ -102,6 +102,9 @@ void sdcard_replaystart()
 	if (replay_mode)
 		return;
 
+	if (capture_mode)
+		sdcard_capturestop();
+
 	if (!replay_pause)
 	{
 		if (!selectedFile)

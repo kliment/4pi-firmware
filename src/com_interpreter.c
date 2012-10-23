@@ -360,8 +360,8 @@ void get_command()
 			    {
 			    	if(!serial_count) 
 					{ //if empty line
-			          comment_mode = false; // for new command
-			          return;
+			          	comment_mode = false; // for new command
+						continue;
 			        }
 				
 					cmdbuffer[bufindw][serial_count] = 0; //terminate string
