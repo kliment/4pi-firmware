@@ -79,6 +79,20 @@ void AD5206_setup(){
 }
 
 
+//convert digipot count to mV
+unsigned char current_mv(unsigned char current)
+{
+	unsigned char mv = (current*743)/100;
+	return mv;
+}
+
+//convert mV to digipot count
+unsigned char mv_current(unsigned char mv)
+{
+	unsigned char current = (mv*100)/743;
+	return mv;
+}
+
 
 unsigned char microstep_mode(unsigned char usteps){
 	unsigned char mode;

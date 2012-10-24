@@ -512,12 +512,35 @@ void process_commands()
 			}
 		}
 		break;
-      case 106: //M106 Fan On
-
+      case 106: //M106 Fan 1 On
+          if (code_seen('S'))
+          {
+            g_pwm_value[2] = constrain(code_value(),0,255);          
+          }
+          else 
+          {
+            g_pwm_value[2] = 255;
+          }
+          g_pwm_aktiv[2] = 1;
         break;
-		
-      case 107: //M107 Fan Off
-
+      case 107: //M107 Fan 1 Off
+          g_pwm_value[2] = 0;
+          g_pwm_aktiv[2] = 0;
+        break;
+      case 176: //M176 Fan 2 On
+          if (code_seen('S'))
+          {
+            g_pwm_value[3] = constrain(code_value(),0,255);          
+          }
+          else 
+          {
+            g_pwm_value[3] = 255;
+          }
+          g_pwm_aktiv[3] = 1;
+        break;
+      case 177: //M177 Fan 2 Off
+          g_pwm_value[3] = 0;
+          g_pwm_aktiv[3] = 0;
         break;
       case 82:
         axis_relative_modes[3] = 0;
@@ -829,14 +852,14 @@ void process_commands()
 			if(code_seen(axis_codes[cnt_c])) 
 			{
 			  current = constrain(code_value(),0,1900);
-			  pa.axis_current[cnt_c] = (current*100)/743;
+			  pa.axis_current[cnt_c] = mv_current(current);
 			  motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
 			}
 		  }
 		  if(code_seen('B'))
 		  {
 			current = constrain(code_value(),0,1900);
-		    pa.axis_current[4] = (current*100)/743;
+		    pa.axis_current[4] = mv_current(current);
 			motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
 		  }
 		  if(code_seen('S'))
@@ -844,7 +867,7 @@ void process_commands()
 		    for(cnt_c=0; cnt_c<5; cnt_c++)
 			{
 			  current = constrain(code_value(),0,1900);
-			  pa.axis_current[cnt_c] = (current*100)/743;
+			  pa.axis_current[cnt_c] = mv_current(current);
 			  motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
 		    }
 		  }
