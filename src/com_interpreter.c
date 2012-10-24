@@ -570,9 +570,10 @@ void process_commands()
         break;
       case 105: // M105
 		  	if(tmp_extruder < MAX_EXTRUDER)
-				usb_printf("ok T:%u @%u B:%u ",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
+				usb_printf("ok T:%u @%u B:%u \r\n",heaters[tmp_extruder].akt_temp,heaters[tmp_extruder].pwm,bed_heater.akt_temp);
 			else
-				usb_printf("ok T:%u @%u B:%u ",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
+				usb_printf("ok T:%u @%u B:%u \r\n",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
+      // added \r\n so usb_printf will send it out
         //return;
 			send_clear = 0;
         break;
