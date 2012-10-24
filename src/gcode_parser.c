@@ -196,6 +196,7 @@ static int gcode_process_command()
 				case 1:
 					get_coordinates();
 					prepare_move();
+					break;
 				case 2:
 					get_arc_coordinates();
 					prepare_arc_move(1);
