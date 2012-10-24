@@ -112,7 +112,7 @@
 #include "planner.h"
 #include "stepper_control.h"
 #include "motoropts.h"
-
+#include "sdcard.h"
 
 extern void motor_enaxis(unsigned char axis, unsigned char en);
 
@@ -151,6 +151,43 @@ unsigned char tmp_extruder = 0;
 
 extern volatile unsigned long timestamp;
 
+
+int sd_should_capture()
+{
+	if(!sdcard_iscapturing())
+		return 0;
+	
+	if (strstr(cmdbuffer[bufindw], "M"))
+	{
+		strchr_pointer = strchr(cmdbuffer[bufindw], 'M');
+        switch((int)((strtod(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL))))
+		{
+			case 20:
+			case 21:
+			case 22:
+			case 23:
+			case 24:
+			case 25:
+			case 26:
+			case 27:
+			case 28:
+			case 29:
+			case 105: //get temp
+			case 115:
+			case 117:
+			case 118:
+			case 119:
+			case 500:
+			case 501:
+			case 503:
+				return 0;
+			default:
+				break;
+		}
+	}
+	return 1;
+}
+
 //-----------------------------------------------------
 /// Function is called from the USB routine when bytes 
 /// over the USB received
@@ -184,7 +221,8 @@ unsigned char get_byte_from_UART(unsigned char *zeichen)
 void ClearToSend()
 {
 	previous_millis_cmd = timestamp;
-	usb_printf("ok\r\n");
+	if (fromsd[bufindw] == 0)
+		usb_printf("ok\r\n");
 }
 
 //-----------------------------------------------------
@@ -195,14 +233,14 @@ void FlushSerialRequestResend()
 	uart_rd_pointer = uart_wr_pointer;
 	usb_printf("Resend:%u ok\r\n",gcode_LastN + 1);
 }
-
 //-----------------------------------------------------
 /// Read the command from the FIFO and store to the commad FIFO
 //-----------------------------------------------------
 void get_command() 
 { 
-  while( get_byte_from_UART(&serial_char) != 0 && buflen < BUFSIZE)
+  while( buflen < BUFSIZE && get_byte_from_UART(&serial_char) != 0 ) 
   {
+	
     if(serial_char == '\n' || serial_char == '\r' || (serial_char == ':' && comment_mode == 0) || serial_count >= (MAX_CMD_SIZE - 1) ) 
     {
       if(!serial_count) { //if empty line
@@ -212,6 +250,7 @@ void get_command()
       cmdbuffer[bufindw][serial_count] = 0; //terminate string
 
         fromsd[bufindw] = 0;
+
         if(strstr(cmdbuffer[bufindw], "N") != NULL)
         {
           strchr_pointer = strchr(cmdbuffer[bufindw], 'N');
@@ -261,7 +300,7 @@ void get_command()
           }
         }
         
-				if((strstr(cmdbuffer[bufindw], "G") != NULL))
+		if((strstr(cmdbuffer[bufindw], "G") != NULL))
         {
           strchr_pointer = strchr(cmdbuffer[bufindw], 'G');
           switch((int)((strtod(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL))))
@@ -272,24 +311,30 @@ void get_command()
             case 2:  //G2
             case 3:  //G3 arc func
             #endif
-              #ifdef SDSUPPORT
-              if(savetosd)
-                break;
-              #endif
-              //G0 - G3 dont use ClearToSend() so the ok is send here
-              usb_printf("ok\r\n");
-            break;
-            
+					//G0 - G3 dont use ClearToSend() so the ok is send here
+				if (!sdcard_iscapturing())
+					usb_printf("ok\r\n");
+            	break;
             default:
-            break;
+            	break;
           }
         }
-        //Removed modulo (%) operator, which uses an expensive divide and multiplication
-        //bufindw = (bufindw + 1) % BUFSIZE;
-        bufindw++;
-        if(bufindw == BUFSIZE) bufindw = 0;
-        buflen += 1;
 
+		if (sd_should_capture())
+		{
+			sdcard_writeline(cmdbuffer[bufindw]);
+//			printf("capture: %s\r\n",cmdbuffer[bufindw]);
+			usb_printf("ok\r\n");
+		}
+		else
+		{
+	        //Removed modulo (%) operator, which uses an expensive divide and multiplication
+	        //bufindw = (bufindw + 1) % BUFSIZE;
+	        bufindw++;
+	        if(bufindw == BUFSIZE) bufindw = 0;
+	        buflen += 1;
+		}
+		
       comment_mode = 0; //for new command
       serial_count = 0; //clear buffer
     }
@@ -299,6 +344,49 @@ void get_command()
       if(!comment_mode) cmdbuffer[bufindw][serial_count++] = serial_char;
     }
   }
+ 
+	if (sdcard_isreplaying() && !sdcard_isreplaypaused() && serial_count == 0)
+	{
+		while(buflen < BUFSIZE)
+		{
+			if (sdcard_getchar(&serial_char) == 0)
+			{
+				sdcard_replaystop();
+				break;
+			}
+			else
+			{
+				if(serial_char == '\n' || serial_char == '\r' || (serial_char == ':' && comment_mode == false) || serial_count >= (MAX_CMD_SIZE - 1))
+			    {
+			    	if(!serial_count) 
+					{ //if empty line
+			          	comment_mode = false; // for new command
+						continue;
+			        }
+				
+					cmdbuffer[bufindw][serial_count] = 0; //terminate string
+
+					fromsd[bufindw] = true;
+					buflen += 1;
+					//Removed modulo (%) operator, which uses an expensive divide and multiplication	
+					//bufindw = (bufindw + 1)%BUFSIZE;
+					bufindw++;
+					if(bufindw == BUFSIZE) 
+						bufindw = 0;
+
+					comment_mode = false; //for new command
+				    serial_count = 0; //clear buffer
+				}
+				else
+				{
+					if(serial_char == ';') 
+						comment_mode = true;
+					if(!comment_mode) 
+						cmdbuffer[bufindw][serial_count++] = serial_char;
+				}
+			}	
+		}
+	}
 
 }
 
@@ -322,6 +410,7 @@ unsigned char code_seen(char code)
 //------------------------------------------------
 void process_commands()
 {
+	int send_clear = 1;
   unsigned long codenum; //throw away variable
   char read_endstops[6] = {'X','X','X','X','X','X'};
   //char *starpos = NULL;
@@ -429,7 +518,40 @@ void process_commands()
     
     switch( (int)code_value() ) 
     {
-
+		case 20: //list sd files
+			sdcard_listfiles();
+			send_clear = 0;
+			break;
+		case 21: //init sd card
+			sdcard_mount();
+			break;
+		case 22: //release sd card
+			sdcard_unmount();
+			break;
+		case 23: //select sd file
+			sdcard_selectfile(strchr(cmdbuffer[bufindr],' ')+1);
+			break;
+		case 24: //start/resume sd print
+			sdcard_replaystart();
+			break;
+		case 25: //pause sd print
+			sdcard_replaypause();
+			break;
+		case 26: //set sd position
+			if (code_seen('S'))
+				sdcard_setposition(code_value());
+			break;
+		case 27: //sd print status
+			sdcard_printstatus();
+			send_clear = 0;
+			break;
+		case 28: //begin write to sd file
+			sdcard_selectfile(strchr(cmdbuffer[bufindr],' ')+1);
+			sdcard_capturestart();
+			break;
+		case 29: //stop writing sd file
+			sdcard_capturestop();
+			break;
       case 42: //M42 Change pin status via gcode
         if (code_seen('S'))
         {
@@ -452,6 +574,7 @@ void process_commands()
 			else
 				usb_printf("ok T:%u @%u B:%u ",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
         //return;
+			send_clear = 0;
         break;
       case 109: // M109 - Wait for extruder heater to reach target.
 		if(tmp_extruder < MAX_EXTRUDER)
@@ -753,6 +876,12 @@ void process_commands()
 	  }
 	  break;
 
+      case 44: //M44 - boots from ROM on next reset - needs password "IKnowWhatIAmDoing"
+        if (code_seen_str("IKnowWhatIAmDoing"))
+            FLASH_BootFromROM();
+        else
+            FLASH_BootFromFLASH();
+      break;
 	  case 500: // M500 - stores paramters in EEPROM
 		FLASH_StoreSettings();
 	  break;
@@ -927,6 +1056,7 @@ void process_commands()
        usb_printf("Unknown command: %s \r\n",cmdbuffer[bufindr]);
   }
   
-  ClearToSend();
+  if (send_clear)
+  	ClearToSend();
       
 }

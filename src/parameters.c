@@ -26,7 +26,6 @@
 #include "serial.h"
 #include "motoropts.h"
 
-
 unsigned short calc_crc16(void);
 
 parameter_struct pa;
@@ -388,7 +387,12 @@ unsigned short calc_crc16(void)
 	
 }
 
-
+void FLASH_BootFromROM(void){
+    FLASHD_ClearGPNVM(1);
+}
+void FLASH_BootFromFLASH(void){
+    FLASHD_SetGPNVM(1);
+}
 
 
 

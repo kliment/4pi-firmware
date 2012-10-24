@@ -4,7 +4,7 @@
 // BASIC SETTINGS for the first start, settings can change with G-Code commands
 
 #define false 0
-#define true 1
+#define true !false
 
 // NO SENSOR
 // 0 no Sensor is used
