@@ -602,7 +602,8 @@ void process_commands()
 		#endif
 				if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
 				{
-					usb_printf("ok T:%u",heaters[tmp_extruder].akt_temp);
+					usb_printf("ok T:%u \r\n",heaters[tmp_extruder].akt_temp);
+					   // added \r\n so usb_printf will send it out
 					codenum = timestamp;
 				}
 				#ifdef TEMP_RESIDENCY_TIME
@@ -628,9 +629,10 @@ void process_commands()
 			if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
 			{
 				if(tmp_extruder < MAX_EXTRUDER)
-					usb_printf("T:%u B:%u",heaters[tmp_extruder].akt_temp,bed_heater.akt_temp);
+					usb_printf("T:%u B:%u \r\n",heaters[tmp_extruder].akt_temp,bed_heater.akt_temp);
 				else
-					usb_printf("T:%u B:%u",heaters[0].akt_temp,bed_heater.akt_temp);
+					usb_printf("T:%u B:%u \r\n",heaters[0].akt_temp,bed_heater.akt_temp);
+					   // added \r\n so usb_printf will send it out
 				
 				codenum = timestamp; 
 			}
