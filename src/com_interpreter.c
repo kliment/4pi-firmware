@@ -818,7 +818,7 @@ void process_commands()
 			if(code_seen('I')) heaters[tmp_extruder].PID_I  = pa.heater_iTerm[tmp_extruder] = code_value();
 			if(code_seen('D')) heaters[tmp_extruder].PID_Kd = pa.heater_dTerm[tmp_extruder] = code_value();
 			if(code_seen('S')) heaters[tmp_extruder].slope = pa.heater_slope[tmp_extruder] = code_value();
-			if(code_seen('I')) heaters[tmp_extruder].intercept = pa.heater_intercept[tmp_extruder] = code_value();
+			if(code_seen('B')) heaters[tmp_extruder].intercept = pa.heater_intercept[tmp_extruder] = code_value();
 			if(code_seen('W')) heaters[tmp_extruder].max_pwm = pa.heater_max_pwm[tmp_extruder] = code_value();
 			heaters[tmp_extruder].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (int)heaters[tmp_extruder].PID_I;
 			heaters[tmp_extruder].temp_iState_min = heaters[tmp_extruder].temp_iState_max * (-1);
