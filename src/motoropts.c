@@ -90,7 +90,7 @@ unsigned char current_mv(unsigned char current)
 unsigned char mv_current(unsigned char mv)
 {
 	unsigned char current = (mv*100)/743;
-	return mv;
+	return current;
 }
 
 
