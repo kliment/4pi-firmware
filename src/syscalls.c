@@ -106,7 +106,7 @@ int _write(int file, int *ptr, int len)
 	int todo;
 	file = file; /* avoid warning */
 	for (todo = 0; todo < len; todo++) {
-		*ptr++;//xputc(*ptr++);
+		ptr++;//xputc(*ptr++);
 	}
 	return len;
 }
