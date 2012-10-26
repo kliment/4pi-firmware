@@ -15,7 +15,7 @@ DefaultDestDir=12                                               ; Default instal
                                                                 ; AtmelMfg
 
 [AtmelMfg]                                                      ; Models section corresponding to ATMEL
-%USBtoSerialConverter%=USBtoSer.Install,USB\VID_03EB&PID_6119   ; Identifies a device with ATMEL Vendor ID (03EBh) and
+%USBtoSerialConverter%=USBtoSer.Install,USB\VID_1D50&PID_6019   ; Identifies a device with ATMEL Vendor ID (03EBh) and
                                                                 ; Product ID equal to 6119h. Corresponding Install section
                                                                 ; is named USBtoSer.Install
 

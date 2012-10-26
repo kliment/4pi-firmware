@@ -141,6 +141,9 @@ extern signed short target_hotend1;
 extern heater_struct heaters[];
 extern heater_bed_struct bed_heater;
 
+extern volatile unsigned char g_pwm_value[];
+extern volatile unsigned char g_pwm_aktiv[];
+
 void PID_autotune(heater_struct *hotend, float PIDAT_test_temp);
 void Heater_Eval(heater_struct *hotend, unsigned int step);
 
