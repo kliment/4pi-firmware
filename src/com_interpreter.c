@@ -651,7 +651,6 @@ void process_commands()
         break;
       case 107: //M107 Fan 1 Off
           g_pwm_value[2] = 0;
-          g_pwm_aktiv[2] = 0;
         break;
       case 176: //M176 Fan 2 On
           if (code_seen('S'))
@@ -666,7 +665,6 @@ void process_commands()
         break;
       case 177: //M177 Fan 2 Off
           g_pwm_value[3] = 0;
-          g_pwm_aktiv[3] = 0;
         break;
       case 82:
         axis_relative_modes[3] = 0;
