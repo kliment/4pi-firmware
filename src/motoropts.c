@@ -79,18 +79,18 @@ void AD5206_setup(){
 }
 
 
-//convert digipot count to mV
-unsigned char current_mv(unsigned char current)
+//convert digipot count to mA
+unsigned int count_ma(unsigned char count)
 {
-	unsigned char mv = (current*743)/100;
-	return mv;
+	unsigned int ma = count*743/100;
+	return ma;
 }
 
-//convert mV to digipot count
-unsigned char mv_current(unsigned char mv)
+//convert mA to digipot count
+unsigned char ma_count(unsigned int ma)
 {
-	unsigned char current = (mv*100)/743;
-	return current;
+	unsigned int count = ma*100/743;
+	return (unsigned char)count;
 }
 
 
@@ -176,7 +176,7 @@ void motor_setopts(unsigned char axis, unsigned char ustepbits, unsigned char cu
     }
     AD5206_setchan(channel,current);
 
-	printf("Setting channel %u to current value %u and ustep value %u\r\n",channel, current, ustepbits);
+	//printf("Setting channel %u to current value %u and ustep value %u\r\n",channel, current, ustepbits);
 	
 }
 
