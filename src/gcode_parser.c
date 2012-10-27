@@ -242,6 +242,17 @@ static uint8_t get_command()
 	return parserState.parsePos[0];
 }
 
+heater_struct* get_heater(int idx)
+{
+	if (idx < MAX_EXTRUDER)
+		return &heaters[idx];
+		
+	return NULL;
+}
+
+#define GET(code,default_value) has_code(code) ? get_int(code) : default_value
+
+
 static char* trim_line(char* line)
 {
 	int i;
@@ -473,52 +484,41 @@ static int gcode_process_command()
 				case 104: // M104
 					if (has_code('S'))
 					{
-						if(active_extruder < MAX_EXTRUDER)
-							heaters[active_extruder].target_temp = get_uint('S');
+						heater_struct* heater = get_heater(GET('T',active_extruder));
+						if (heater)
+							heater->target_temp = get_uint('S');
 					}
 			        break;
 				case 105: // M105
-					if(active_extruder < MAX_EXTRUDER)
+				{
+					heater_struct* heater = get_heater(GET('T',active_extruder));
+				
+					if (heater)
 					{
-						sendReply("ok T:%u @%u B:%u \r\n",heaters[active_extruder].akt_temp,heaters[active_extruder].pwm,bed_heater.akt_temp);
-					}
-					else
-					{
-						sendReply("ok T:%u @%u B:%u \r\n",heaters[0].akt_temp,heaters[0].pwm,bed_heater.akt_temp);
+						sendReply("ok T:%u @%u B:%u \r\n",heater->akt_temp,heater->pwm,bed_heater.akt_temp);
 					}
 					return NO_REPLY;
+				}
 				case 106: //M106 Fan 1 On
-          if (has_code('S'))
-          {
-            g_pwm_value[2] = constrain(get_uint('S'),0,255);          
-          }
-          else 
-          {
-            g_pwm_value[2] = 255;
-          }
-          g_pwm_aktiv[2] = 1;
-          break;
+					  if (has_code('S'))
+					  {
+						g_pwm_value[2] = constrain(get_uint('S'),0,255);		  
+					  }
+					  else 
+					  {
+						g_pwm_value[2] = 255;
+					  }
+					  g_pwm_aktiv[2] = 1;
+					  break;
 				case 107: //M107 Fan 1 Off
-          g_pwm_value[2] = 0;
-          break;
-				case 176: //M176 Fan 2 On
-          if (has_code('S'))
-          {
-            g_pwm_value[3] = constrain(get_uint('S'),0,255);          
-          }
-          else 
-          {
-            g_pwm_value[3] = 255;
-          }
-          g_pwm_aktiv[3] = 1;
-          break;
-				case 177: //M177 Fan 2 Off
-          g_pwm_value[3] = 0;
-          break;
+					  g_pwm_value[2] = 0;
+					  break;
 				case 109: // M109 - Wait for extruder heater to reach target.
-					if(active_extruder < MAX_EXTRUDER)
+				{
+					heater_struct* heater = get_heater(GET('T',active_extruder));
+				
+					if (heater)
 					{
-						heater_struct* heater = &heaters[active_extruder];
 	
 						if (has_code('S')) 
 							heater->target_temp = get_uint('S');
@@ -559,6 +559,7 @@ static int gcode_process_command()
 						}
 					}
 					break;
+				}
 				case 110:
 					break;
 				case 114: // M114 Display current position
@@ -598,6 +599,20 @@ static int gcode_process_command()
 						bed_heater.target_temp = get_uint('S');
 
 					break;
+				case 176: //M176 Fan 2 On
+					  if (has_code('S'))
+					  {
+						g_pwm_value[3] = constrain(get_uint('S'),0,255);		  
+					  }
+					  else 
+					  {
+						g_pwm_value[3] = 255;
+					  }
+					  g_pwm_aktiv[3] = 1;
+					  break;
+				case 177: //M177 Fan 2 Off
+					  g_pwm_value[3] = 0;
+					  break;
 				case 190: // M190 - Wait for bed heater to reach target temperature.
 				{
 					if (has_code('S'))
@@ -608,13 +623,11 @@ static int gcode_process_command()
 					{
 						if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
 						{
-							if(active_extruder < MAX_EXTRUDER)
+							heater_struct* heater = get_heater(GET('T',active_extruder));
+
+							if (heater)
 							{
-								sendReply("T:%u B:%u\r\n",heaters[active_extruder].akt_temp,bed_heater.akt_temp);
-							}
-							else
-							{
-								sendReply("T:%u B:%u\r\n",heaters[0].akt_temp,bed_heater.akt_temp);
+								sendReply("T:%u B:%u\r\n",heater->akt_temp,bed_heater.akt_temp);
 							}
 							codenum = timestamp; 
 						}
@@ -678,70 +691,80 @@ static int gcode_process_command()
 					GET_AXES(pa.homing_feedrate,float,3);
 					break;
 				}
-        case 220: // M220 S<factor in percent>- set speed factor override percentage
-          {
-            if(has_code('S')) 
-            {
-              feedmultiply = get_uint('S');
-              feedmultiply = constrain(feedmultiply, 20, 200);
-              feedmultiplychanged=1;
-            }
-          }
-          break;
-        case 221: // M221 S<factor in percent>- set extrude factor override percentage
-          {
-            if(has_code('S')) 
-            {
-              extrudemultiply = get_uint('S');
-              extrudemultiply = constrain(extrudemultiply, 40, 200);
-            }
-          }
-          break;
-        case 301: // M301
-          {
-            if(active_extruder < MAX_EXTRUDER)
-            {
-              if(has_code('P')) heaters[active_extruder].PID_Kp = pa.heater_pTerm[active_extruder] = get_uint('P');
-              if(has_code('I')) heaters[active_extruder].PID_I  = pa.heater_iTerm[active_extruder] = get_uint('I');
-              if(has_code('D')) heaters[active_extruder].PID_Kd = pa.heater_dTerm[active_extruder] = get_uint('D');
-              if(has_code('S')) heaters[active_extruder].slope = pa.heater_slope[active_extruder] = get_uint('S');
-              if(has_code('B')) heaters[active_extruder].intercept = pa.heater_intercept[active_extruder] = get_uint('B');
-              if(has_code('W')) heaters[active_extruder].max_pwm = pa.heater_max_pwm[active_extruder] = get_uint('W');
-              heaters[active_extruder].temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (int)heaters[active_extruder].PID_I;
-              heaters[active_extruder].temp_iState_min = heaters[active_extruder].temp_iState_max * (-1);
+		        case 220: // M220 S<factor in percent>- set speed factor override percentage
+		          {
+		            if(has_code('S')) 
+		            {
+		              feedmultiply = get_uint('S');
+		              feedmultiply = constrain(feedmultiply, 20, 200);
+		              feedmultiplychanged=1;
+		            }
+		          }
+		          break;
+		        case 221: // M221 S<factor in percent>- set extrude factor override percentage
+		          {
+		            if(has_code('S')) 
+		            {
+		              extrudemultiply = get_uint('S');
+		              extrudemultiply = constrain(extrudemultiply, 40, 200);
+		            }
+		          }
+		          break;
+		        case 301: // M301
+		        {
+					int extruder = GET('T',active_extruder);
+					heater_struct* heater = get_heater(extruder);
+		
+					if (heater)
+					{
+						if(has_code('P')) heater->PID_Kp = pa.heater_pTerm[extruder] = get_uint('P');
+						if(has_code('I')) heater->PID_I  = pa.heater_iTerm[extruder] = get_uint('I');
+						if(has_code('D')) heater->PID_Kd = pa.heater_dTerm[extruder] = get_uint('D');
+						if(has_code('S')) heater->slope = pa.heater_slope[extruder] = get_uint('S');
+						if(has_code('B')) heater->intercept = pa.heater_intercept[extruder] = get_uint('B');
+						if(has_code('W')) heater->max_pwm = pa.heater_max_pwm[extruder] = get_uint('W');
+
+						heater->temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (int)heater->PID_I;
+						heater->temp_iState_min = heater->temp_iState_max * (-1);
+					}
+		          	break;
+				}
+		        case 303: // M303 PID autotune
+		        {
+					heater_struct* heater = get_heater(GET('T',active_extruder));
+
+					if (heater)
+					{
+
+						float help_temp = 150.0;
+						if (has_code('S')) help_temp=get_float('S');
+						PID_autotune(heater, help_temp);
+					}
+					return NO_REPLY;
 		        }
-          }
-          break;
-        case 303: // M303 PID autotune
-          {
-            if(active_extruder < MAX_EXTRUDER)
+		        case 304: // M304 Evaluate heater performance
 		        {
-              float help_temp = 150.0;
-              if (has_code('S')) help_temp=get_float('S');
-              PID_autotune(&heaters[active_extruder], help_temp);
-            }
-          }
+					heater_struct* heater = get_heater(GET('T',active_extruder));
+
+					if (heater)
+					{
+						unsigned int step = 10;
+						if (has_code('S')) step=get_uint('S');
+						Heater_Eval(heater, step);
+		            }
 					return NO_REPLY;
-        case 304: // M304 Evaluate heater performance
-          {
-            if(active_extruder < MAX_EXTRUDER)
+		        }
+		        case 400: // M400 finish all moves
 		        {
-              unsigned int step = 10;
-              if (has_code('S')) step=get_uint('S');
-              Heater_Eval(&heaters[active_extruder], step);
-            }
-          }
-					return NO_REPLY;
-        case 400: // M400 finish all moves
-          {
-      	   st_synchronize();	
-          }
-        break;
+		      	   	st_synchronize();	
+					break;
+
+		        }
 				case 350: // Set microstepping mode (1=full step, 2=1/2 step, 4=1/4 step, 16=1/16 step).
 	            //Warning: Steps per unit remains unchanged. 
                 // M350 X[value] Y[value] Z[value] E[value] B[value] 
                 // M350 S[value] set all motors
-					{
+				{
 					 int cnt_c;
 					 for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
 					 {
@@ -764,9 +787,8 @@ static int gcode_process_command()
 					     motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
 					   }
 					 }
-					}
 					break;
-
+				}
 				case 500: // M500 - stores paramters in EEPROM
 					FLASH_StoreSettings();
 					break;
@@ -821,23 +843,32 @@ static int gcode_process_command()
 					if(has_code('Z')) pa.z_endstop_invert = (get_uint('Z')==0?0:1);
 					break;
 				case 530: // M530 Heater Sensor
+				{
+					int extruder = GET('T',active_extruder);
+					heater_struct* heater = get_heater(extruder);
+
+					if (heater)
 					{
-					  if(active_extruder < MAX_EXTRUDER)
-					  {
-					    if(has_code('E')) heaters[active_extruder].thermistor_type = pa.heater_thermistor_type[active_extruder] = get_uint('E');
-					  }
-					  if(has_code('B')) bed_heater.thermistor_type = pa.bed_thermistor_type = get_uint('B');
+					  	if(has_code('E')) 
+							heater->thermistor_type = pa.heater_thermistor_type[extruder] = get_uint('E');
 					}
+					if(has_code('B')) 
+						bed_heater.thermistor_type = pa.bed_thermistor_type = get_uint('B');
 					break;
+				}
     
 				case 531: // M531 Heater PWM
+				{
+					int extruder = GET('T',active_extruder);
+					heater_struct* heater = get_heater(extruder);
+
+					if (heater)
 					{
-					  if(active_extruder < MAX_EXTRUDER)
-					  {
-					    if(has_code('E')) heaters[active_extruder].pwm = pa.heater_pwm_en[active_extruder] = (get_uint('E')==0?0:1);
-					  }
+						if(has_code('E')) 
+							heater->pwm = pa.heater_pwm_en[extruder] = (get_uint('E')==0?0:1);
 					}
 					break;
+				}
 				case 906: // set motor current value in mA using axis codes
                 // M906 X[mA] Y[mA] Z[mA] E[mA] B[mA] 
                 // M906 S[mA] set all motors current 
