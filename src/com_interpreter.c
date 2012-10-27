@@ -982,14 +982,14 @@ void process_commands()
 			if(code_seen(axis_codes[cnt_c])) 
 			{
 			  current = constrain(code_value(),0,1900);
-			  pa.axis_current[cnt_c] = mv_current(current);
+			  pa.axis_current[cnt_c] = ma_count(current);
 			  motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
 			}
 		  }
 		  if(code_seen('B'))
 		  {
 			current = constrain(code_value(),0,1900);
-		    pa.axis_current[4] = mv_current(current);
+		    pa.axis_current[4] = ma_count(current);
 			motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
 		  }
 		  if(code_seen('S'))
@@ -997,7 +997,7 @@ void process_commands()
 		    for(cnt_c=0; cnt_c<5; cnt_c++)
 			{
 			  current = constrain(code_value(),0,1900);
-			  pa.axis_current[cnt_c] = mv_current(current);
+			  pa.axis_current[cnt_c] = ma_count(current);
 			  motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
 		    }
 		  }
