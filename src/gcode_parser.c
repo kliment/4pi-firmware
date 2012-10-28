@@ -21,11 +21,11 @@
 /*
 Implemented Codes
 -------------------
- G0  -> G1
- G1  - Coordinated Movement X Y Z E
- G2  - CW ARC
- G3  - CCW ARC
- G4  - Dwell S<seconds> or P<milliseconds>
+ G0	 -> G1
+ G1	 - Coordinated Movement X Y Z E
+ G2	 - CW ARC
+ G3	 - CCW ARC
+ G4	 - Dwell S<seconds> or P<milliseconds>
  G28 - Home all Axis
  G90 - Use Absolute Coordinates
  G91 - Use Relative Coordinates
@@ -58,7 +58,7 @@ Custom M Codes
  M82  - Set E codes absolute (default)
  M83  - Set E codes relative while in Absolute Coordinates (G90) mode
  M84  - Disable steppers until next move, 
-        or use S<seconds> to specify an inactivity timeout, after which the steppers will be disabled.  S0 to disable the timeout.
+		or use S<seconds> to specify an inactivity timeout, after which the steppers will be disabled.	S0 to disable the timeout.
  M85  - Set inactivity shutdown timer with parameter S<seconds>. To disable set zero (default)
  M92  - Set axis_steps_per_unit - same syntax as G92
  M93  - Send axis_steps_per_unit
@@ -72,19 +72,19 @@ Custom M Codes
  M202 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
  M203 - Set temperture monitor to Sx
  M204 - Set default acceleration: S normal moves T filament only moves (M204 S3000 T7000) in mm/sec^2
- M205 - advanced settings:  minimum travel speed S=while printing T=travel only,  X=maximum xy jerk, Z=maximum Z jerk
+ M205 - advanced settings:	minimum travel speed S=while printing T=travel only,  X=maximum xy jerk, Z=maximum Z jerk
  M206 - set additional homing offset
  M207 - set homing feedrate mm/min (M207 X1500 Y1500 Z120)
 
  M220 - set speed factor override percentage S=factor in percent 
  M221 - set extruder multiply factor S100 --> original Extrude Speed 
 
-Note: M301, M303, M304 applies to currently selected extruder.  Use T0 or T1 to select.
+Note: M301, M303, M304 applies to currently selected extruder.	Use T0 or T1 to select.
  M301 - Set Heater parameters P, I, D, S (slope), B (y-intercept), W (maximum pwm)
  M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
  M304 - Calculate slope and y-intercept for HEATER_DUTY_FOR_SETPOINT formula.
-         Caution - this can take 30 minutes to complete and will heat the hotend 
-                   to 200 degrees.
+		 Caution - this can take 30 minutes to complete and will heat the hotend 
+				   to 200 degrees.
 
  M400 - Finish all moves
 
@@ -226,6 +226,11 @@ float get_float(char chr)
 	return ptr ? strtod(ptr+1,NULL) : 0;
 }
 
+uint32_t get_bool(char chr)
+{
+	return get_int(chr) ? 1 : 0;
+}
+
 const char* get_str(char chr)
 {
 	char *ptr = strchr(parserState.parsePos,chr);
@@ -249,8 +254,6 @@ heater_struct* get_heater(int idx)
 		
 	return NULL;
 }
-
-#define GET(code,default_value) has_code(code) ? get_int(code) : default_value
 
 
 static char* trim_line(char* line)
@@ -289,6 +292,8 @@ enum ProcessReply {
 
 #define GET_AXES(var,type,count) { int cnt_c; for(cnt_c = 0;cnt_c < count;cnt_c++) { if (has_code(axis_codes[cnt_c])) var[cnt_c] = get_##type(axis_codes[cnt_c]); } }
 #define GET_ALL_AXES(var,type) GET_AXES(var,type,NUM_AXIS)
+#define GET(code,default_value) has_code(code) ? get_int(code) : default_value
+
 
 //process the actual gcode command
 static int gcode_process_command()
@@ -473,7 +478,7 @@ static int gcode_process_command()
 						{
 							pa.axis_steps_per_unit[cnt_c] = get_float(axis_codes[cnt_c]);
 							axis_steps_per_sqr_second[cnt_c] = pa.max_acceleration_units_per_sq_second[cnt_c] * pa.axis_steps_per_unit[cnt_c];
-				  		}
+						}
 					}
 					break;
 				}
@@ -488,7 +493,7 @@ static int gcode_process_command()
 						if (heater)
 							heater->target_temp = get_uint('S');
 					}
-			        break;
+					break;
 				case 105: // M105
 				{
 					heater_struct* heater = get_heater(GET('T',active_extruder));
@@ -532,7 +537,7 @@ static int gcode_process_command()
 					#ifdef TEMP_RESIDENCY_TIME
 						long residencyStart;
 						residencyStart = -1;
-						/* continue to loop until we have reached the target temp   
+						/* continue to loop until we have reached the target temp	
 						_and_ until TEMP_RESIDENCY_TIME hasn't passed since we reached it */
 						while( (target_direction ? (heater->akt_temp < heater->target_temp) : (heater->akt_temp > heater->target_temp))
 						|| (residencyStart > -1 && (timestamp - residencyStart) < TEMP_RESIDENCY_TIME*1000) )
@@ -549,7 +554,7 @@ static int gcode_process_command()
 							#ifdef TEMP_RESIDENCY_TIME
 							/* start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
 							or when current temp falls outside the hysteresis after target temp was reached */
-							if (   (residencyStart == -1 &&  target_direction && heater->akt_temp >= heater->target_temp)
+							if (   (residencyStart == -1 &&	 target_direction && heater->akt_temp >= heater->target_temp)
 							|| (residencyStart == -1 && !target_direction && heater->akt_temp <= heater->target_temp)
 							|| (residencyStart > -1 && labs(heater->akt_temp) - heater->target_temp > TEMP_HYSTERESIS) )
 							{
@@ -564,7 +569,7 @@ static int gcode_process_command()
 					break;
 				case 114: // M114 Display current position
 					sendReply("X:%f Y:%f Z:%f E:%f",current_position[0],current_position[1],current_position[2],current_position[3]);
-		        	break;			  
+					break;			  
 				case 115: // M115
 					sendReply("ok FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n",MAX_EXTRUDER);
 					return NO_REPLY;
@@ -593,7 +598,7 @@ static int gcode_process_command()
 
 					sendReply("Xmin:%c Ymin:%c Zmin:%c / Xmax:%c Ymax:%c Zmax:%c",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
 					break;
-  				}
+				}
 				case 140: // M140 set bed temp
 					if (has_code('S')) 
 						bed_heater.target_temp = get_uint('S');
@@ -654,25 +659,30 @@ static int gcode_process_command()
 					break;
 				}
 				case 203: // M203 Temperature monitor
-				 	//if(code_seen('S')) manage_monitor = code_value();
-				 	//if(manage_monitor==100) manage_monitor=1; // Set 100 to heated bed
+					//if(code_seen('S')) manage_monitor = code_value();
+					//if(manage_monitor==100) manage_monitor=1; // Set 100 to heated bed
 					break;
 				case 204: // M204 acceleration S normal moves T filmanent only moves
 					if(has_code('S')) 
 						pa.move_acceleration = get_float('S');
+
 					if(has_code('T'))
 						pa.retract_acceleration = get_float('T');
 					break;
-				case 205: //M205 advanced settings:  minimum travel speed S=while printing T=travel only,	 B=minimum segment time X= maximum xy jerk, Z=maximum Z jerk, E= max E jerk
+				case 205: //M205 advanced settings:	 minimum travel speed S=while printing T=travel only,	 B=minimum segment time X= maximum xy jerk, Z=maximum Z jerk, E= max E jerk
 					if(has_code('S')) 
 						pa.minimumfeedrate = get_float('S');
+
 					if(has_code('T')) 
 						pa.mintravelfeedrate = get_float('T');
 					//if(code_seen('B')) minsegmenttime = code_value() ;
+
 					if(has_code('X')) 
 						pa.max_xy_jerk = get_float('X');
+
 					if(has_code('Z'))
 						pa.max_z_jerk = get_float('Z');
+
 					if(has_code('E'))
 						pa.max_e_jerk = get_float('E');
 					break;
@@ -680,7 +690,7 @@ static int gcode_process_command()
 				{
 					if(has_code('D'))
 					{
-				 		sendReply("Addhome X:%g Y:%g Z:%g",add_homing[0],add_homing[1],add_homing[2]);
+						sendReply("Addhome X:%g Y:%g Z:%g",add_homing[0],add_homing[1],add_homing[2]);
 					}
 
 					GET_AXES(add_homing,float,3);
@@ -691,102 +701,119 @@ static int gcode_process_command()
 					GET_AXES(pa.homing_feedrate,float,3);
 					break;
 				}
-		        case 220: // M220 S<factor in percent>- set speed factor override percentage
-		          {
-		            if(has_code('S')) 
-		            {
-		              feedmultiply = get_uint('S');
-		              feedmultiply = constrain(feedmultiply, 20, 200);
-		              feedmultiplychanged=1;
-		            }
-		          }
-		          break;
-		        case 221: // M221 S<factor in percent>- set extrude factor override percentage
-		          {
-		            if(has_code('S')) 
-		            {
-		              extrudemultiply = get_uint('S');
-		              extrudemultiply = constrain(extrudemultiply, 40, 200);
-		            }
-		          }
-		          break;
-		        case 301: // M301
-		        {
+				case 220: // M220 S<factor in percent>- set speed factor override percentage
+				{
+					if(has_code('S')) 
+					{
+						feedmultiply = constrain(get_uint('S'), 20, 200);
+						feedmultiplychanged=1;
+					}
+				  break;
+				}
+				case 221: // M221 S<factor in percent>- set extrude factor override percentage
+				{
+					if(has_code('S')) 
+					{
+						extrudemultiply = constrain(get_uint('S'), 40, 200);
+					}
+					break;
+				}
+				case 301: // M301
+				{
 					int extruder = GET('T',active_extruder);
 					heater_struct* heater = get_heater(extruder);
 		
 					if (heater)
 					{
-						if(has_code('P')) heater->PID_Kp = pa.heater_pTerm[extruder] = get_uint('P');
-						if(has_code('I')) heater->PID_I  = pa.heater_iTerm[extruder] = get_uint('I');
-						if(has_code('D')) heater->PID_Kd = pa.heater_dTerm[extruder] = get_uint('D');
-						if(has_code('S')) heater->slope = pa.heater_slope[extruder] = get_uint('S');
-						if(has_code('B')) heater->intercept = pa.heater_intercept[extruder] = get_uint('B');
-						if(has_code('W')) heater->max_pwm = pa.heater_max_pwm[extruder] = get_uint('W');
+						if(has_code('P'))
+							heater->PID_Kp = pa.heater_pTerm[extruder] = get_uint('P');
+
+						if(has_code('I'))
+							heater->PID_I	 = pa.heater_iTerm[extruder] = get_uint('I');
+
+						if(has_code('D'))
+							heater->PID_Kd = pa.heater_dTerm[extruder] = get_uint('D');
+
+						if(has_code('S'))
+							heater->slope = pa.heater_slope[extruder] = get_uint('S');
+
+						if(has_code('B'))
+							heater->intercept = pa.heater_intercept[extruder] = get_uint('B');
+
+						if(has_code('W'))
+							heater->max_pwm = pa.heater_max_pwm[extruder] = get_uint('W');
 
 						heater->temp_iState_max = (256L * PID_INTEGRAL_DRIVE_MAX) / (int)heater->PID_I;
 						heater->temp_iState_min = heater->temp_iState_max * (-1);
 					}
-		          	break;
+					break;
 				}
-		        case 303: // M303 PID autotune
-		        {
+				case 303: // M303 PID autotune
+				{
 					heater_struct* heater = get_heater(GET('T',active_extruder));
 
 					if (heater)
 					{
 
 						float help_temp = 150.0;
-						if (has_code('S')) help_temp=get_float('S');
+
+						if (has_code('S')) 
+							help_temp=get_float('S');
+
 						PID_autotune(heater, help_temp);
 					}
 					return NO_REPLY;
-		        }
-		        case 304: // M304 Evaluate heater performance
-		        {
+				}
+				case 304: // M304 Evaluate heater performance
+				{
 					heater_struct* heater = get_heater(GET('T',active_extruder));
 
 					if (heater)
 					{
 						unsigned int step = 10;
-						if (has_code('S')) step=get_uint('S');
+
+						if (has_code('S')) 
+							step=get_uint('S');
+
 						Heater_Eval(heater, step);
-		            }
+					}
 					return NO_REPLY;
-		        }
-		        case 400: // M400 finish all moves
-		        {
-		      	   	st_synchronize();	
+				}
+				case 400: // M400 finish all moves
+				{
+					st_synchronize();	
 					break;
 
-		        }
+				}
 				case 350: // Set microstepping mode (1=full step, 2=1/2 step, 4=1/4 step, 16=1/16 step).
-	            //Warning: Steps per unit remains unchanged. 
-                // M350 X[value] Y[value] Z[value] E[value] B[value] 
-                // M350 S[value] set all motors
+				//Warning: Steps per unit remains unchanged. 
+				// M350 X[value] Y[value] Z[value] E[value] B[value] 
+				// M350 S[value] set all motors
 				{
-					 int cnt_c;
-					 for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
-					 {
-					   if(has_code(axis_codes[cnt_c])) 
-					   {
-					     pa.axis_ustep[cnt_c] = microstep_mode(get_uint(axis_codes[cnt_c]));
-					     motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
-					   }
-					 }
-					 if(has_code('B'))
-					 {
-					   pa.axis_ustep[4] = microstep_mode(get_uint('B'));
-					   motor_setopts(4,pa.axis_ustep[4],pa.axis_current[4]);
-					 }
-					 if(has_code('S'))
-					 {
-					   for(cnt_c=0; cnt_c<5; cnt_c++)
-					   {
-					     pa.axis_ustep[cnt_c] = microstep_mode(get_uint('S'));
-					     motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
-					   }
-					 }
+					int cnt_c;
+					for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+					{
+						if(has_code(axis_codes[cnt_c])) 
+						{
+							pa.axis_ustep[cnt_c] = microstep_mode(get_uint(axis_codes[cnt_c]));
+							motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
+						}
+					}
+					
+					if(has_code('B'))
+					{
+						pa.axis_ustep[4] = microstep_mode(get_uint('B'));
+						motor_setopts(4,pa.axis_ustep[4],pa.axis_current[4]);
+					}
+					 
+					if(has_code('S'))
+					{
+						for(cnt_c=0; cnt_c<5; cnt_c++)
+						{
+							pa.axis_ustep[cnt_c] = microstep_mode(get_uint('S'));
+							motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
+						}
+					}
 					break;
 				}
 				case 500: // M500 - stores paramters in EEPROM
@@ -802,45 +829,95 @@ static int gcode_process_command()
 					FLASH_PrintSettings();
 					break;
 				case 510: // M510 Axis invert
-					if(has_code('X')) pa.invert_x_dir = (get_uint('X')==0?0:1);
-					if(has_code('Y')) pa.invert_y_dir = (get_uint('Y')==0?0:1);
-					if(has_code('Z')) pa.invert_z_dir = (get_uint('Z')==0?0:1);
-					if(has_code('E')) pa.invert_e_dir = (get_uint('E')==0?0:1);
+					if(has_code('X'))
+						pa.invert_x_dir = get_bool('X');
+
+					if(has_code('Y'))
+						pa.invert_y_dir = get_bool('Y');
+
+					if(has_code('Z'))
+						pa.invert_z_dir = get_bool('Z');
+
+					if(has_code('E'))
+						pa.invert_e_dir = get_bool('E');
+
 					break;
 				case 520: // M520 Maximum Area unit
-					if(has_code('X')) pa.x_max_length = get_uint('X');
-					if(has_code('Y')) pa.y_max_length = get_uint('Y');
-					if(has_code('Z')) pa.z_max_length = get_uint('Z');
+					if(has_code('X'))
+						pa.x_max_length = get_bool('X');
+
+					if(has_code('Y'))
+						pa.y_max_length = get_bool('Y');
+
+					if(has_code('Z'))
+						pa.z_max_length = get_bool('Z');
+
 					break;
 				case 521: // M521 Disable axis when unused
-					if(has_code('X')) pa.disable_x_en = (get_uint('X')==0?0:1);
-					if(has_code('Y')) pa.disable_y_en = (get_uint('Y')==0?0:1);
-					if(has_code('Z')) pa.disable_z_en = (get_uint('Z')==0?0:1);
-					if(has_code('E')) pa.disable_e_en = (get_uint('E')==0?0:1);
+					if(has_code('X'))
+						pa.disable_x_en = get_bool('X');
+
+					if(has_code('Y'))
+						pa.disable_y_en = get_bool('Y');
+
+					if(has_code('Z'))
+						pa.disable_z_en = get_bool('Z');
+
+					if(has_code('E'))
+						pa.disable_e_en = get_bool('E');
+
 					break;
 				case 522: // M522 Software Endstop
-					if(has_code('I')) pa.min_software_endstops = (get_uint('I')==0?0:1);
-					if(has_code('A')) pa.max_software_endstops = (get_uint('A')==0?0:1);
+					if(has_code('I'))
+						pa.min_software_endstops = get_bool('I');
+
+					if(has_code('A'))
+						pa.max_software_endstops = get_bool('A');
+
 					break;
 				case 523: // M523 MIN Endstop
-					if(has_code('X')) pa.x_min_endstop_aktiv = (get_uint('X')==1?1:-1);
-					if(has_code('Y')) pa.y_min_endstop_aktiv = (get_uint('Y')==1?1:-1);
-					if(has_code('Z')) pa.z_min_endstop_aktiv = (get_uint('Z')==1?1:-1);
+					if(has_code('X'))
+						pa.x_min_endstop_aktiv = get_int('X')==1 ? 1 : -1;
+
+					if(has_code('Y'))
+						pa.y_min_endstop_aktiv = get_int('Y')==1 ? 1 : -1;
+
+					if(has_code('Z'))
+						pa.z_min_endstop_aktiv = get_int('Z')==1 ? 1 : -1;
+
 					break;
 				case 524: // M524 MAX Endstop
-					if(has_code('X')) pa.x_max_endstop_aktiv = (get_uint('X')==1?1:-1);
-					if(has_code('Y')) pa.y_max_endstop_aktiv = (get_uint('Y')==1?1:-1);
-					if(has_code('Z')) pa.z_max_endstop_aktiv = (get_uint('Z')==1?1:-1);
+					if(has_code('X'))
+						pa.x_max_endstop_aktiv = get_int('X')==1 ? 1 : -1;
+
+					if(has_code('Y'))
+						pa.y_max_endstop_aktiv = get_int('Y')==1 ? 1 : -1;
+
+					if(has_code('Z'))
+						pa.z_max_endstop_aktiv = get_int('Z')==1 ? 1 : -1;
+
 					break;
 				case 525: // M525 Homing Direction
-					if(has_code('X')) pa.x_home_dir = (get_uint('X')==1?1:-1);
-					if(has_code('Y')) pa.y_home_dir = (get_uint('Y')==1?1:-1);
-					if(has_code('Z')) pa.z_home_dir = (get_uint('Z')==1?1:-1);
+					if(has_code('X'))
+						pa.x_home_dir = get_int('X')==1 ? 1 : -1;
+
+					if(has_code('Y'))
+						pa.y_home_dir = get_int('Y')==1 ? 1 : -1;
+
+					if(has_code('Z'))
+						pa.z_home_dir = get_int('Z')==1 ? 1 : -1;
+
 					break;
 				case 526: // M526 Endstop Invert
-					if(has_code('X')) pa.x_endstop_invert = (get_uint('X')==0?0:1);
-					if(has_code('Y')) pa.y_endstop_invert = (get_uint('Y')==0?0:1);
-					if(has_code('Z')) pa.z_endstop_invert = (get_uint('Z')==0?0:1);
+					if(has_code('X'))
+						pa.x_endstop_invert = get_bool('X');
+
+					if(has_code('Y'))
+						pa.y_endstop_invert = get_bool('Y');
+
+					if(has_code('Z'))
+						pa.z_endstop_invert = get_bool('Z');
+
 					break;
 				case 530: // M530 Heater Sensor
 				{
@@ -849,14 +926,16 @@ static int gcode_process_command()
 
 					if (heater)
 					{
-					  	if(has_code('E')) 
+						if(has_code('E')) 
 							heater->thermistor_type = pa.heater_thermistor_type[extruder] = get_uint('E');
 					}
+					
 					if(has_code('B')) 
 						bed_heater.thermistor_type = pa.bed_thermistor_type = get_uint('B');
+					
 					break;
 				}
-    
+	
 				case 531: // M531 Heater PWM
 				{
 					int extruder = GET('T',active_extruder);
@@ -865,71 +944,76 @@ static int gcode_process_command()
 					if (heater)
 					{
 						if(has_code('E')) 
-							heater->pwm = pa.heater_pwm_en[extruder] = (get_uint('E')==0?0:1);
+							heater->pwm = pa.heater_pwm_en[extruder] = get_bool('E');
 					}
+					
 					break;
 				}
 				case 906: // set motor current value in mA using axis codes
-                // M906 X[mA] Y[mA] Z[mA] E[mA] B[mA] 
-                // M906 S[mA] set all motors current 
-					{
-					  int cnt_c;
-					  unsigned int ma;
+				// M906 X[mA] Y[mA] Z[mA] E[mA] B[mA] 
+				// M906 S[mA] set all motors current 
+				{
+					int cnt_c;
+					unsigned int ma;
 		
-					  for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
-					  {
-					    if(has_code(axis_codes[cnt_c])) 
-					    {
-					      ma = constrain(get_uint(axis_codes[cnt_c]),0,1900);
-					      pa.axis_current[cnt_c] = ma_count(ma);
-					      motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
-					    }
-					  }
-					  if(has_code('B'))
-					  {
-					    ma = constrain(get_uint('B'),0,1900);
-					    pa.axis_current[4] = ma_count(ma);
-					    motor_setopts(4,pa.axis_ustep[4],pa.axis_current[4]);
-					  }
-					  if(has_code('S'))
-					  {
-					    for(cnt_c=0; cnt_c<5; cnt_c++)
-					    {
-					      ma = constrain(get_uint('S'),0,1900);
-					      pa.axis_current[cnt_c] = ma_count(ma);
-					      motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
-					    }
-					  }
-					}
-					break;	  
-				case 907: // set motor current value (0-255) using axis codes
-                // M907 X[value] Y[value] Z[value] E[value] B[value] 
-                // M907 S[value] set all motors current 
+					for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
 					{
-					 int cnt_c;
-					  for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
-					  {
-					    if(has_code(axis_codes[cnt_c])) 
-					    {
-					      pa.axis_current[cnt_c] = constrain(get_uint(axis_codes[cnt_c]),0,255);
-					      motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
-					    }
-					  }
-					  if(has_code('B'))
-					  {
-					    pa.axis_current[4] = constrain(get_uint('B'),0,255);
-					    motor_setopts(4,pa.axis_ustep[4],pa.axis_current[4]);
-					  }
-					  if(has_code('S'))
-					  {
-					    for(cnt_c=0; cnt_c<5; cnt_c++)
-					    {
-					      pa.axis_current[cnt_c] = constrain(get_uint('S'),0,255);
-					      motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
-					    }
-					  }
+						if(has_code(axis_codes[cnt_c])) 
+						{
+							ma = constrain(get_uint(axis_codes[cnt_c]),0,1900);
+							pa.axis_current[cnt_c] = ma_count(ma);
+							motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
+						}
+					}
+					
+					if(has_code('B'))
+					{
+						ma = constrain(get_uint('B'),0,1900);
+						pa.axis_current[4] = ma_count(ma);
+						motor_setopts(4,pa.axis_ustep[4],pa.axis_current[4]);
+					}
+					  
+					if(has_code('S'))
+					{
+						for(cnt_c=0; cnt_c<5; cnt_c++)
+						{
+							ma = constrain(get_uint('S'),0,1900);
+							pa.axis_current[cnt_c] = ma_count(ma);
+							motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
+						}
+					}
+					break;
+				}
+				case 907: // set motor current value (0-255) using axis codes
+				// M907 X[value] Y[value] Z[value] E[value] B[value] 
+				// M907 S[value] set all motors current 
+				{
+					int cnt_c;
+					for(cnt_c=0; cnt_c < NUM_AXIS; cnt_c++) 
+					{
+						if(has_code(axis_codes[cnt_c])) 
+						{
+							pa.axis_current[cnt_c] = constrain(get_uint(axis_codes[cnt_c]),0,255);
+							motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
+						}
+					}
+					  
+					if(has_code('B'))
+					{
+						pa.axis_current[4] = constrain(get_uint('B'),0,255);
+						motor_setopts(4,pa.axis_ustep[4],pa.axis_current[4]);
+					}
+					  
+					if(has_code('S'))
+					{
+						for(cnt_c=0; cnt_c<5; cnt_c++)
+						{
+							pa.axis_current[cnt_c] = constrain(get_uint('S'),0,255);
+							motor_setopts(cnt_c,pa.axis_ustep[cnt_c],pa.axis_current[cnt_c]);
+						}
 					}
 					break;	  
+				}
 			  default:
 					sendReply("Unknown M%d\n\r",get_int('M'));
 					return NO_REPLY;
