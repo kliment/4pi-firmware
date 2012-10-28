@@ -246,7 +246,7 @@ void FLASH_PrintSettings(void)
 	usb_printf("Minimum Endstop Input:\r\n  M523 X%d Y%d Z%d\r\n",pa.x_min_endstop_aktiv,pa.y_min_endstop_aktiv,pa.z_min_endstop_aktiv);
 	usb_printf("Maximum Endstop Input:\r\n  M524 X%d Y%d Z%d\r\n",pa.x_max_endstop_aktiv,pa.y_max_endstop_aktiv,pa.z_max_endstop_aktiv);
 	
-	usb_printf("Homing Direction:\r\n  M525 X%d Y%d Z%d\r\n",pa.x_home_dir,pa.y_home_dir,pa.z_home_dir);
+	usb_printf("Homing Direction (-1=minimum,1=maximum):\r\n  M525 X%d Y%d Z%d\r\n",pa.x_home_dir,pa.y_home_dir,pa.z_home_dir);
 	usb_printf("Endstop invert:\r\n  M526 X%d Y%d Z%d\r\n",pa.x_endstop_invert,pa.y_endstop_invert,pa.z_endstop_invert);
 	usb_printf("Axis invert:\r\n  M510 X%d Y%d Z%d E%d\r\n",pa.invert_x_dir,pa.invert_y_dir,pa.invert_z_dir,pa.invert_e_dir);
 	
@@ -260,15 +260,15 @@ void FLASH_PrintSettings(void)
 	usb_printf("Heater 1 PWM: \r\n  M531 E%d\r\n",pa.heater_pwm_en[0]);
 	usb_printf("Heater 2 PWM: \r\n  M531 E%d\r\n",pa.heater_pwm_en[1]);
 	
-	usb_printf("Heater 1 Max pwm: \r\n  M301 W%d\r\n",pa.heater_max_pwm[0]);
-	usb_printf("Heater 2 Max pwm: \r\n  M301 W%d\r\n",pa.heater_max_pwm[1]);
+	usb_printf("Heater 1 Max pwm (range 0-255): \r\n  M301 W%d\r\n",pa.heater_max_pwm[0]);
+	usb_printf("Heater 2 Max pwm (range 0-255): \r\n  M301 W%d\r\n",pa.heater_max_pwm[1]);
 	
-	usb_printf("Heater 1 (S)lope, (I)ntercept \r\n  M301 S%d I%d\r\n",pa.heater_slope[0],pa.heater_intercept[0]);
-	usb_printf("Heater 2 (S)lope, (I)ntercept \r\n  M301 S%d I%d\r\n",pa.heater_slope[1],pa.heater_intercept[1]);
+	usb_printf("Heater 1 (S)lope, (I)ntercept:\r\n  M301 S%d I%d\r\n",pa.heater_slope[0],pa.heater_intercept[0]);
+	usb_printf("Heater 2 (S)lope, (I)ntercept:\r\n  M301 S%d I%d\r\n",pa.heater_slope[1],pa.heater_intercept[1]);
 	
 	//usb_printf("Motor Current \r\n  M907 X%d Y%d Z%d E%d B%d \r\n",pa.axis_current[0],pa.axis_current[1],pa.axis_current[2],pa.axis_current[3],pa.axis_current[4]);
-	usb_printf("Motor Current (mA)\r\n  M906 X%d Y%d Z%d E%d B%d \r\n",count_ma(pa.axis_current[0]),count_ma(pa.axis_current[1]),count_ma(pa.axis_current[2]),count_ma(pa.axis_current[3]),count_ma(pa.axis_current[4]));
-	usb_printf("Motor Microstepping \r\n  M350 X%d Y%d Z%d E%d B%d \r\n",microstep_usteps(pa.axis_ustep[0]),microstep_usteps(pa.axis_ustep[1]),microstep_usteps(pa.axis_ustep[2]),microstep_usteps(pa.axis_ustep[3]),microstep_usteps(pa.axis_ustep[4]));
+	usb_printf("Motor Current (mA) (range 0-1900):\r\n  M906 X%d Y%d Z%d E%d B%d \r\n",count_ma(pa.axis_current[0]),count_ma(pa.axis_current[1]),count_ma(pa.axis_current[2]),count_ma(pa.axis_current[3]),count_ma(pa.axis_current[4]));
+	usb_printf("Motor Microstepping: \r\n  M350 X%d Y%d Z%d E%d B%d \r\n",microstep_usteps(pa.axis_ustep[0]),microstep_usteps(pa.axis_ustep[1]),microstep_usteps(pa.axis_ustep[2]),microstep_usteps(pa.axis_ustep[3]),microstep_usteps(pa.axis_ustep[4]));
 	
 }
 
