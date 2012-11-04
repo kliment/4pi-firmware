@@ -109,6 +109,7 @@ Note: M530, M531 applies to currently selected extruder.  Use T0 or T1 to select
  M501 - reads parameters from EEPROM (if you need to reset them after you changed them temporarily).
  M502 - reverts to the default "factory settings". You still need to store them in EEPROM afterwards if you want to.
  M503 - Print settings
+ M505 - Save Parameters to SD-Card
 
 */
 
