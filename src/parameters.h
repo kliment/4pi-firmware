@@ -109,6 +109,7 @@ void FLASH_PrintSettings(void);
 void FLASH_LoadSettings(void);
 void FLASH_BootFromROM(void);
 void FLASH_BootFromFLASH(void);
+void FLASH_Store_to_SD(void);
 
 
 

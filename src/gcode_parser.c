@@ -568,7 +568,7 @@ static int gcode_process_command()
 				case 110:
 					break;
 				case 114: // M114 Display current position
-					sendReply("X:%f Y:%f Z:%f E:%f",current_position[0],current_position[1],current_position[2],current_position[3]);
+					sendReply("X:%f Y:%f Z:%f E:%f ",current_position[0],current_position[1],current_position[2],current_position[3]);
 					break;			  
 				case 115: // M115
 					sendReply("ok FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n",MAX_EXTRUDER);
@@ -596,7 +596,7 @@ static int gcode_process_command()
 						read_endstops[5] = (PIO_Get(&Z_MAX_PIN) ^ pa.z_endstop_invert) + 48; 
 
 
-					sendReply("Xmin:%c Ymin:%c Zmin:%c / Xmax:%c Ymax:%c Zmax:%c",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
+					sendReply("Xmin:%c Ymin:%c Zmin:%c / Xmax:%c Ymax:%c Zmax:%c ",read_endstops[0],read_endstops[1],read_endstops[2],read_endstops[3],read_endstops[4],read_endstops[5]);
 					break;
 				}
 				case 140: // M140 set bed temp
@@ -827,6 +827,9 @@ static int gcode_process_command()
 					break;
 				case 503:	//M503 show settings
 					FLASH_PrintSettings();
+					break;
+				case 505:
+					FLASH_Store_to_SD();
 					break;
 				case 510: // M510 Axis invert
 					if(has_code('X'))
