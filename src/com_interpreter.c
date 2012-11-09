@@ -83,7 +83,7 @@
 // M400 - Finish all moves
 
 // M350 - Set microstepping steps (M350 X16 Y16 Z16 E16 B16)
-// M906 - Set motor current (mV) (M906 X1000 Y1000 Z1000 E1000 B1000) or set all (M906 S1000)
+// M906 - Set motor current (mA) (M906 X1000 Y1000 Z1000 E1000 B1000) or set all (M906 S1000)
 // M907 - Set motor current (raw) (M907 X128 Y128 Z128 E128 B128) or set all (M907 S128)
 
 // M500 - stores paramters in EEPROM
