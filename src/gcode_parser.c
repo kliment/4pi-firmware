@@ -102,7 +102,7 @@ Note: M530, M531 applies to currently selected extruder.  Use T0 or T1 to select
  M531 - Set heater PWM mode 0=false, 1=true (M531 E1)
  
  M350 - Set microstepping steps (M350 X16 Y16 Z16 E16 B16)
- M906 - Set motor current (mV) (M906 X1000 Y1000 Z1000 E1000 B1000) or set all (M906 S1000)
+ M906 - Set motor current (mA) (M906 X1000 Y1000 Z1000 E1000 B1000) or set all (M906 S1000)
  M907 - Set motor current (raw) (M907 X128 Y128 Z128 E128 B128) or set all (M907 S128)
 
  M500 - stores paramters in EEPROM
