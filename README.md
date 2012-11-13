@@ -1,9 +1,9 @@
 
 Sprinter firmware for 4pi
-
+=========================
 
 Configuration
-=============
+-------------
 
 Most parameters are configurable runtime. Use **M503** command to get list of current settings, and commands to change them.
 
