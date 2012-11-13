@@ -17,6 +17,7 @@
 #include "planner.h"
 #include "gcode_parser.h"
 #include "sdcard.h"
+#include "usb.h"
 //#include "heaters.h"
 
 
@@ -120,6 +121,7 @@ int main()
     //-------- Init UART --------------
 	printf("USB Seriel INIT\n\r");
 	samserial_init();
+	usb_init();
 	
 	//-------- Init ADC without Autostart --------------
 	printf("Init ADC\n\r");
@@ -170,6 +172,8 @@ int main()
 		do_periodic();
 
 		gcode_update();
+		
+		usb_statemachine();
 /*    	
 		if(buflen < (BUFSIZE-1))
 			get_command();

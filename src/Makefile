@@ -32,6 +32,12 @@
 #		User-modifiable options
 #-------------------------------------------------------------------------------
 
+#USB mode
+#select USB driver mode from possible options: CDC, COMPOSITE
+USB_DRIVER=COMPOSITE
+USB_VID=0x1d50
+USB_PID=0x6019
+
 # Chip & board used for compilation
 # (can be overriden by adding CHIP=chip and BOARD=board to the command-line)
 CHIP  = at91sam3u4
@@ -101,6 +107,7 @@ endif
 CFLAGS += $(TARGET_OPTS)
 CFLAGS += -Wall -mlong-calls -ffunction-sections
 CFLAGS += -g $(OPTIMIZATION) $(INCLUDES) -D$(CHIP) -DTRACE_LEVEL=$(TRACE_LEVEL)
+CFLAGS += -DUSB_$(USB_DRIVER)=1 -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID)
 ASFLAGS = $(TARGET_OPTS) -Wall -g $(OPTIMIZATION) $(INCLUDES) -D$(CHIP) -D__ASSEMBLY__
 LDFLAGS = -g $(OPTIMIZATION) -nostartfiles $(TARGET_OPTS) -Wl,--gc-sections
 
@@ -117,7 +124,6 @@ MEMORY = $(AT91LIB)/memories
 DRV = $(AT91LIB)/drivers
 FATFS = $(EXT_LIBS)/fat/fatfs
 
-VPATH += $(USB)/device/cdc-serial
 VPATH += $(USB)/device/core
 VPATH += $(USB)/common/core
 VPATH += $(USB)/common/cdc
@@ -151,35 +157,12 @@ VPATH += $(FATFS)/src/option
 # Objects built from C source files
 C_OBJECTS += main.o
 C_OBJECTS += syscalls.o
-C_OBJECTS += CDCDSerialDriver.o
-C_OBJECTS += CDCDSerialDriverDescriptors.o
-C_OBJECTS += CDCSetControlLineStateRequest.o
-C_OBJECTS += CDCLineCoding.o
-C_OBJECTS += USBD_OTGHS.o
-C_OBJECTS += USBD_UDP.o
-C_OBJECTS += USBD_UDPHS.o
-C_OBJECTS += USBDDriver.o
-C_OBJECTS += USBDCallbacks_Initialized.o
-C_OBJECTS += USBDCallbacks_Reset.o
-#C_OBJECTS += USBDCallbacks_Resumed.o
-#C_OBJECTS += USBDCallbacks_Suspended.o
-C_OBJECTS += USBDDriverCb_CfgChanged.o
-C_OBJECTS += USBDDriverCb_IfSettingChanged.o
-C_OBJECTS += USBSetAddressRequest.o
-C_OBJECTS += USBGenericDescriptor.o
-C_OBJECTS += USBInterfaceRequest.o
-C_OBJECTS += USBGenericRequest.o
-C_OBJECTS += USBGetDescriptorRequest.o
-C_OBJECTS += USBSetConfigurationRequest.o
 C_OBJECTS += util.o
 C_OBJECTS += stdio.o
 C_OBJECTS += systick.o
 C_OBJECTS += serial.o
 C_OBJECTS += motoropts.o
 C_OBJECTS += tc.o
-C_OBJECTS += USBFeatureRequest.o
-C_OBJECTS += USBEndpointDescriptor.o
-C_OBJECTS += USBConfigurationDescriptor.o
 C_OBJECTS += led.o
 C_OBJECTS += adc12.o
 C_OBJECTS += samadc.o
@@ -215,6 +198,46 @@ C_OBJECTS += diskio.o
 C_OBJECTS += ff.o
 C_OBJECTS += unicode.o
 
+C_OBJECTS += usb.o
+
+C_OBJECTS += CDCSetControlLineStateRequest.o
+C_OBJECTS += CDCLineCoding.o
+C_OBJECTS += USBD_OTGHS.o
+C_OBJECTS += USBD_UDP.o
+C_OBJECTS += USBD_UDPHS.o
+C_OBJECTS += USBDDriver.o
+C_OBJECTS += USBDCallbacks_Initialized.o
+C_OBJECTS += USBDCallbacks_Reset.o
+C_OBJECTS += USBDDriverCb_IfSettingChanged.o
+C_OBJECTS += USBSetAddressRequest.o
+C_OBJECTS += USBGenericDescriptor.o
+C_OBJECTS += USBInterfaceRequest.o
+C_OBJECTS += USBGenericRequest.o
+C_OBJECTS += USBGetDescriptorRequest.o
+C_OBJECTS += USBSetConfigurationRequest.o
+C_OBJECTS += USBFeatureRequest.o
+C_OBJECTS += USBEndpointDescriptor.o
+C_OBJECTS += USBConfigurationDescriptor.o
+
+
+ifeq ($(USB_DRIVER), COMPOSITE)
+VPATH += $(USB)/common/massstorage
+VPATH += $(USB)/device/massstorage
+VPATH += $(USB)/device/composite
+C_OBJECTS += MSDDStateMachine.o
+C_OBJECTS += MSDLun.o
+C_OBJECTS += SBCMethods.o
+C_OBJECTS += CDCMSDDDriver.o
+C_OBJECTS += CDCMSDDDriverDescriptors.o
+C_OBJECTS += MSDDFunctionDriver.o
+C_OBJECTS += CDCDFunctionDriver.o
+else
+VPATH += $(USB)/device/cdc-serial
+C_OBJECTS += CDCDSerialDriver.o
+C_OBJECTS += CDCDSerialDriverDescriptors.o
+C_OBJECTS += USBDDriverCb_CfgChanged.o
+
+endif
 
 
 # Objects for different chips

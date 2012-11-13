@@ -30,6 +30,7 @@
 #include "heaters.h"
 #include "thermistortables.h"
 #include "serial.h"
+#include "usb.h"
 
 #define HEATER_BED			0
 #define HEATER_HOTEND_1		1

@@ -133,6 +133,7 @@ Note: M530, M531 applies to currently selected extruder.  Use T0 or T1 to select
 #include "motoropts.h"
 #include "sdcard.h"
 #include "globals.h"
+#include "usb.h"
 
 #define BUFFER_SIZE 256
 
@@ -399,11 +400,19 @@ static int gcode_process_command()
 					sdcard_listfiles();
 					return NO_REPLY;
 				case 21: //init sd card
+				{
+					usb_set_msc_mode(MSC_INACTIVE);
+					usb_unmount_msc();
 					sdcard_mount();
 					break;
+				}
 				case 22: //release sd card
+				{
+					usb_set_msc_mode(MSC_ACTIVE);
 					sdcard_unmount();
+					usb_mount_msc();
 					break;
+				}
 				case 23: //select sd file
 					sdcard_selectfile(get_str(' '));
 					break;

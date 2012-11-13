@@ -26,6 +26,7 @@
 #include "serial.h"
 #include "motoropts.h"
 #include "sdcard.h"
+#include "usb.h"
 
 unsigned short calc_crc16(void);
 

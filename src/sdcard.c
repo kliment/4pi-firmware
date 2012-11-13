@@ -6,6 +6,7 @@
 #include <string.h>
 #include "sdcard.h"
 #include "serial.h"
+#include "usb.h"
 
 #define MAX_LUNS            1
 #define DRV_DISK            0
@@ -44,6 +45,11 @@ static const char* errorStrings[] = {
 	_ERR(FR_MKFS_ABORTED)		/* 13 */
 };
 #undef _ERR
+
+Media* sdcard_getMedia()
+{
+	return &medias[0];
+}
 
 static const char* getError(FRESULT r)
 {
@@ -244,13 +250,18 @@ void sdcard_handle_state()
 		if (has_card)
 		{
 			printf("sdcard: card inserted\n\r");
-			sdcard_mount();
+			if (usb_get_msc_mode() == MSC_ACTIVE)
+				usb_mount_msc();
+			else
+				sdcard_mount();
 		}
 		else
 		{
 			printf("sdcard: card removed\n\r");
-			sdcard_unmount();
-			is_mounted = 0;
+			if (usb_get_msc_mode() == MSC_ACTIVE)
+				usb_unmount_msc();
+			else
+				sdcard_unmount();
 		}
 	}
 	had_card = has_card;
@@ -292,6 +303,9 @@ void sdcard_unmount()
 {
 	if (!is_mounted)
 		return;
+
+	if (capture_mode)
+		sdcard_capturestop();
 		
 	f_mount(0,NULL);
 	is_mounted = 0;

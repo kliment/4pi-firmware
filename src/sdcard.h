@@ -1,6 +1,8 @@
 #ifndef SDCARD_H_YIQ9IWI0
 #define SDCARD_H_YIQ9IWI0
 
+#include <memories/MEDSdcard.h>
+
 
 void sdcard_listfiles();
 void sdcard_selectfile(const char* name);
@@ -22,4 +24,5 @@ void sdcard_unmount();
 unsigned char sdcard_ismounted();
 unsigned char sdcard_carddetected();
 
+Media* sdcard_getMedia();
 #endif /* end of include guard: SDCARD_H_YIQ9IWI0 */

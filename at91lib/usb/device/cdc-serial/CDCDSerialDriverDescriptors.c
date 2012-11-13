@@ -61,9 +61,9 @@
 /// - CDCDSerialDriverDescriptors_RELEASE
 
 /// Device product ID.
-#define CDCDSerialDriverDescriptors_PRODUCTID       0x6019
+#define CDCDSerialDriverDescriptors_PRODUCTID       USB_PID
 /// Device vendor ID (Atmel).
-#define CDCDSerialDriverDescriptors_VENDORID        0x1d50
+#define CDCDSerialDriverDescriptors_VENDORID        USB_VID
 /// Device release number.
 #define CDCDSerialDriverDescriptors_RELEASE         0x0100
 //------------------------------------------------------------------------------
