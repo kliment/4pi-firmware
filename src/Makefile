@@ -32,11 +32,20 @@
 #		User-modifiable options
 #-------------------------------------------------------------------------------
 
+
+
 #USB mode
 #select USB driver mode from possible options: CDC, COMPOSITE
 USB_DRIVER=COMPOSITE
+#USB_DRIVER=CDC
+
+#-------------------------------------------------------------------------------
+#		End of user-modifiable options
+#-------------------------------------------------------------------------------
+
 USB_VID=0x1d50
 USB_PID=0x6019
+
 
 # Chip & board used for compilation
 # (can be overriden by adding CHIP=chip and BOARD=board to the command-line)
