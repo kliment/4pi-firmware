@@ -89,8 +89,8 @@ unsigned int count_ma(unsigned char count)
 //convert mA to digipot count
 unsigned char ma_count(unsigned int ma)
 {
-	unsigned char count = ma*100/743;
-	return count;
+	unsigned int count = ma*100/743;
+	return (unsigned char)count;
 }
 
 
@@ -176,7 +176,7 @@ void motor_setopts(unsigned char axis, unsigned char ustepbits, unsigned char cu
     }
     AD5206_setchan(channel,current);
 
-	printf("Setting channel %u to current value %u and ustep value %u\r\n",channel, current, ustepbits);
+	//printf("Setting channel %u to current value %u and ustep value %u\r\n",channel, current, ustepbits);
 	
 }
 

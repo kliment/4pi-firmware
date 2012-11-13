@@ -27,13 +27,13 @@
 
 #include "parameters.h"
 #include "init_configuration.h"
-#include "com_interpreter.h"
+#include "gcode_parser.h"
 #include "arc_func.h"
 #include "planner.h"
 #include "heaters.h"
 #include "stepper_control.h"
 #include "motoropts.h"
-
+#include "globals.h"
 
 
 float destination[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
@@ -43,16 +43,9 @@ char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 char axis_relative_modes[NUM_AXIS] = _AXIS_RELATIVE_MODES;
 float offset[3] = {0.0, 0.0, 0.0};
 
-signed short feedrate = 1500, next_feedrate, saved_feedrate;
-
-unsigned char is_homing = 0;
-unsigned char home_all_axis = 1;
-
 unsigned long minsegmenttime = 20000;
 
 unsigned long axis_steps_per_sqr_second[NUM_AXIS] ;
-
-extern volatile signed short extrudemultiply; // Sets extrude multiply factor (in percent)
 
 unsigned short virtual_steps_x = 0;
 unsigned short virtual_steps_y = 0;
@@ -85,14 +78,17 @@ void get_coordinates()
 
 	for(i = 0; i < NUM_AXIS; i++)
 	{
-		if(code_seen(axis_codes[i])) destination[i] = (float)code_value() + (axis_relative_modes[i] || relative_mode)*current_position[i];
-		else destination[i] = current_position[i];
+		if (has_code(axis_codes[i]))
+			destination[i] = get_float(axis_codes[i]) + (axis_relative_modes[i] || relative_mode)*current_position[i];
+		else 
+			destination[i] = current_position[i];
 	}
 
-	if(code_seen('F'))
+	if(has_code('F'))
 	{
-		next_feedrate = code_value();
-		if(next_feedrate > 0.0) feedrate = next_feedrate;
+		next_feedrate = get_int('F');
+		if(next_feedrate > 0) 
+			feedrate = next_feedrate;
 	}
 
 	//printf("new POS:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
@@ -102,18 +98,18 @@ void get_arc_coordinates()
 {
 	get_coordinates();
 	
-	if(code_seen('I'))
+	if(has_code('I'))
 	{
-		offset[0] = code_value();
+		offset[0] = get_float('I');
 	} 
 	else
 	{
-		offset[0] = 0.0;
+		offset[0] = 0.0f;
 	}
 	
-	if(code_seen('J'))
+	if(has_code('J'))
 	{
-		offset[1] = code_value();
+		offset[1] = get_float('J');
 	}
 	else
 	{

@@ -239,7 +239,6 @@ signed int PutFloat(
     double value)
 {
     int num=0;
-    int c;
     int whole ;
     int fraction ;
     whole = abs((int)value);

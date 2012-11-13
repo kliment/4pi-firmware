@@ -194,7 +194,6 @@ C_OBJECTS += pmc.o
 C_OBJECTS += trace.o
 C_OBJECTS += board_memories.o
 C_OBJECTS += board_lowlevel.o
-C_OBJECTS += com_interpreter.o
 C_OBJECTS += heaters.o
 C_OBJECTS += arc_func.o
 C_OBJECTS += planner.o
@@ -203,6 +202,8 @@ C_OBJECTS += parameters.o
 C_OBJECTS += eefc.o
 C_OBJECTS += flashd_eefc.o
 C_OBJECTS += sdcard.o
+C_OBJECTS += gcode_parser.o
+C_OBJECTS += globals.o
 
 #media
 C_OBJECTS += Media.o

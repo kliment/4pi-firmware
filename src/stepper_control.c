@@ -31,7 +31,6 @@
 
 #include "parameters.h"
 #include "init_configuration.h"
-#include "com_interpreter.h"
 #include "arc_func.h"
 #include "planner.h"
 #include "stepper_control.h"

@@ -820,6 +820,9 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
   unsigned int points[2][20];
   unsigned int count = 0;
 
+#define X 0
+#define Y 1
+
   usb_printf("Find equation of temperature to heater pwm \r\n\n");
 
   autotune_active = true;  // disable PID while running
@@ -851,9 +854,9 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
       }
     }
     if( input > 195) break;
-    points[0][count] = (unsigned char)input;
-    points[1][count] = pwm;
-    printf("{%u,%u} ",points[0][count],points[1][count]);
+    points[X][count] = (unsigned char)input;
+    points[Y][count] = pwm;
+    printf("{%u,%u} ",points[X][count],points[Y][count]);
     if( count++ > 20 ) break;
   }
   printf("\r\n\n");
@@ -868,27 +871,26 @@ void Heater_Eval(heater_struct *hotend, unsigned int step)
   signed short slope;
   signed short intercept;
   unsigned char i;
+  unsigned char max_pwm;
   
   for(i=0; i<count; i++)
   {
-    x_sum += points[0][i];
-    y_sum += points[1][i];
-    xy_sum += points[0][i] * points[1][i];
-    x2_sum += points[0][i] * points[0][i];
+    x_sum += points[X][i];
+    y_sum += points[Y][i];
+    xy_sum += points[X][i] * points[Y][i];
+    x2_sum += points[X][i] * points[X][i];
   }
   printf("count = %d, x_sum = %u, y_sum = %u, xy_sum = %u, x2_sum = %u \r\n",count,x_sum,y_sum,(unsigned int)xy_sum,(unsigned int)x2_sum);
 
   slope = (int)((float)(((count * xy_sum) - (x_sum * y_sum)) * 256) / ((count * x2_sum) - (x_sum * x_sum)) + 0.5);
   intercept = ((y_sum - (((float)(slope * x_sum)/256.0)) + 0.5) / (count));
   
-  hotend->slope = slope;
-  hotend->intercept = intercept;
-  hotend->max_pwm = (signed short)min((((long)slope*(long)200>>8)+intercept)*4,255);
+  max_pwm = (unsigned char)min((((long)slope*(long)200>>8)+intercept)*4,255);
 
-  usb_printf("HEATER_SLOPE = %d, HEATER_INTERCEPT = %d \r\n", (unsigned)slope, (unsigned)intercept);  
+  usb_printf("HEATER_SLOPE = %d, HEATER_INTERCEPT = %d \r\n", slope, intercept);  
   usb_printf("Heater evaluation finished \r\n");
-  usb_printf("Recommended HEATER_MAX_PWM: %u \r\n",(unsigned)hotend->max_pwm);
-  usb_printf("Enter above values in init_configuration.h \r\n");
+  usb_printf("Recommended HEATER_MAX_PWM: %u \r\n",max_pwm);
+  usb_printf("Use M301 S%u B%d W%u to set values\r\n", slope, intercept, max_pwm);
   return;
 }
 //---------------- END EVALUATE HEATER ------------------------------

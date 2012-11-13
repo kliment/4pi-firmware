@@ -201,6 +201,7 @@ void sdcard_capturestop()
 	}
 	
 	usb_printf("%d bytes written\n\r",f_tell(&captureFile));
+	f_sync(&captureFile);
 	f_close(&captureFile);
 	capture_mode = 0;
 }
@@ -343,8 +344,9 @@ void sdcard_listfiles()
 		return;
 	}
 	
-	printf("sdcard_listfiles:\n\r");
-	usb_printf("ok Files: {");
+	printf("Begin file list\r\n");
+	//usb_printf("ok Files: {");
+	usb_printf("Begin file list\r\n");
 	while(1)
 	{
 		res = f_readdir(&rootDir,&fileInfo);
@@ -360,11 +362,12 @@ void sdcard_listfiles()
 		if (!(fileInfo.fattrib & AM_DIR))
 		{
 			filename = fileInfo.fname;
-			usb_printf("%s,",filename);
+			usb_printf("%s\r\n",filename);
 			printf("\t%s\n\r",filename);
 		}
 	}
-	usb_printf("}\r\n");
+	//usb_printf("}\r\n");
+	usb_printf("End file list\r\n");
 	
 }
 

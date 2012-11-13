@@ -199,7 +199,7 @@ void samserial_print(const char* c)
 volatile char bufferInUse = 0;
 char printBuffer[256];
 
-static void UsbWriteCompleted(unsigned int unused,
+static void UsbWriteCompleted(void* pArg,
                             unsigned char status,
                             unsigned int received,
                             unsigned int remaining)
