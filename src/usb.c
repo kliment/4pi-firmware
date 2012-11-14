@@ -261,7 +261,7 @@ void usb_mount_msc()
 void usb_unmount_msc()
 {
 #ifdef USB_COMPOSITE
-	while(LUN_Eject(&luns[0]) != USBD_STATUS_SUCCESS) {}
+	while(LUN_Eject(&luns[0]) != USBD_STATUS_SUCCESS) { usb_statemachine(); }
 #endif	
 }
 
