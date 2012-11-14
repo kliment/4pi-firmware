@@ -51,7 +51,7 @@
 /// Default CDC interrupt endpoints max packat size (8).
 #define CDCD_Descriptors_INTERRUPT_MAXPACKETSIZE    8
 /// Default CDC bulk endpoints max packat size (128, for HS actually).
-#define CDCD_Descriptors_BULK_MAXPACKETSIZE         128
+#define CDCD_Descriptors_BULK_MAXPACKETSIZE         512
 
 /// Default CDC interrupt IN endpoint polling rate of Full Speed (16ms).
 #define CDCD_Descriptors_INTERRUPTIN_POLLING_FS     16

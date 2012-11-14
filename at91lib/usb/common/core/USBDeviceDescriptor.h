@@ -55,6 +55,7 @@
 /// !Code
 /// - USBDeviceDescriptor_USB2_00
 
+
 /// The device supports USB 2.00.
 #define USBDeviceDescriptor_USB2_00         0x0200
 //------------------------------------------------------------------------------

@@ -250,10 +250,17 @@ void sdcard_handle_state()
 		if (has_card)
 		{
 			printf("sdcard: card inserted\n\r");
-			if (usb_get_msc_mode() == MSC_ACTIVE)
-				usb_mount_msc();
+			if (!MEDSdcard_Initialize(&medias[DRV_DISK],0))
+			{
+				printf("\r\nsdcard: SD card initialization failed, no sd card inserted?\r\n");
+			}
 			else
-				sdcard_mount();
+			{
+				if (usb_get_msc_mode() == MSC_ACTIVE)
+					usb_mount_msc();
+				else
+					sdcard_mount();
+			}
 		}
 		else
 		{
@@ -275,12 +282,6 @@ void sdcard_mount()
 
 	if (is_mounted)
 		return;
-	
-	if (!MEDSdcard_Initialize(&medias[DRV_DISK],0))
-	{
-		printf("\r\nsdcard: SD card initialization failed, no sd card inserted?\r\n");
-		return;
-	}
 	
 	f_mount(0,&fs);
 	

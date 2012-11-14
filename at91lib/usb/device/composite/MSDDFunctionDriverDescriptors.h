@@ -58,10 +58,10 @@
 #endif
 
 /// Address of the Mass Storage bulk-out endpoint.
-#define MSDD_Descriptors_BULKOUT        4
+#define MSDD_Descriptors_BULKOUT        1
 
 /// Address of the Mass Storage bulk-in endpoint.
-#define MSDD_Descriptors_BULKIN         5
+#define MSDD_Descriptors_BULKIN         2
 //-----------------------------------------------------------------------------
 
 

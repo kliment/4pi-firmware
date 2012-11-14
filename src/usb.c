@@ -56,7 +56,7 @@ MSDLun luns[MAX_LUNS];
 /// LUN read/write buffer.
 unsigned char msdBuffer[MSD_BUFFER_SIZE];
 
-static unsigned char usb_msc_active = 1;
+static unsigned char usb_msc_active = MSC_ACTIVE;
 
 
 #else
@@ -254,6 +254,7 @@ void usb_statemachine()
 void usb_mount_msc()
 {
 #ifdef USB_COMPOSITE
+	printf("usb_mount_msc()\n");
     LUN_Init(&(luns[0]), sdcard_getMedia(),msdBuffer, MSD_BUFFER_SIZE,0, 0, 0, 0, 0);
 #endif
 }

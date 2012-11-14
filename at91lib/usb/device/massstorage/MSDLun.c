@@ -31,7 +31,6 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-
 #include "MSDLun.h"
 #include <utility/trace.h>
 #include <usb/device/core/USBD.h>
@@ -75,7 +74,7 @@ static SBCInquiryData inquiryData = {
     0x0,                            // Unused features
     0,                              // Task management model not supported
     0x0,                            // ???
-    {'R','e','p','R','a','p',' ',' '},
+    {'4','p','i',' ',' ',' ',' ',' '},
     {'M','a','s','s',' ',
      'S','t','o','r','a','g','e',' ',
      'M','S','D'},

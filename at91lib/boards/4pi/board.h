@@ -149,7 +149,7 @@
 #define BOARD_USB_NUMENDPOINTS              7
 
 /// Returns the maximum packet size of the given endpoint.
-#define BOARD_USB_ENDPOINTS_MAXPACKETSIZE(i) (((i == 0)||(i == 3)||(i == 4)) ? 64 :\
+#define BOARD_USB_ENDPOINTS_MAXPACKETSIZE(i) (((i == 0)||(i == 3)||(i == 4)||(i==5)) ? 64 :\
                                              (((i == 1) || (i == 2)) ? 512 : 1024))
 
 /// Returns the number of FIFO banks for the given endpoint.

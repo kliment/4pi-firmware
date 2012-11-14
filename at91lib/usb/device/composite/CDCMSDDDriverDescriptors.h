@@ -49,18 +49,18 @@
 /// Address of the CDC interrupt-in endpoint.
 #define CDCD_Descriptors_NOTIFICATION0              3
 /// Address of the CDC bulk-in endpoint.
-#define CDCD_Descriptors_DATAIN0                    2
+#define CDCD_Descriptors_DATAIN0                    4
 /// Address of the CDC bulk-out endpoint.
-#define CDCD_Descriptors_DATAOUT0                   1
+#define CDCD_Descriptors_DATAOUT0                   5
 
 /// Number of the Mass Storage interface.
 #define MSDD_Descriptors_INTERFACENUM               2
 
 /// Address of the Mass Storage bulk-out endpoint.
-#define MSDD_Descriptors_BULKOUT                    4
+#define MSDD_Descriptors_BULKOUT                    1
 
 /// Address of the Mass Storage bulk-in endpoint.
-#define MSDD_Descriptors_BULKIN                     5
+#define MSDD_Descriptors_BULKIN                     2
 
 //-----------------------------------------------------------------------------
 //         Exported variables
