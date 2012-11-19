@@ -526,44 +526,68 @@ static int gcode_process_command()
 					if (heater)
 					{
 	
-						if (has_code('S')) 
+						int min_target,max_target;
+
+						if (has_code('S'))
+						{
 							heater->target_temp = get_uint('S');
-
-						uint32_t codenum = timestamp; 
+							min_target = heater->target_temp;
+						}
+						else
+						{
+							min_target = heater->target_temp - TEMP_HYSTERESIS;
+						}
 						
-						/* See if we are heating up or cooling down */
-						 // true if heating, false if cooling
-						unsigned char target_direction = (heater->akt_temp < heater->target_temp); 
+						max_target = has_code('R') ? get_uint('R') : heater->target_temp + TEMP_HYSTERESIS;
+					
+						uint32_t codenum = timestamp; 
 
+						//loops separated for cleanliness
 					#ifdef TEMP_RESIDENCY_TIME
 						long residencyStart;
 						residencyStart = -1;
-						/* continue to loop until we have reached the target temp	
-						_and_ until TEMP_RESIDENCY_TIME hasn't passed since we reached it */
-						while( (target_direction ? (heater->akt_temp < heater->target_temp) : (heater->akt_temp > heater->target_temp))
-						|| (residencyStart > -1 && (timestamp - residencyStart) < TEMP_RESIDENCY_TIME*1000) )
+
+						while(1)
 						{
+							if (heater->akt_temp < min_target || heater->akt_temp > max_target)
+							{
+								residencyStart = -1;
+								if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
+								{
+									sendReply("ok T:%u \r\n",heater->akt_temp);
+									codenum = timestamp;
+								}
+							}
+							else
+							{
+								if (residencyStart > -1 && timestamp - residencyStart) > TEMP_RESIDENCY_TIME*1000)
+								{
+									break; //done
+								}
+								else
+								{
+									residencyStart = timestamp;
+								}
+							}
+						}
 					#else
-						while ( target_direction ? (heater->akt_temp < heater->target_temp) : (heater->akt_temp > heater->target_temp) ) 
+						while(1)
 						{
-					#endif
-							if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
+							if (heater->akt_temp < min_target || heater->akt_temp > max_target)
 							{
-								sendReply("ok T:%u \r\n",heater->akt_temp);
-								codenum = timestamp;
+								if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
+								{
+									sendReply("ok T:%u \r\n",heater->akt_temp);
+									codenum = timestamp;
+								}
 							}
-							#ifdef TEMP_RESIDENCY_TIME
-							/* start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
-							or when current temp falls outside the hysteresis after target temp was reached */
-							if (   (residencyStart == -1 &&	 target_direction && heater->akt_temp >= heater->target_temp)
-							|| (residencyStart == -1 && !target_direction && heater->akt_temp <= heater->target_temp)
-							|| (residencyStart > -1 && labs(heater->akt_temp) - heater->target_temp > TEMP_HYSTERESIS) )
+							else
 							{
-								residencyStart = timestamp;
+								break; //done
 							}
-							#endif
 						}
 					}
+					#endif
 					break;
 				}
 				case 110:

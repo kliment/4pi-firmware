@@ -189,6 +189,9 @@
 #define HEATER_CHECK_INTERVAL 250
 #define BED_CHECK_INTERVAL 5000
 
+#define TEMP_HYSTERESIS 1       // (C°) range of +/- temperatures considered "close" to the target one
+
+
 
 //// Experimental watchdog and minimal temp
 // The watchdog waits for the watchperiod in milliseconds whenever an M104 or M109 increases the target temperature
@@ -197,7 +200,6 @@
 
 // Actual temperature must be close to target for this long before M109 returns success
 //#define TEMP_RESIDENCY_TIME 20  // (seconds)
-//#define TEMP_HYSTERESIS 5       // (C°) range of +/- temperatures considered "close" to the target one
 
 //// The minimal temperature defines the temperature below which the heater will not be enabled
 #define MINTEMP 5
