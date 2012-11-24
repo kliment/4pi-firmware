@@ -490,14 +490,14 @@ static int gcode_process_command()
 				case 104: // M104
 					if (has_code('S'))
 					{
-						heater_struct* heater = get_heater(GET('T',active_extruder));
+						heater_struct* heater = get_heater(GET('T',GET('P',active_extruder)));
 						if (heater)
 							heater->target_temp = get_uint('S');
 					}
 					break;
 				case 105: // M105
 				{
-					heater_struct* heater = get_heater(GET('T',active_extruder));
+					heater_struct* heater = get_heater(GET('T',GET('P',active_extruder)));
 				
 					if (heater)
 					{
@@ -521,7 +521,7 @@ static int gcode_process_command()
 					  break;
 				case 109: // M109 - Wait for extruder heater to reach target.
 				{
-					heater_struct* heater = get_heater(GET('T',active_extruder));
+					heater_struct* heater = get_heater(GET('T',GET('P',active_extruder)));
 				
 					if (heater)
 					{
@@ -653,7 +653,7 @@ static int gcode_process_command()
 					{
 						if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
 						{
-							heater_struct* heater = get_heater(GET('T',active_extruder));
+							heater_struct* heater = get_heater(GET('T',GET('P',active_extruder)));
 
 							if (heater)
 							{
@@ -775,7 +775,7 @@ static int gcode_process_command()
 				}
 				case 303: // M303 PID autotune
 				{
-					heater_struct* heater = get_heater(GET('T',active_extruder));
+					heater_struct* heater = get_heater(GET('T',GET('P',active_extruder)));
 
 					if (heater)
 					{
@@ -791,7 +791,7 @@ static int gcode_process_command()
 				}
 				case 304: // M304 Evaluate heater performance
 				{
-					heater_struct* heater = get_heater(GET('T',active_extruder));
+					heater_struct* heater = get_heater(GET('T',GET('P',active_extruder)));
 
 					if (heater)
 					{
@@ -949,7 +949,7 @@ static int gcode_process_command()
 					break;
 				case 530: // M530 Heater Sensor
 				{
-					int extruder = GET('T',active_extruder);
+					int extruder = GET('T',GET('P',active_extruder));
 					heater_struct* heater = get_heater(extruder);
 
 					if (heater)
@@ -966,7 +966,7 @@ static int gcode_process_command()
 	
 				case 531: // M531 Heater PWM
 				{
-					int extruder = GET('T',active_extruder);
+					int extruder = GET('T',GET('P',active_extruder));
 					heater_struct* heater = get_heater(extruder);
 
 					if (heater)
