@@ -560,7 +560,7 @@ static int gcode_process_command()
 							}
 							else
 							{
-								if (residencyStart > -1 && timestamp - residencyStart) > TEMP_RESIDENCY_TIME*1000)
+								if ((residencyStart > (-1)) && ((timestamp - residencyStart) > TEMP_RESIDENCY_TIME*1000))
 								{
 									break; //done
 								}
