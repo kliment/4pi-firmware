@@ -872,13 +872,13 @@ static int gcode_process_command()
 					break;
 				case 520: // M520 Maximum Area unit
 					if(has_code('X'))
-						pa.x_max_length = get_bool('X');
+						pa.x_max_length = get_int('X');
 
 					if(has_code('Y'))
-						pa.y_max_length = get_bool('Y');
+						pa.y_max_length = get_int('Y');
 
 					if(has_code('Z'))
-						pa.z_max_length = get_bool('Z');
+						pa.z_max_length = get_int('Z');
 
 					break;
 				case 521: // M521 Disable axis when unused
