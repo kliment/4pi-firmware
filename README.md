@@ -42,19 +42,19 @@ Firmware compilation and upload
 4. Using your IDE of choice or text editor modify init_configuration.h
    4pi-firmware/src/init_configuration.h
    **SPECIFICALLY CHECK/MODIFY THESE VALUES FOR YOUR MACHINE**
-  #define THERMISTORHEATER 11
-  #define THERMISTORBED 11
-  #define _AXIS_STEP_PER_UNIT {80, 80, 3200/0.8,700}
-  #define _AXIS_CURRENT {128, 128, 128, 128, 128}
-  #define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
-  #define _X_MAX_LENGTH 200
-  #define _Y_MAX_LENGTH 200
-  #define _Z_MAX_LENGTH 100
-  #define _MAX_FEEDRATE {400, 400, 2, 45} // (mm/sec)
-  #define _HOMING_FEEDRATE {1500,1500,120} // (mm/min) !!
-  #define _ACCELERATION 1000 // Axis Normal acceleration mm/s^2
-  #define _RETRACT_ACCELERATION 2000 // Extruder Normal acceleration mm/s^2
-  #define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,50,5000} // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
+  define THERMISTORHEATER 11
+  define THERMISTORBED 11
+  define _AXIS_STEP_PER_UNIT {80, 80, 3200/0.8,700}
+  define _AXIS_CURRENT {128, 128, 128, 128, 128}
+  define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
+  define _X_MAX_LENGTH 200
+  define _Y_MAX_LENGTH 200
+  define _Z_MAX_LENGTH 100
+  define _MAX_FEEDRATE {400, 400, 2, 45} // (mm/sec)
+  define _HOMING_FEEDRATE {1500,1500,120} // (mm/min) !!
+  define _ACCELERATION 1000 // Axis Normal acceleration mm/s^2
+  define _RETRACT_ACCELERATION 2000 // Extruder Normal acceleration mm/s^2
+  define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,50,5000} // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
 
 5. Compile the firmware by going to the \src directory and running "make". This should create a \bin and \obj folder in the \src folder
 
@@ -87,19 +87,19 @@ Firmware compilation and upload
 5. Using your IDE of choice or text editor modify init_configuration.h
    4pi-firmware\src\init_configuration.h
    **SPECIFICALLY CHECK/MODIFY THESE VALUES FOR YOUR MACHINE**
-  #define THERMISTORHEATER 11
-  #define THERMISTORBED 11
-  #define _AXIS_STEP_PER_UNIT {80, 80, 3200/0.8,700}
-  #define _AXIS_CURRENT {128, 128, 128, 128, 128}
-  #define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
-  #define _X_MAX_LENGTH 200
-  #define _Y_MAX_LENGTH 200
-  #define _Z_MAX_LENGTH 100
-  #define _MAX_FEEDRATE {400, 400, 2, 45} // (mm/sec)
-  #define _HOMING_FEEDRATE {1500,1500,120} // (mm/min) !!
-  #define _ACCELERATION 1000 // Axis Normal acceleration mm/s^2
-  #define _RETRACT_ACCELERATION 2000 // Extruder Normal acceleration mm/s^2
-  #define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,50,5000} // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
+  define THERMISTORHEATER 11
+  define THERMISTORBED 11
+  define _AXIS_STEP_PER_UNIT {80, 80, 3200/0.8,700}
+  define _AXIS_CURRENT {128, 128, 128, 128, 128}
+  define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
+  define _X_MAX_LENGTH 200
+  define _Y_MAX_LENGTH 200
+  define _Z_MAX_LENGTH 100
+  define _MAX_FEEDRATE {400, 400, 2, 45} // (mm/sec)
+  define _HOMING_FEEDRATE {1500,1500,120} // (mm/min) !!
+  define _ACCELERATION 1000 // Axis Normal acceleration mm/s^2
+  define _RETRACT_ACCELERATION 2000 // Extruder Normal acceleration mm/s^2
+  define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,50,5000} // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
 
 6. Compile the firmware by using what ever compiler you chose to download (if using Codebench, the command line is cs-make.exe). This should create a \bin and \obj folder in the \src folder
 
