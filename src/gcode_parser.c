@@ -303,6 +303,10 @@ static int gcode_process_command()
 	{
 		case 'G':
 		{
+			if (sdcard_iscapturing()) {
+				sdcard_writeline(parserState.parsePos);
+				break;
+			}
 			switch(get_int('G'))
 			{
 				case 0:
@@ -393,7 +397,12 @@ static int gcode_process_command()
 		}
 		case 'M':
 		{
-			switch(get_int('M'))
+			int mcode = get_int('M');
+			if (sdcard_iscapturing() && (mcode < 20 || mcode > 29)) {
+				sdcard_writeline(parserState.parsePos);
+				break;
+			}
+			switch(mcode)
 			{
 				case 20: //list sd files
 					sdcard_listfiles();
@@ -1050,6 +1059,10 @@ static int gcode_process_command()
 		}
 		case 'T':
 		{
+			if (sdcard_iscapturing()) {
+				sdcard_writeline(parserState.parsePos);
+				break;
+			}
 			int new_extruder = get_uint('T');
 			if (new_extruder >= MAX_EXTRUDER)
 			{
