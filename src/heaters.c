@@ -766,9 +766,9 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
     hotend->pwm = (unsigned char)PIDAT_PWM_val;
     }
 
-    if((PIDAT_input > (PIDAT_test_temp > 10)) || (PIDAT_input > 255))
+    if((PIDAT_input < (10)) || (PIDAT_input > 255))
     {
-      usb_printf("PID Autotune failed! Temperature to low \r\n");
+      usb_printf("PID Autotune failed! Double check thermistor connection \r\n");
       hotend->target_temp = 0;
       hotend->pwm = 0;
       autotune_active = false;
@@ -777,7 +777,7 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
 
     if((PIDAT_input > (PIDAT_test_temp + 55)) || (PIDAT_input > 255))
     {
-      usb_printf("PID Autotune failed! Temperature to high \r\n");
+      usb_printf("PID Autotune failed! Temperature too high \r\n");
       hotend->target_temp = 0;
       hotend->pwm = 0;
       autotune_active = false;
