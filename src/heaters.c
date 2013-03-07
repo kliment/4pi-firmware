@@ -741,18 +741,21 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
 
               printf(" P:%u, I:%u, D:%u\r\n",(unsigned)(PIDAT_Kp*1000),(unsigned)(PIDAT_Ki*1000),(unsigned)(PIDAT_Kd*1000));
               usb_printf(" Clasic PID \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n", (unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
+              usb_printf("  Set with M301 P%u I%u D%u\r\n", (unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
 
               PIDAT_Kp = 0.33*PIDAT_Ku;
               PIDAT_Ki = 2*PIDAT_Kp/PIDAT_Tu;
               PIDAT_Kd = PIDAT_Kp*PIDAT_Tu/3;
 
               usb_printf(" Some overshoot \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n",(unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
+              usb_printf("  Set with M301 P%u I%u D%u\r\n", (unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
 
               PIDAT_Kp = 0.20*PIDAT_Ku;
               PIDAT_Ki = 2*PIDAT_Kp/PIDAT_Tu;
               PIDAT_Kd = PIDAT_Kp*PIDAT_Tu/3;
 
               usb_printf(" No overshoot \r\n  CFG Kp: %u \r\n  CFG Ki: %u \r\n  CFG Kd: %u \r\n",(unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
+              usb_printf("  Set with M301 P%u I%u D%u\r\n", (unsigned int)(PIDAT_Kp*256),(unsigned int)(PIDAT_Ki*PIDAT_TIME_FACTOR),(unsigned int)(PIDAT_Kd*PIDAT_TIME_FACTOR));
 
             }
           }
