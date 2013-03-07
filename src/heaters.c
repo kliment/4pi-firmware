@@ -128,7 +128,7 @@ void LED_switch(unsigned char led, unsigned char en)
 
 
 //--------------------------------------------
-// Convert °C to mV with Compute function
+// Convert ï¿½C to mV with Compute function
 //--------------------------------------------
 signed short temp2analog_thermistor_compute(signed short celsius, const float beta, const float rs, const float r_inf)
 {
@@ -165,7 +165,7 @@ signed short temp2analog_thermistor_table(signed short celsius, const short tabl
 
 
 //--------------------------------------------
-// Convert mV to °C with Compute function
+// Convert mV to ï¿½C with Compute function
 //---------------------------------------------
 signed short analog2temp_thermistor_compute(signed short raw, const float beta, const float rs, const float r_inf)
 {
@@ -769,9 +769,18 @@ void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
     hotend->pwm = (unsigned char)PIDAT_PWM_val;
     }
 
+    if((PIDAT_input < (10)) || (PIDAT_input > 255))
+    {
+      usb_printf("PID Autotune failed! Double check thermistor connection \r\n");
+      hotend->target_temp = 0;
+      hotend->pwm = 0;
+      autotune_active = false;
+      return;
+    }
+
     if((PIDAT_input > (PIDAT_test_temp + 55)) || (PIDAT_input > 255))
     {
-      usb_printf("PID Autotune failed! Temperature to high \r\n");
+      usb_printf("PID Autotune failed! Temperature too high \r\n");
       hotend->target_temp = 0;
       hotend->pwm = 0;
       autotune_active = false;
