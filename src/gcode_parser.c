@@ -367,7 +367,7 @@ static int gcode_process_command()
 						destination[X_AXIS] = 3 * pa.x_max_length;
 						destination[Y_AXIS] = 3 * pa.y_max_length;
 						destination[Z_AXIS] = 3 * pa.z_max_length;
-						feedrate = 1.732 * pa.homing_feedrate[X_AXIS];	//1.732 = sqrt(3)
+						feedrate = 1.732 * pa.homing_feedrate[X_AXIS];	//1.732 = sqrt(3), but why?
 						plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
 						st_synchronize();
 						//endstops_hit_on_purpose(); //seems not to be implemented in this firmware
