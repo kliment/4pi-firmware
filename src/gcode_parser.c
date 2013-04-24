@@ -354,7 +354,30 @@ static int gcode_process_command()
 
 					home_all_axis = !((has_code(axis_codes[0])) || (has_code(axis_codes[1])) || (has_code(axis_codes[2])))
 									|| ((has_code(axis_codes[0])) && (has_code(axis_codes[1])) && (has_code(axis_codes[2])));
+									
+					
+					#ifdef QUICK_HOME
+					if (home_all_axis)  // Move all carriages up together until the first endstop is hit.
+					{
+						current_position[X_AXIS] = 0;
+						current_position[Y_AXIS] = 0;
+						current_position[Z_AXIS] = 0;
+						plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
 
+						destination[X_AXIS] = 3 * pa.x_max_length;
+						destination[Y_AXIS] = 3 * pa.y_max_length;
+						destination[Z_AXIS] = 3 * pa.z_max_length;
+						feedrate = 1.732 * pa.homing_feedrate[X_AXIS];	//1.732 = sqrt(3)
+						plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+						st_synchronize();
+						//endstops_hit_on_purpose(); //seems not to be implemented in this firmware
+
+						current_position[X_AXIS] = destination[X_AXIS];
+						current_position[Y_AXIS] = destination[Y_AXIS];
+						current_position[Z_AXIS] = destination[Z_AXIS];
+					}
+					#endif
+					
 					if((home_all_axis) || (has_code(axis_codes[X_AXIS]))) 
 						homing_routine(X_AXIS);
 
