@@ -37,6 +37,7 @@
 
 
 float destination[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
+float delta[3] = {0.0, 0.0, 0.0};
 float current_position[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
 float add_homing[3]={0,0,0};
 char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
