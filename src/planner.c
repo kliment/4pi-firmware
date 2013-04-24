@@ -173,14 +173,43 @@ void prepare_move()
 	{
 		help_feedrate = ((long)feedrate*(long)100);
 	}
+	
+	
+	//calculate relative movement
+	float difference[NUM_AXIS];
+	for (i=0; i < NUM_AXIS; i++) {
+		difference[i] = destination[i] - current_position[i];
+	}
+	
+	//calculate length of movement
+	float cartesian_mm = sqrt(sq(difference[X_AXIS]) +
+                            sq(difference[Y_AXIS]) +
+                            sq(difference[Z_AXIS]));
+	if (cartesian_mm < 0.000001) { return; }
+	
+	//calculate number of slices to divide movement
+	float seconds = 6000 * cartesian_mm / feedrate / feedmultiply;
+	int steps = max(1, (int)(DELTA_SEGMENTS_PER_SECOND * seconds));
 
 	printf("new POS 1:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
 	
-	//stores results in delta[3] array
-	calculate_delta(destination);
-	
-	plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0, active_extruder);
+	//calculate the slices
+	int s;
+	for (s = 1; s <= steps; s++) {
+		float fraction = (float)(s) / (float)(steps);
+		
+		//calculate absolute position for this slice
+		for(i=0; i < NUM_AXIS; i++) {
+			destination[i] = current_position[i] + difference[i] * fraction;
+		}
+		//stores results in delta[3] array
+		calculate_delta(destination);
+		
+		//add to buffer
+		plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0, active_extruder);
 
+	}
+	
 	for(i=0; i < NUM_AXIS; i++)
 	{
 		current_position[i] = destination[i];
