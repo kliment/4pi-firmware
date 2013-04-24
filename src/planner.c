@@ -118,6 +118,23 @@ void get_arc_coordinates()
 	}
 }
 
+//calculates the movements for delta printers
+void calculate_delta(float cartesian[3])
+{
+  delta[X_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
+                       - sq(DELTA_TOWER1_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER1_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS];
+  delta[Y_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
+                       - sq(DELTA_TOWER2_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER2_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS];
+  delta[Z_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
+                       - sq(DELTA_TOWER3_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER3_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS];
+}
+
 
 
 void prepare_move()
@@ -152,7 +169,11 @@ void prepare_move()
 	}
 
 	printf("new POS 1:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
-	plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0,active_extruder);
+	
+	//stores results in delta[3] array
+	calculate_delta(destination);
+	
+	plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0, active_extruder);
 
 	for(i=0; i < NUM_AXIS; i++)
 	{
