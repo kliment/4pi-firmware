@@ -96,6 +96,9 @@
 #define Y_HOME_DIR -1
 #define Z_HOME_DIR -1
 
+//Move all axis until the first endstop is hit. Should be enabled for Delta printers.
+#define QUICK_HOME
+
 //-----------------------------------------------------------------------
 //Max Length for Prusa Mendel, check the ways of your axis and set this Values
 //-----------------------------------------------------------------------
