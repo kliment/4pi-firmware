@@ -352,7 +352,8 @@ static int gcode_process_command()
 					feedrate = 0;
 					is_homing = 1;
 
-					home_all_axis = !((has_code(axis_codes[0])) || (has_code(axis_codes[1])) || (has_code(axis_codes[2])));
+					home_all_axis = !((has_code(axis_codes[0])) || (has_code(axis_codes[1])) || (has_code(axis_codes[2])))
+									|| ((has_code(axis_codes[0])) && (has_code(axis_codes[1])) && (has_code(axis_codes[2])));
 
 					if((home_all_axis) || (has_code(axis_codes[X_AXIS]))) 
 						homing_routine(X_AXIS);
