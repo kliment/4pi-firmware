@@ -47,7 +47,7 @@
 //-----------------------------------------------------------------------
 //The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
 //If your axes are only moving in one direction, make sure the endstops are connected properly.
-#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
+//#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
 //If your axes move in one direction ONLY when the endstops are triggered, set [XYZ]_ENDSTOP_INVERT to true here:
 #define _X_ENDSTOP_INVERT 	false
@@ -56,20 +56,20 @@
 
 //#define ENDSTOPS_ONLY_FOR_HOMING // If defined the endstops will only be used for homing
 
-#define _MIN_SOFTWARE_ENDSTOPS false; //If true, axis won't move to coordinates less than zero.
+#define _MIN_SOFTWARE_ENDSTOPS true; //If true, axis won't move to coordinates less than zero.
 #define _MAX_SOFTWARE_ENDSTOPS true; //If true, axis won't move to coordinates greater than the defined lengths below.
 
 //-----------------------------------------------------------------------
 //// ENDSTOP INPUT ACTIV:	1 --> Active // -1 --> NO ENDSTOP 
 //-----------------------------------------------------------------------
-#define X_MIN_ACTIV          1
-#define X_MAX_ACTIV          -1
+#define X_MIN_ACTIV          -1
+#define X_MAX_ACTIV          1
 
-#define Y_MIN_ACTIV          1
-#define Y_MAX_ACTIV          -1
+#define Y_MIN_ACTIV          -1
+#define Y_MAX_ACTIV          1
 
-#define Z_MIN_ACTIV          1
-#define Z_MAX_ACTIV          -1
+#define Z_MIN_ACTIV          -1
+#define Z_MAX_ACTIV          1
 
 //-----------------------------------------------------------------------
 // Disables axis when it's not being used.
@@ -77,7 +77,7 @@
 
 #define _DISABLE_X_EN 	false
 #define _DISABLE_Y_EN 	false
-#define _DISABLE_Z_EN 	true
+#define _DISABLE_Z_EN 	false
 #define _DISABLE_E_EN 	false
 
 //-----------------------------------------------------------------------
@@ -85,31 +85,31 @@
 //-----------------------------------------------------------------------
 #define _INVERT_X_DIR 	false
 #define _INVERT_Y_DIR 	false
-#define _INVERT_Z_DIR 	true
+#define _INVERT_Z_DIR 	false
 #define _INVERT_E_DIR 	false
 
 //-----------------------------------------------------------------------
 //// HOMING SETTINGS:
 //-----------------------------------------------------------------------
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
-#define X_HOME_DIR -1
-#define Y_HOME_DIR -1
-#define Z_HOME_DIR -1
+#define X_HOME_DIR 1
+#define Y_HOME_DIR 1
+#define Z_HOME_DIR 1
 
 //Move all axis until the first endstop is hit. Should be enabled for Delta printers.
 #define QUICK_HOME
 
 //-----------------------------------------------------------------------
-//Max Length for Prusa Mendel, check the ways of your axis and set this Values
+//Check the ways of your axis and set these Values
 //-----------------------------------------------------------------------
-#define _X_MAX_LENGTH	200
-#define _Y_MAX_LENGTH 	200
-#define _Z_MAX_LENGTH 	100
+#define _X_MAX_LENGTH	300
+#define _Y_MAX_LENGTH 	300
+#define _Z_MAX_LENGTH 	300
 
 //-----------------------------------------------------------------------
 //// MOVEMENT SETTINGS
 //-----------------------------------------------------------------------
-#define _MAX_FEEDRATE {400, 400, 2, 45}       // (mm/sec)    
+#define _MAX_FEEDRATE {400, 400, 400, 45}       // (mm/sec)    
 #define _HOMING_FEEDRATE {1500,1500,120}      // (mm/min) !!
 #define _AXIS_RELATIVE_MODES {false, false, false, false}
 
