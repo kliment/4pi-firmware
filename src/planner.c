@@ -118,6 +118,12 @@ void get_arc_coordinates()
 	}
 }
 
+
+//square helper function
+float sq(float x){
+	return x*x;
+}
+
 //calculates the movements for delta printers
 void calculate_delta(float cartesian[3])
 {
