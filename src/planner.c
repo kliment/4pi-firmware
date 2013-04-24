@@ -119,6 +119,8 @@ void get_arc_coordinates()
 }
 
 
+#ifdef IS_DELTA
+
 //square helper function
 float sq(float x){
 	return x*x;
@@ -141,6 +143,7 @@ void calculate_delta(float cartesian[3])
                        ) + cartesian[Z_AXIS];
 }
 
+#endif //IS_DELTA
 
 
 void prepare_move()
@@ -174,6 +177,7 @@ void prepare_move()
 		help_feedrate = ((long)feedrate*(long)100);
 	}
 	
+#ifdef IS_DELTA
 	
 	//calculate relative movement
 	float difference[NUM_AXIS];
@@ -191,7 +195,7 @@ void prepare_move()
 	float seconds = 6000 * cartesian_mm / feedrate / feedmultiply;
 	int steps = max(1, (int)(DELTA_SEGMENTS_PER_SECOND * seconds));
 
-	printf("new POS 1:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
+	
 	
 	//calculate the slices
 	int s;
@@ -206,9 +210,17 @@ void prepare_move()
 		calculate_delta(destination);
 		
 		//add to buffer
+		printf("new POS 1:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
 		plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0, active_extruder);
 
 	}
+	
+#else	//IS_DELTA
+	
+	printf("new POS 1:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
+	plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0, active_extruder);
+	
+#endif	//IS_DELTA
 	
 	for(i=0; i < NUM_AXIS; i++)
 	{
