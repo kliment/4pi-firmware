@@ -37,7 +37,7 @@
 //// Calibration variables
 //-----------------------------------------------------------------------
 // X, Y, Z, E steps per unit
-#define _AXIS_STEP_PER_UNIT {80, 80, 3200/0.8,700}
+#define _AXIS_STEP_PER_UNIT {29.0909, 29.0909, 29.0909,700}
 
 #define _AXIS_CURRENT {128, 128, 128, 128, 128}
 #define _AXIS_USTEP {3, 3, 3, 3, 3}
@@ -102,15 +102,15 @@
 //-----------------------------------------------------------------------
 //Check the ways of your axis and set these Values
 //-----------------------------------------------------------------------
-#define _X_MAX_LENGTH	300
-#define _Y_MAX_LENGTH 	300
-#define _Z_MAX_LENGTH 	300
+#define _X_MAX_LENGTH	700
+#define _Y_MAX_LENGTH 	700
+#define _Z_MAX_LENGTH 	700
 
 //-----------------------------------------------------------------------
 //// MOVEMENT SETTINGS
 //-----------------------------------------------------------------------
 #define _MAX_FEEDRATE {400, 400, 400, 45}       // (mm/sec)    
-#define _HOMING_FEEDRATE {1500,1500,120}      // (mm/min) !!
+#define _HOMING_FEEDRATE {2000,2000,2000}      // (mm/min) !!
 #define _AXIS_RELATIVE_MODES {false, false, false, false}
 
 
@@ -123,7 +123,7 @@
 #define _MAX_XY_JERK 20.0
 #define _MAX_Z_JERK 0.4
 #define _MAX_E_JERK 5.0
-#define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,50,5000}    // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
+#define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,5000,5000}    // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
 
 //For the retract (negative Extruder) move this maxiumum Limit of Feedrate is used
 //The next positive Extruder move use also this Limit, 
@@ -226,19 +226,19 @@
 // Make delta curves from many straight lines (linear interpolation).
 // This is a trade-off between visible corners (not enough segments)
 // and processor overload (too many expensive sqrt calls).
-#define DELTA_SEGMENTS_PER_SECOND 200
+#define DELTA_SEGMENTS_PER_SECOND 200 //200
 
 // Center-to-center distance of the holes in the diagonal push rods.
-#define DELTA_DIAGONAL_ROD 250.0 // mm
+#define DELTA_DIAGONAL_ROD 492.0 // mm
 
 // Horizontal offset from middle of printer to smooth rod center.
-#define DELTA_SMOOTH_ROD_OFFSET 175.0 // mm
+#define DELTA_SMOOTH_ROD_OFFSET 267.0 // mm
 
 // Horizontal offset of the universal joints on the end effector.
-#define DELTA_EFFECTOR_OFFSET 33.0 // mm
+#define DELTA_EFFECTOR_OFFSET 45.0 // mm
 
 // Horizontal offset of the universal joints on the carriages.
-#define DELTA_CARRIAGE_OFFSET 18.0 // mm
+#define DELTA_CARRIAGE_OFFSET 15.0 // mm
 
 // Effective horizontal distance bridged by diagonal push rods.
 #define DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
