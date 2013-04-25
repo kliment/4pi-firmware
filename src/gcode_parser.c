@@ -362,6 +362,7 @@ static int gcode_process_command()
 						current_position[X_AXIS] = 0;
 						current_position[Y_AXIS] = 0;
 						current_position[Z_AXIS] = 0;
+						printf("from quickhoming\n\r");
 						plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
 
 						destination[X_AXIS] = 3 * pa.x_max_length;
@@ -386,6 +387,17 @@ static int gcode_process_command()
 
 					if((home_all_axis) || (has_code(axis_codes[Z_AXIS]))) 
 						homing_routine(Z_AXIS);
+						
+						
+					#ifdef IS_DELTA
+					if(home_all_axis){
+						current_position[X_AXIS] = 0;
+						current_position[Y_AXIS] = 0;
+						current_position[Z_AXIS] = 250;
+						printf("from after homing\n\r");
+						plan_set_position(pa.x_max_length, pa.y_max_length, pa.z_max_length, current_position[E_AXIS]); 
+					}
+					#endif
 
 				#ifdef ENDSTOPS_ONLY_FOR_HOMING
 					enable_endstops(0);
@@ -409,7 +421,8 @@ static int gcode_process_command()
 						st_synchronize();
 
 					GET_ALL_AXES(current_position,float);
-					plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+					printf("from G92\n\r");
+					//plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
 					break;
 				}
