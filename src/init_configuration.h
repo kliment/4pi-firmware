@@ -221,6 +221,8 @@
 //============================== Delta Settings =============================
 //===========================================================================
 
+
+// Uncomment this for delta printers.
 #define IS_DELTA
 
 // Make delta curves from many straight lines (linear interpolation).
