@@ -422,7 +422,7 @@ static int gcode_process_command()
 
 					GET_ALL_AXES(current_position,float);
 					printf("from G92\n\r");
-					//plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+					plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
 					break;
 				}
