@@ -37,7 +37,9 @@
 
 
 float destination[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
+#ifdef IS_DELTA
 float delta[3] = {0.0, 0.0, 0.0};
+#endif //IS_DELTA
 float current_position[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
 float add_homing[3]={0,0,0};
 char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
@@ -334,7 +336,6 @@ void homing_routine(unsigned char axis)
 	if ((min_pin > (-1) && home_dir==(-1)) || (max_pin > (-1) && home_dir==1))
 	{
 		current_position[axis] = (-1.5) * max_length * home_dir;
-		printf("from homing 1\n\r");
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = 0;
 		feedrate = pa.homing_feedrate[axis];
@@ -342,14 +343,12 @@ void homing_routine(unsigned char axis)
 		st_synchronize();
 
 		current_position[axis] = home_bounce/2 * home_dir;
-		printf("from homing 2\n\r");
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = 0;
 		plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
 		st_synchronize();
 
 		current_position[axis] = (home_bounce * home_dir)*(-1);
-		printf("from homing 3\n\r");
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = 0;
 		feedrate = pa.homing_feedrate[axis]/2;
@@ -358,7 +357,6 @@ void homing_routine(unsigned char axis)
 
 		current_position[axis] = (home_dir == (-1)) ? 0 : max_length;
 		current_position[axis] += add_homing[axis];
-		printf("from homing 4\n\r");
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = current_position[axis];
 		feedrate = 0;
@@ -797,9 +795,6 @@ unsigned char retract_feedrate_aktiv = 0;
 // calculation the caller must also provide the physical length of the line in millimeters.
 void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsigned char extruder)
 {
-
-	printf("new POS 2:%d %d %d\n\r",(int)position[0]/29,(int)position[1]/29, (int)position[2]/29);
-
 	// Calculate the buffer head after we push this byte
 	short next_buffer_head = next_block_index(block_buffer_head);
 
@@ -1156,8 +1151,6 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 
 	// Update position
 	memcpy(position, target, sizeof(target)); // position[] = target[]
-	
-	
 
 	planner_recalculate();
 	st_wake_up();
@@ -1194,8 +1187,6 @@ void plan_set_position(float x, float y, float z, float e)
 	#endif //IS_DELTA
 	
 	position[E_AXIS] = lround(e*pa.axis_steps_per_unit[E_AXIS]);
-	
-	printf("set_position:%d %d %d\n\r",(int)position[0]/29,(int)position[1]/29, (int)position[2]/29);
 
 	virtual_steps_x = 0;
 	virtual_steps_y = 0;
