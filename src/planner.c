@@ -1169,7 +1169,7 @@ short calc_plannerpuffer_fill(void)
 void plan_set_position(float x, float y, float z, float e)
 {
 
-
+	
 	#ifdef IS_DELTA
 	//Only "real" physical coordinates should be set using this. Otherwise the delta coordinates are messed up.
 	//When homing, give direct access to the axes.
@@ -1181,11 +1181,12 @@ void plan_set_position(float x, float y, float z, float e)
 		position[Z_AXIS] = lround(delta[2]*pa.axis_steps_per_unit[Z_AXIS]);  
 	}
 	else{
-	#else //IS_DELTA
+	#endif //IS_DELTA
+
 	position[X_AXIS] = lround(x*pa.axis_steps_per_unit[X_AXIS]);
 	position[Y_AXIS] = lround(y*pa.axis_steps_per_unit[Y_AXIS]);
-	position[Z_AXIS] = lround(z*pa.axis_steps_per_unit[Z_AXIS]);     
-	#endif //IS_DELTA
+	position[Z_AXIS] = lround(z*pa.axis_steps_per_unit[Z_AXIS]); 
+	
 	#ifdef IS_DELTA
 	}
 	#endif //IS_DELTA
