@@ -326,7 +326,11 @@ void homing_routine(unsigned char axis)
 			max_pin = Z_MAX_ACTIV;
 			home_dir = pa.z_home_dir;
 			max_length = pa.z_max_length;
+			#ifdef IS_DELTA
+			home_bounce = 10;
+			#else
 			home_bounce = 4;
+			#endif
 		break;
 		default:
 			//never reached
