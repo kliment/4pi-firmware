@@ -97,6 +97,11 @@
 	signed short heater_slope[MAX_EXTRUDER]; 
 	signed short heater_intercept[MAX_EXTRUDER];
 	signed short heater_max_pwm[MAX_EXTRUDER];
+	
+	//Delta related settings
+
+	int delta_offset[3];
+
  
 } parameter_struct;
 

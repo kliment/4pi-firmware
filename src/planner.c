@@ -134,15 +134,18 @@ void calculate_delta(float cartesian[3])
   delta[X_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
                        - sq(DELTA_TOWER1_X-cartesian[X_AXIS])
                        - sq(DELTA_TOWER1_Y-cartesian[Y_AXIS])
-                       ) + cartesian[Z_AXIS];
+                       ) + cartesian[Z_AXIS]
+					   + pa.delta_offset[0];
   delta[Y_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
                        - sq(DELTA_TOWER2_X-cartesian[X_AXIS])
                        - sq(DELTA_TOWER2_Y-cartesian[Y_AXIS])
-                       ) + cartesian[Z_AXIS];
+                       ) + cartesian[Z_AXIS]
+					   + pa.delta_offset[1];
   delta[Z_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
                        - sq(DELTA_TOWER3_X-cartesian[X_AXIS])
                        - sq(DELTA_TOWER3_Y-cartesian[Y_AXIS])
-                       ) + cartesian[Z_AXIS];
+                       ) + cartesian[Z_AXIS]
+					   + pa.delta_offset[2];
 }
 
 #endif //IS_DELTA

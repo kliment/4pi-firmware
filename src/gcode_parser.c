@@ -772,6 +772,12 @@ static int gcode_process_command()
 					GET_AXES(pa.homing_feedrate,float,3);
 					break;
 				}
+				case 208: //M208 Set Offest for Deltaprinter Axes mm X Y Z
+				{
+					GET_AXES(pa.delta_offset,int,3);
+					
+					break;
+				}
 				case 220: // M220 S<factor in percent>- set speed factor override percentage
 				{
 					if(has_code('S')) 
