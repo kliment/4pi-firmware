@@ -37,7 +37,7 @@
 //// Calibration variables
 //-----------------------------------------------------------------------
 // X, Y, Z, E steps per unit
-#define _AXIS_STEP_PER_UNIT {80, 80, 3200/0.8,700}
+#define _AXIS_STEP_PER_UNIT {29.0909, 29.0909, 29.0909,700}
 
 #define _AXIS_CURRENT {128, 128, 128, 128, 128}
 #define _AXIS_USTEP {3, 3, 3, 3, 3}
@@ -47,7 +47,7 @@
 //-----------------------------------------------------------------------
 //The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
 //If your axes are only moving in one direction, make sure the endstops are connected properly.
-#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
+//#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
 //If your axes move in one direction ONLY when the endstops are triggered, set [XYZ]_ENDSTOP_INVERT to true here:
 #define _X_ENDSTOP_INVERT 	false
@@ -56,20 +56,20 @@
 
 //#define ENDSTOPS_ONLY_FOR_HOMING // If defined the endstops will only be used for homing
 
-#define _MIN_SOFTWARE_ENDSTOPS false; //If true, axis won't move to coordinates less than zero.
+#define _MIN_SOFTWARE_ENDSTOPS true; //If true, axis won't move to coordinates less than zero.
 #define _MAX_SOFTWARE_ENDSTOPS true; //If true, axis won't move to coordinates greater than the defined lengths below.
 
 //-----------------------------------------------------------------------
 //// ENDSTOP INPUT ACTIV:	1 --> Active // -1 --> NO ENDSTOP 
 //-----------------------------------------------------------------------
-#define X_MIN_ACTIV          1
-#define X_MAX_ACTIV          -1
+#define X_MIN_ACTIV          -1
+#define X_MAX_ACTIV          1
 
-#define Y_MIN_ACTIV          1
-#define Y_MAX_ACTIV          -1
+#define Y_MIN_ACTIV          -1
+#define Y_MAX_ACTIV          1
 
-#define Z_MIN_ACTIV          1
-#define Z_MAX_ACTIV          -1
+#define Z_MIN_ACTIV          -1
+#define Z_MAX_ACTIV          1
 
 //-----------------------------------------------------------------------
 // Disables axis when it's not being used.
@@ -77,7 +77,7 @@
 
 #define _DISABLE_X_EN 	false
 #define _DISABLE_Y_EN 	false
-#define _DISABLE_Z_EN 	true
+#define _DISABLE_Z_EN 	false
 #define _DISABLE_E_EN 	false
 
 //-----------------------------------------------------------------------
@@ -85,29 +85,32 @@
 //-----------------------------------------------------------------------
 #define _INVERT_X_DIR 	false
 #define _INVERT_Y_DIR 	false
-#define _INVERT_Z_DIR 	true
+#define _INVERT_Z_DIR 	false
 #define _INVERT_E_DIR 	false
 
 //-----------------------------------------------------------------------
 //// HOMING SETTINGS:
 //-----------------------------------------------------------------------
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
-#define X_HOME_DIR -1
-#define Y_HOME_DIR -1
-#define Z_HOME_DIR -1
+#define X_HOME_DIR 1
+#define Y_HOME_DIR 1
+#define Z_HOME_DIR 1
+
+//Move all axis until the first endstop is hit. Should be enabled for Delta printers.
+#define QUICK_HOME
 
 //-----------------------------------------------------------------------
-//Max Length for Prusa Mendel, check the ways of your axis and set this Values
+//Check the ways of your axis and set these Values
 //-----------------------------------------------------------------------
-#define _X_MAX_LENGTH	200
-#define _Y_MAX_LENGTH 	200
-#define _Z_MAX_LENGTH 	100
+#define _X_MAX_LENGTH	700
+#define _Y_MAX_LENGTH 	700
+#define _Z_MAX_LENGTH 	700
 
 //-----------------------------------------------------------------------
 //// MOVEMENT SETTINGS
 //-----------------------------------------------------------------------
-#define _MAX_FEEDRATE {400, 400, 2, 45}       // (mm/sec)    
-#define _HOMING_FEEDRATE {1500,1500,120}      // (mm/min) !!
+#define _MAX_FEEDRATE {400, 400, 400, 45}       // (mm/sec)    
+#define _HOMING_FEEDRATE {2000,2000,2000}      // (mm/min) !!
 #define _AXIS_RELATIVE_MODES {false, false, false, false}
 
 
@@ -118,9 +121,9 @@
 #define _ACCELERATION 1000         // Axis Normal acceleration mm/s^2
 #define _RETRACT_ACCELERATION 2000 // Extruder Normal acceleration mm/s^2
 #define _MAX_XY_JERK 20.0
-#define _MAX_Z_JERK 0.4
+#define _MAX_Z_JERK 20.0
 #define _MAX_E_JERK 5.0
-#define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,50,5000}    // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
+#define _MAX_ACCELERATION_UNITS_PER_SQ_SECOND {5000,5000,5000,5000}    // X, Y, Z and E max acceleration in mm/s^2 for printing moves or retracts
 
 //For the retract (negative Extruder) move this maxiumum Limit of Feedrate is used
 //The next positive Extruder move use also this Limit, 
@@ -210,6 +213,47 @@
 // You should use MINTEMP for thermistor short/failure protection.
 #define MAXTEMP 275
 
+
+
+
+
+//===========================================================================
+//============================== Delta Settings =============================
+//===========================================================================
+
+
+// Uncomment this for delta printers.
+#define IS_DELTA
+
+// Make delta curves from many straight lines (linear interpolation).
+// This is a trade-off between visible corners (not enough segments)
+// and processor overload (too many expensive sqrt calls).
+#define DELTA_SEGMENTS_PER_SECOND 200 //200
+
+// Center-to-center distance of the holes in the diagonal push rods.
+#define DELTA_DIAGONAL_ROD 492.0 // mm
+
+// Horizontal offset from middle of printer to smooth rod center.
+#define DELTA_SMOOTH_ROD_OFFSET 267.0 // mm
+
+// Horizontal offset of the universal joints on the end effector.
+#define DELTA_EFFECTOR_OFFSET 45.0 // mm
+
+// Horizontal offset of the universal joints on the carriages.
+#define DELTA_CARRIAGE_OFFSET 15.0 // mm
+
+// Effective horizontal distance bridged by diagonal push rods.
+#define DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
+
+// Effective X/Y positions of the three vertical towers.
+#define SIN_60 0.8660254037844386
+#define COS_60 0.5
+#define DELTA_TOWER1_X -SIN_60*DELTA_RADIUS // front left tower
+#define DELTA_TOWER1_Y -COS_60*DELTA_RADIUS
+#define DELTA_TOWER2_X SIN_60*DELTA_RADIUS // front right tower
+#define DELTA_TOWER2_Y -COS_60*DELTA_RADIUS
+#define DELTA_TOWER3_X 0.0 // back middle tower
+#define DELTA_TOWER3_Y DELTA_RADIUS
 
 
 #endif

@@ -37,6 +37,9 @@
 
 
 float destination[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
+#ifdef IS_DELTA
+float delta[3] = {0.0, 0.0, 0.0};
+#endif //IS_DELTA
 float current_position[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
 float add_homing[3]={0,0,0};
 char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
@@ -118,6 +121,35 @@ void get_arc_coordinates()
 }
 
 
+#ifdef IS_DELTA
+
+//square helper function
+float sq(float x){
+	return x*x;
+}
+
+//calculates the movements for delta printers
+void calculate_delta(float cartesian[3])
+{
+  delta[X_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
+                       - sq(DELTA_TOWER1_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER1_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS]
+					   + pa.delta_offset[0];
+  delta[Y_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
+                       - sq(DELTA_TOWER2_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER2_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS]
+					   + pa.delta_offset[1];
+  delta[Z_AXIS] = sqrt(sq(DELTA_DIAGONAL_ROD)
+                       - sq(DELTA_TOWER3_X-cartesian[X_AXIS])
+                       - sq(DELTA_TOWER3_Y-cartesian[Y_AXIS])
+                       ) + cartesian[Z_AXIS]
+					   + pa.delta_offset[2];
+}
+
+#endif //IS_DELTA
+
 
 void prepare_move()
 {
@@ -149,10 +181,53 @@ void prepare_move()
 	{
 		help_feedrate = ((long)feedrate*(long)100);
 	}
+	
+#ifdef IS_DELTA
 
+	
+	//calculate relative movement
+	float difference[NUM_AXIS];
+	for (i=0; i < NUM_AXIS; i++) {
+		difference[i] = destination[i] - current_position[i];
+	}
+	
+	//calculate length of movement
+	float cartesian_mm = sqrt(sq(difference[X_AXIS]) +
+							sq(difference[Y_AXIS]) +
+							sq(difference[Z_AXIS]));
+	if (cartesian_mm < 0.000001) { return; }
+	
+	//calculate number of slices to divide movement
+	float seconds = 6000 * cartesian_mm / feedrate / feedmultiply;
+	int steps = max(1, (int)(DELTA_SEGMENTS_PER_SECOND * seconds));
+
+	
+	
+	//calculate the slices
+	int s;
+	for (s = 1; s <= steps; s++) {
+		float fraction = (float)(s) / (float)(steps);
+		
+		//calculate absolute position for this slice
+		for(i=0; i < NUM_AXIS; i++) {
+			destination[i] = current_position[i] + difference[i] * fraction;
+		}
+		//stores results in delta[3] array
+		calculate_delta(destination);
+		
+		//add to buffer
+		printf("new POS 1:%d %d %d %d %d\n\r",(int)delta[0],(int)delta[1],(int)delta[2],(int)destination[3],(int)feedrate);
+		plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0, active_extruder);
+
+	}
+
+#else	//IS_DELTA
+	
 	printf("new POS 1:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
-	plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0,active_extruder);
-
+	plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0, active_extruder);
+	
+#endif	//IS_DELTA
+	
 	for(i=0; i < NUM_AXIS; i++)
 	{
 		current_position[i] = destination[i];
@@ -254,7 +329,11 @@ void homing_routine(unsigned char axis)
 			max_pin = Z_MAX_ACTIV;
 			home_dir = pa.z_home_dir;
 			max_length = pa.z_max_length;
+			#ifdef IS_DELTA
+			home_bounce = 10;
+			#else
 			home_bounce = 4;
+			#endif
 		break;
 		default:
 			//never reached
@@ -267,20 +346,20 @@ void homing_routine(unsigned char axis)
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = 0;
 		feedrate = pa.homing_feedrate[axis];
-		prepare_move();
+		plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
 		st_synchronize();
 
 		current_position[axis] = home_bounce/2 * home_dir;
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = 0;
-		prepare_move();
+		plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
 		st_synchronize();
 
 		current_position[axis] = (home_bounce * home_dir)*(-1);
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = 0;
 		feedrate = pa.homing_feedrate[axis]/2;
-		prepare_move();
+		plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
 		st_synchronize();
 
 		current_position[axis] = (home_dir == (-1)) ? 0 : max_length;
@@ -1092,10 +1171,30 @@ short calc_plannerpuffer_fill(void)
 
 void plan_set_position(float x, float y, float z, float e)
 {
+
+	
+	#ifdef IS_DELTA
+	//Only "real" physical coordinates should be set using this. Otherwise the delta coordinates are messed up.
+	//When homing, give direct access to the axes.
+	if(!is_homing){
+		float pos[3] = {x,y,z};
+		calculate_delta(pos);	//stores output in delta[3]
+		position[X_AXIS] = lround(delta[0]*pa.axis_steps_per_unit[X_AXIS]);
+		position[Y_AXIS] = lround(delta[1]*pa.axis_steps_per_unit[Y_AXIS]);
+		position[Z_AXIS] = lround(delta[2]*pa.axis_steps_per_unit[Z_AXIS]);  
+	}
+	else{
+	#endif //IS_DELTA
+
 	position[X_AXIS] = lround(x*pa.axis_steps_per_unit[X_AXIS]);
 	position[Y_AXIS] = lround(y*pa.axis_steps_per_unit[Y_AXIS]);
-	position[Z_AXIS] = lround(z*pa.axis_steps_per_unit[Z_AXIS]);     
-	position[E_AXIS] = lround(e*pa.axis_steps_per_unit[E_AXIS]);  
+	position[Z_AXIS] = lround(z*pa.axis_steps_per_unit[Z_AXIS]); 
+	
+	#ifdef IS_DELTA
+	}
+	#endif //IS_DELTA
+	
+	position[E_AXIS] = lround(e*pa.axis_steps_per_unit[E_AXIS]);
 
 	virtual_steps_x = 0;
 	virtual_steps_y = 0;

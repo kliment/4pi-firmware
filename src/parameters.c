@@ -138,6 +138,12 @@ void init_parameters(void)
 	pa.heater_intercept[1] = HEATER_1_INTERCEPT;
 	pa.heater_max_pwm[1] = HEATER_1_MAX_PWM;
 	
+
+	pa.delta_offset[0] = DELTA_OFFSET_X;
+	pa.delta_offset[1] = DELTA_OFFSET_Y;
+	pa.delta_offset[2] = DELTA_OFFSET_Z;
+
+	
 }
 
 void FLASH_StoreSettings(void) 
@@ -271,6 +277,11 @@ void FLASH_PrintSettings(void)
 	usb_printf("; Motor Current (mA) (range 0-1900):\r\nM906 X%d Y%d Z%d E%d B%d \r\n",count_ma(pa.axis_current[0]),count_ma(pa.axis_current[1]),count_ma(pa.axis_current[2]),count_ma(pa.axis_current[3]),count_ma(pa.axis_current[4]));
 	usb_printf("; Motor Microstepping (1,2,4,8,16): \r\nM350 X%d Y%d Z%d E%d B%d \r\n",microstep_usteps(pa.axis_ustep[0]),microstep_usteps(pa.axis_ustep[1]),microstep_usteps(pa.axis_ustep[2]),microstep_usteps(pa.axis_ustep[3]),microstep_usteps(pa.axis_ustep[4]));
 	
+	
+	#ifdef IS_DELTA
+	usb_printf("; M208 Set Offest for Deltaprinter Axes:\r\nM208 X%d Y%d Z%d\r\n",(int)pa.delta_offset[0],(int)pa.delta_offset[1],(int)pa.delta_offset[2]);
+	
+	#endif //IS_DELTA
 }
 
 

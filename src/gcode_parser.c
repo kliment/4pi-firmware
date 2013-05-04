@@ -352,8 +352,33 @@ static int gcode_process_command()
 					feedrate = 0;
 					is_homing = 1;
 
-					home_all_axis = !((has_code(axis_codes[0])) || (has_code(axis_codes[1])) || (has_code(axis_codes[2])));
+					home_all_axis = !((has_code(axis_codes[0])) || (has_code(axis_codes[1])) || (has_code(axis_codes[2])))
+									|| ((has_code(axis_codes[0])) && (has_code(axis_codes[1])) && (has_code(axis_codes[2])));
+									
+					
+					#ifdef QUICK_HOME
+					if (home_all_axis)  // Move all carriages up together until the first endstop is hit.
+					{
+						current_position[X_AXIS] = 0;
+						current_position[Y_AXIS] = 0;
+						current_position[Z_AXIS] = 0;
+						printf("from quickhoming\n\r");
+						plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]); 
 
+						destination[X_AXIS] = 3 * pa.x_max_length;
+						destination[Y_AXIS] = 3 * pa.y_max_length;
+						destination[Z_AXIS] = 3 * pa.z_max_length;
+						feedrate = 1.732 * pa.homing_feedrate[X_AXIS];	//1.732 = sqrt(3), but why?
+						plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder);
+						st_synchronize();
+						//endstops_hit_on_purpose(); //seems not to be implemented in this firmware
+
+						current_position[X_AXIS] = destination[X_AXIS];
+						current_position[Y_AXIS] = destination[Y_AXIS];
+						current_position[Z_AXIS] = destination[Z_AXIS];
+					}
+					#endif
+					
 					if((home_all_axis) || (has_code(axis_codes[X_AXIS]))) 
 						homing_routine(X_AXIS);
 
@@ -362,6 +387,17 @@ static int gcode_process_command()
 
 					if((home_all_axis) || (has_code(axis_codes[Z_AXIS]))) 
 						homing_routine(Z_AXIS);
+						
+						
+					#ifdef IS_DELTA
+					if(home_all_axis){
+						current_position[X_AXIS] = 0;
+						current_position[Y_AXIS] = 0;
+						current_position[Z_AXIS] = 250;
+						printf("from after homing\n\r");
+						plan_set_position(pa.x_max_length, pa.y_max_length, pa.z_max_length, current_position[E_AXIS]); 
+					}
+					#endif
 
 				#ifdef ENDSTOPS_ONLY_FOR_HOMING
 					enable_endstops(0);
@@ -385,6 +421,7 @@ static int gcode_process_command()
 						st_synchronize();
 
 					GET_ALL_AXES(current_position,float);
+					printf("from G92\n\r");
 					plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
 					break;
@@ -733,6 +770,12 @@ static int gcode_process_command()
 				case 207: //M207 Homing Feedrate mm/min Xnnn Ynnn Znnn
 				{
 					GET_AXES(pa.homing_feedrate,float,3);
+					break;
+				}
+				case 208: //M208 Set Offest for Deltaprinter Axes mm X Y Z
+				{
+					GET_AXES(pa.delta_offset,int,3);
+					
 					break;
 				}
 				case 220: // M220 S<factor in percent>- set speed factor override percentage
