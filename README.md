@@ -113,4 +113,5 @@ Congratulations, you have just upgraded the firmware of your 4pi!
 You can use pronterface.py to do some manual verifications by moving the printer's tip along 
 the axes and verifying that the physical displacements match the ones indicated on the interface. 
 
-Special thanks to Kliment for all of his amazing work and efforts.
+Special thanks to Kliment for all of his amazing work and efforts, and to the Grbl project
+(http://github.com/grbl/grbl) for providing a smooth motion planner.
