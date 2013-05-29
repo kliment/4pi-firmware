@@ -724,7 +724,7 @@ static int gcode_process_command()
 				{
 					if(has_code('D'))
 					{
-						sendReply("Addhome X:%g Y:%g Z:%g",add_homing[0],add_homing[1],add_homing[2]);
+						sendReply("Addhome X:%f Y:%f Z:%f",add_homing[0],add_homing[1],add_homing[2]);
 					}
 
 					GET_AXES(add_homing,float,3);
