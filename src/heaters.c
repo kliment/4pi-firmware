@@ -628,7 +628,7 @@ void manage_heaters(void)
 
 void PID_autotune(heater_struct *hotend, float PIDAT_test_temp)
 {
-  float PIDAT_input = 0;
+  float PIDAT_input = (float)hotend->akt_temp;
   float PIDAT_input_ave = 0;
   unsigned char PIDAT_count_input = 0;
 
