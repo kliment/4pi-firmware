@@ -241,6 +241,7 @@ void FLASH_PrintSettings(void)
 	//max 100 chars ??
 	usb_printf("; Advanced variables (mm/s): S=Min feedrate, T=Min travel feedrate, X=max xY jerk,  Z=max Z jerk,");
 	usb_printf(" E=max E jerk\r\nM205 S%d T%d X%d Z%d E%d\r\n",(int)pa.minimumfeedrate,(int)pa.mintravelfeedrate,(int)pa.max_xy_jerk,(int)pa.max_z_jerk,(int)pa.max_e_jerk);
+	usb_printf("; Home offset\r\nM206 X%d Y%d Z%d\r\n",(int)pa.add_homing[0],(int)pa.add_homing[1],(int)pa.add_homing[2]);
 
 	usb_printf("; Maximum Area unit:\r\nM520 X%d Y%d Z%d\r\n",(int)pa.x_max_length,(int)pa.y_max_length,(int)pa.z_max_length);
 	usb_printf("; Disable axis when unused:\r\nM521 X%d Y%d Z%d E%d\r\n",pa.disable_x_en,pa.disable_y_en,pa.disable_z_en,pa.disable_e_en);
