@@ -53,6 +53,7 @@ void init_parameters(void)
 	float f_tmp1[NUM_AXIS] = _MAX_FEEDRATE;
 	float f_tmp2[NUM_AXIS] = _AXIS_STEP_PER_UNIT;
 	float f_tmp3[3] = _HOMING_FEEDRATE;
+	float f_tmp4[3] = _HOMING_OFFSET;
 	unsigned long ul_tmp1[NUM_AXIS] = _MAX_ACCELERATION_UNITS_PER_SQ_SECOND;
 	
 	for(cnt_c = 0;cnt_c < 4;cnt_c++)
@@ -60,8 +61,10 @@ void init_parameters(void)
 		pa.max_feedrate[cnt_c] = f_tmp1[cnt_c];
 		pa.axis_steps_per_unit[cnt_c] = f_tmp2[cnt_c];
 		pa.max_acceleration_units_per_sq_second[cnt_c] = ul_tmp1[cnt_c];
-		if(cnt_c < 3)
+		if(cnt_c < 3) {
 			pa.homing_feedrate[cnt_c] = f_tmp3[cnt_c];
+			pa.add_homing[cnt_c] = f_tmp4[cnt_c];
+		}
 	}
 	
 	pa.minimumfeedrate = DEFAULT_MINIMUMFEEDRATE;
@@ -238,6 +241,7 @@ void FLASH_PrintSettings(void)
 	//max 100 chars ??
 	usb_printf("; Advanced variables (mm/s): S=Min feedrate, T=Min travel feedrate, X=max xY jerk,  Z=max Z jerk,");
 	usb_printf(" E=max E jerk\r\nM205 S%d T%d X%d Z%d E%d\r\n",(int)pa.minimumfeedrate,(int)pa.mintravelfeedrate,(int)pa.max_xy_jerk,(int)pa.max_z_jerk,(int)pa.max_e_jerk);
+	usb_printf("; Home offset\r\nM206 X%d Y%d Z%d\r\n",(int)pa.add_homing[0],(int)pa.add_homing[1],(int)pa.add_homing[2]);
 
 	usb_printf("; Maximum Area unit:\r\nM520 X%d Y%d Z%d\r\n",(int)pa.x_max_length,(int)pa.y_max_length,(int)pa.z_max_length);
 	usb_printf("; Disable axis when unused:\r\nM521 X%d Y%d Z%d E%d\r\n",pa.disable_x_en,pa.disable_y_en,pa.disable_z_en,pa.disable_e_en);

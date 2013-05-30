@@ -118,7 +118,6 @@ extern unsigned long axis_steps_per_sqr_second[];
 
 extern float destination[];
 extern float current_position[];
-extern float add_homing[];
 extern char axis_codes[];
 extern char axis_relative_modes[];
 extern float offset[];
