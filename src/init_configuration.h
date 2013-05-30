@@ -103,6 +103,10 @@
 #define _Y_MAX_LENGTH 	200
 #define _Z_MAX_LENGTH 	100
 
+
+// Set additional home offset (M206)
+#define _HOMING_OFFSET {0, 0, 0}
+
 //-----------------------------------------------------------------------
 //// MOVEMENT SETTINGS
 //-----------------------------------------------------------------------

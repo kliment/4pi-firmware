@@ -40,7 +40,6 @@
 
 float destination[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
 float current_position[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
-float add_homing[3]={0,0,0};
 char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 char axis_relative_modes[NUM_AXIS] = _AXIS_RELATIVE_MODES;
 float offset[3] = {0.0, 0.0, 0.0};
@@ -286,7 +285,7 @@ void homing_routine(unsigned char axis)
 		st_synchronize();
 
 		current_position[axis] = (home_dir == (-1)) ? 0 : max_length;
-		current_position[axis] += add_homing[axis];
+		current_position[axis] += pa.add_homing[axis];
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = current_position[axis];
 		feedrate = 0;

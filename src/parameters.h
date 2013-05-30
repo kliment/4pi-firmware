@@ -18,7 +18,7 @@
  #define NUM_AXIS 4
  #define MAX_EXTRUDER 2
  
- #define FLASH_VERSION "F01" 
+ #define FLASH_VERSION "F02" 
   
  
  typedef struct {
@@ -29,6 +29,7 @@
 	//Planner Parameter
 	float max_feedrate[NUM_AXIS];
 	float homing_feedrate[3];
+	float add_homing[3];
 	float axis_steps_per_unit[NUM_AXIS];
 	unsigned long max_acceleration_units_per_sq_second[NUM_AXIS];
 	float minimumfeedrate;

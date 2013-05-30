@@ -53,6 +53,7 @@ void init_parameters(void)
 	float f_tmp1[NUM_AXIS] = _MAX_FEEDRATE;
 	float f_tmp2[NUM_AXIS] = _AXIS_STEP_PER_UNIT;
 	float f_tmp3[3] = _HOMING_FEEDRATE;
+	float f_tmp4[3] = _HOMING_OFFSET;
 	unsigned long ul_tmp1[NUM_AXIS] = _MAX_ACCELERATION_UNITS_PER_SQ_SECOND;
 	
 	for(cnt_c = 0;cnt_c < 4;cnt_c++)
@@ -60,8 +61,10 @@ void init_parameters(void)
 		pa.max_feedrate[cnt_c] = f_tmp1[cnt_c];
 		pa.axis_steps_per_unit[cnt_c] = f_tmp2[cnt_c];
 		pa.max_acceleration_units_per_sq_second[cnt_c] = ul_tmp1[cnt_c];
-		if(cnt_c < 3)
+		if(cnt_c < 3) {
 			pa.homing_feedrate[cnt_c] = f_tmp3[cnt_c];
+			pa.add_homing[cnt_c] = f_tmp4[cnt_c];
+		}
 	}
 	
 	pa.minimumfeedrate = DEFAULT_MINIMUMFEEDRATE;
