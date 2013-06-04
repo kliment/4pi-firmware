@@ -1,7 +1,9 @@
 
 /*
  Planner for smooth moves
- 
+
+ Originally from Grbl (http://github.com/grbl/grbl)
+  
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -116,7 +118,6 @@ extern unsigned long axis_steps_per_sqr_second[];
 
 extern float destination[];
 extern float current_position[];
-extern float add_homing[];
 extern char axis_codes[];
 extern char axis_relative_modes[];
 extern float offset[];

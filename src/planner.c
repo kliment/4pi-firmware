@@ -1,5 +1,7 @@
 /*
  Planner for smooth moves
+
+ Originally from Grbl (http://github.com/grbl/grbl)
  
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -38,7 +40,6 @@
 
 float destination[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
 float current_position[NUM_AXIS] = {0.0, 0.0, 0.0, 0.0};
-float add_homing[3]={0,0,0};
 char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 char axis_relative_modes[NUM_AXIS] = _AXIS_RELATIVE_MODES;
 float offset[3] = {0.0, 0.0, 0.0};
@@ -236,22 +237,22 @@ void homing_routine(unsigned char axis)
 	switch(axis)
 	{
 		case X_AXIS:
-			min_pin = X_MIN_ACTIV;
-			max_pin = X_MAX_ACTIV;
+			min_pin = pa.x_min_endstop_aktiv;
+			max_pin = pa.x_max_endstop_aktiv;
 			home_dir = pa.x_home_dir;
 			max_length = pa.x_max_length;
 			home_bounce = 10;
 		break;
 		case Y_AXIS:
-			min_pin = Y_MIN_ACTIV;
-			max_pin = Y_MAX_ACTIV;
+			min_pin = pa.y_min_endstop_aktiv;
+			max_pin = pa.y_max_endstop_aktiv;
 			home_dir = pa.y_home_dir;
 			max_length = pa.y_max_length;
 			home_bounce = 10;
 		break;
 		case Z_AXIS:
-			min_pin = Z_MIN_ACTIV;
-			max_pin = Z_MAX_ACTIV;
+			min_pin = pa.z_min_endstop_aktiv;
+			max_pin = pa.z_max_endstop_aktiv;
 			home_dir = pa.z_home_dir;
 			max_length = pa.z_max_length;
 			home_bounce = 4;
@@ -284,7 +285,7 @@ void homing_routine(unsigned char axis)
 		st_synchronize();
 
 		current_position[axis] = (home_dir == (-1)) ? 0 : max_length;
-		current_position[axis] += add_homing[axis];
+		current_position[axis] += pa.add_homing[axis];
 		plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 		destination[axis] = current_position[axis];
 		feedrate = 0;
