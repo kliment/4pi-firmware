@@ -406,6 +406,7 @@ static int gcode_process_command()
 			{
 				case 20: //list sd files
 					sdcard_listfiles();
+//					break;
 					return NO_REPLY;
 				case 21: //init sd card
 					sdcard_mount();
@@ -430,8 +431,8 @@ static int gcode_process_command()
 					sdcard_printstatus();
 					return NO_REPLY;
 				case 28: //begin write to sd file
-					sdcard_selectfile(get_str(' '));
-					sdcard_capturestart();
+					//sdcard_selectfile();
+					sdcard_capturestart(get_str(' '));
 					break;
 				case 29: //stop writing sd file
 					sdcard_capturestop();
@@ -1143,12 +1144,15 @@ void gcode_init(ReplyFunction replyFunc)
 
 void gcode_update()
 {
+	uint8_t chr='\0';
 	while (ringbuffer_numAvailable(&uartBuffer) > 0)
 	{
-		uint8_t chr = ringbuffer_get(&uartBuffer);
+		chr = ringbuffer_get(&uartBuffer);
 		
 		switch(chr)
 		{
+			case '\0':
+				break;
 			case ';':
 			case '(':
 				parserState.comment_mode = true;
@@ -1175,6 +1179,51 @@ void gcode_update()
 				break;
 		}
 		
+	}
+	if(parserState.commandLen == 0 && sdcard_isreplaying() && !sdcard_isreplaypaused()){
+		int newline=0;
+        unsigned char nchar=0;
+		while(!newline){
+			int x=sdcard_getchar(&nchar);
+			if(!x){
+				sendReply("Done printing file\n\r");
+				sdcard_replaystop();
+				newline=1;
+				break;
+			}
+//			printf("%c\n\r",nchar);
+		switch(nchar)
+		{
+			case '\0':
+				newline=1;
+				break;
+			case ';':
+			case '(':
+				parserState.comment_mode = true;
+				break;
+			case '\n':
+			case '\r':
+				parserState.commandBuffer[parserState.commandLen] = 0;
+				parserState.parsePos = parserState.commandBuffer;
+				gcode_line_received();
+				parserState.comment_mode = false;
+				parserState.commandLen = 0;
+				newline=1;
+				break;
+			default:
+				if (parserState.commandLen >= BUFFER_SIZE)
+				{
+					printf("error: command buffer full!\n\r");
+				}
+				else
+				{
+					if (!parserState.comment_mode)
+						parserState.commandBuffer[parserState.commandLen++] = nchar;
+				}
+				break;
+		}
+	
+		}
 	}
 	
 }

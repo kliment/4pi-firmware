@@ -65,7 +65,7 @@ void sdcard_selectfile(const char* name)
 	strcpy(selectedfileBuffer,name);
 	selectedFile = selectedfileBuffer;
 	printf("sdcard_selectfile: selected file %s\n\r",selectedFile);
-	usb_printf("file selected: %s\n\r",selectedFile);
+	usb_printf("File selected: %s\n\r",selectedFile);
 }
 
 unsigned char sdcard_iscapturing()
@@ -81,8 +81,7 @@ int sdcard_getchar(unsigned char* chr)
 	if (!replay_mode && !replay_pause)
 		return 0;
 	
-	res = f_read(&replayFile,&chr,1,&read);
-	
+	res = f_read(&replayFile,chr,1,&read);
 	if (res != FR_OK)
 	{
 		printf("sdcard_getchar: error %s\n\r",getError(res));
@@ -119,13 +118,15 @@ void sdcard_replaystart()
 		if (res != FR_OK)
 		{
 			printf("sdcard_replaystart: error %s\n\r",getError(res));
-			usb_printf("error: failed to open file\n\r");
+			usb_printf("error: file.open failed\n\r");
 			return;
 		}
+		usb_printf("File opened: %s \n\rok\n\r",selectedFile);
 	}
 	replay_mode = 1;
 	replay_pause = 0;
-	sdcard_setposition(fileSeekpos);
+	if(fileSeekpos)
+        sdcard_setposition(fileSeekpos);
 	fileSeekpos = 0;
 }
 
@@ -157,8 +158,12 @@ int sdcard_isreplaypaused()
 	return replay_pause;
 }
 
-void sdcard_capturestart()
+void sdcard_capturestart(const char* name)
 {
+	strcpy(selectedfileBuffer,name);
+	selectedFile = selectedfileBuffer;
+	printf("sdcard_capturestart: selected file %s\n\r",selectedFile);
+	usb_printf("Writing to file: %s\n\r",selectedFile);
 	if (!selectedFile)
 	{
 		usb_printf("error: file not selected\r\n");
@@ -315,7 +320,7 @@ void sdcard_printstatus()
 	}
 	else
 	{
-		usb_printf("ok %02.02f%% (%d/%d)\n\r",(double)f_tell(&replayFile)/(double)f_size(&replayFile),f_tell(&replayFile),f_size(&replayFile));
+		usb_printf("ok %02d%% (%d/%d)\n\r",(int)(f_tell(&replayFile)/(double)f_size(&replayFile)),f_tell(&replayFile),f_size(&replayFile));
 	}
 }
 
