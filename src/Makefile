@@ -68,6 +68,7 @@ include $(AT91LIB)/boards/$(BOARD)/board.mak
 # Output directories
 BIN = bin
 OBJ = obj
+DEPDIR = .deps
 
 #-------------------------------------------------------------------------------
 #		Tools
@@ -148,99 +149,97 @@ VPATH += $(FATFS)/src/option
 
 
 
-# Objects built from C source files
-C_OBJECTS += main.o
-C_OBJECTS += syscalls.o
-C_OBJECTS += CDCDSerialDriver.o
-C_OBJECTS += CDCDSerialDriverDescriptors.o
-C_OBJECTS += CDCSetControlLineStateRequest.o
-C_OBJECTS += CDCLineCoding.o
-C_OBJECTS += USBD_OTGHS.o
-C_OBJECTS += USBD_UDP.o
-C_OBJECTS += USBD_UDPHS.o
-C_OBJECTS += USBDDriver.o
-C_OBJECTS += USBDCallbacks_Initialized.o
-C_OBJECTS += USBDCallbacks_Reset.o
-#C_OBJECTS += USBDCallbacks_Resumed.o
-#C_OBJECTS += USBDCallbacks_Suspended.o
-C_OBJECTS += USBDDriverCb_CfgChanged.o
-C_OBJECTS += USBDDriverCb_IfSettingChanged.o
-C_OBJECTS += USBSetAddressRequest.o
-C_OBJECTS += USBGenericDescriptor.o
-C_OBJECTS += USBInterfaceRequest.o
-C_OBJECTS += USBGenericRequest.o
-C_OBJECTS += USBGetDescriptorRequest.o
-C_OBJECTS += USBSetConfigurationRequest.o
-C_OBJECTS += util.o
-C_OBJECTS += stdio.o
-C_OBJECTS += systick.o
-C_OBJECTS += serial.o
-C_OBJECTS += motoropts.o
-C_OBJECTS += tc.o
-C_OBJECTS += USBFeatureRequest.o
-C_OBJECTS += USBEndpointDescriptor.o
-C_OBJECTS += USBConfigurationDescriptor.o
-C_OBJECTS += led.o
-C_OBJECTS += adc12.o
-C_OBJECTS += samadc.o
-#C_OBJECTS += spi.o
-C_OBJECTS += string.o
-C_OBJECTS += dbgu.o
-C_OBJECTS += math.o
-C_OBJECTS += usart.o
-C_OBJECTS += pio.o
-C_OBJECTS += pio_it.o
-C_OBJECTS += pmc.o
-C_OBJECTS += trace.o
-C_OBJECTS += board_memories.o
-C_OBJECTS += board_lowlevel.o
-C_OBJECTS += heaters.o
-C_OBJECTS += arc_func.o
-C_OBJECTS += planner.o
-C_OBJECTS += stepper_control.o
-C_OBJECTS += parameters.o
-C_OBJECTS += eefc.o
-C_OBJECTS += flashd_eefc.o
-C_OBJECTS += sdcard.o
-C_OBJECTS += gcode_parser.o
-C_OBJECTS += globals.o
+# C source files
+C_SOURCES += main.c
+C_SOURCES += syscalls.c
+C_SOURCES += CDCDSerialDriver.c
+C_SOURCES += CDCDSerialDriverDescriptors.c
+C_SOURCES += CDCSetControlLineStateRequest.c
+C_SOURCES += CDCLineCoding.c
+C_SOURCES += USBD_OTGHS.c
+C_SOURCES += USBD_UDP.c
+C_SOURCES += USBD_UDPHS.c
+C_SOURCES += USBDDriver.c
+C_SOURCES += USBDCallbacks_Initialized.c
+C_SOURCES += USBDCallbacks_Reset.c
+#C_SOURCES += USBDCallbacks_Resumed.c
+#C_SOURCES += USBDCallbacks_Suspended.c
+C_SOURCES += USBDDriverCb_CfgChanged.c
+C_SOURCES += USBDDriverCb_IfSettingChanged.c
+C_SOURCES += USBSetAddressRequest.c
+C_SOURCES += USBGenericDescriptor.c
+C_SOURCES += USBInterfaceRequest.c
+C_SOURCES += USBGenericRequest.c
+C_SOURCES += USBGetDescriptorRequest.c
+C_SOURCES += USBSetConfigurationRequest.c
+C_SOURCES += util.c
+C_SOURCES += stdio.c
+C_SOURCES += systick.c
+C_SOURCES += serial.c
+C_SOURCES += motoropts.c
+C_SOURCES += tc.c
+C_SOURCES += USBFeatureRequest.c
+C_SOURCES += USBEndpointDescriptor.c
+C_SOURCES += USBConfigurationDescriptor.c
+C_SOURCES += led.c
+C_SOURCES += adc12.c
+C_SOURCES += samadc.c
+#C_SOURCES += spi.c
+C_SOURCES += string.c
+C_SOURCES += dbgu.c
+C_SOURCES += math.c
+C_SOURCES += usart.c
+C_SOURCES += pio.c
+C_SOURCES += pio_it.c
+C_SOURCES += pmc.c
+C_SOURCES += trace.c
+C_SOURCES += board_memories.c
+C_SOURCES += board_lowlevel.c
+C_SOURCES += heaters.c
+C_SOURCES += arc_func.c
+C_SOURCES += planner.c
+C_SOURCES += stepper_control.c
+C_SOURCES += parameters.c
+C_SOURCES += eefc.c
+C_SOURCES += flashd_eefc.c
+C_SOURCES += sdcard.c
+C_SOURCES += gcode_parser.c
+C_SOURCES += globals.c
 
 #media
-C_OBJECTS += Media.o
-C_OBJECTS += MEDSdcard.o
-C_OBJECTS += sdmmc_mci.o
+C_SOURCES += Media.c
+C_SOURCES += MEDSdcard.c
+C_SOURCES += sdmmc_mci.c
 
 #fatfs
-C_OBJECTS += diskio.o
-C_OBJECTS += ff.o
-C_OBJECTS += unicode.o
+C_SOURCES += diskio.c
+C_SOURCES += ff.c
+C_SOURCES += unicode.c
 
-
-
-# Objects for different chips
+# C sources for different chips
 ifeq ($(CHIP_CORE), cortexm3)
-C_OBJECTS += nvic.o
-C_OBJECTS += exceptions.o
-C_OBJECTS += board_cstartup_gnu.o
-C_OBJECTS += core_cm3.o
+C_SOURCES += nvic.c
+C_SOURCES += exceptions.c
+C_SOURCES += board_cstartup_gnu.c
+C_SOURCES += core_cm3.c
 else
-C_OBJECTS += aic.o
-C_OBJECTS += cp15.o
+C_SOURCES += aic.c
+C_SOURCES += cp15.c
 endif
 
 ifeq ($(CHIP_IP_MCI), MCI_DMA)
-C_OBJECTS += dmad.o
-C_OBJECTS += dma.o
-C_OBJECTS += mci_hs.o
+C_SOURCES += dmad.c
+C_SOURCES += dma.c
+C_SOURCES += mci_hs.c
 else
-C_OBJECTS += mci.o
+C_SOURCES += mci.c
 endif
 
 
-# Objects built from Assembly source files
+# Assembly source files
 ifneq ($(CHIP_CORE), cortexm3)
-ASM_OBJECTS += board_cstartup.o
-ASM_OBJECTS += cp15_asm.o
+ASM_SOURCES += board_cstartup.S
+ASM_SOURCES += cp15_asm.S
 endif
 
 # Append OBJ and BIN directories to output filename
@@ -252,31 +251,37 @@ OUTPUT := $(BIN)/$(OUTPUT)
 
 all: $(BIN) $(OBJ) $(MEMORIES)
 
-$(BIN) $(OBJ):
+$(BIN) $(OBJ) $(DEPDIR):
 	mkdir $@
 
 define RULES
-C_OBJECTS_$(1) = $(addprefix $(OBJ)/$(1)_, $(C_OBJECTS))
-ASM_OBJECTS_$(1) = $(addprefix $(OBJ)/$(1)_, $(ASM_OBJECTS))
+C_OBJECTS_$(1) = $(C_SOURCES:%.c=$(OBJ)/$(1)_%.o)
+ASM_OBJECTS_$(1) = $(ASM_SOURCES:%.S=$(OBJ)/$(1)_%.o)
 
-$(1): $$(ASM_OBJECTS_$(1)) $$(C_OBJECTS_$(1))
-	$(CC) $(LDFLAGS) -T"$(AT91LIB)/boards/$(BOARD)/$(CHIP)/$$@.lds" -o $(OUTPUT)-$$@.elf $$^ -lm
-	$(OBJCOPY) -O binary $(OUTPUT)-$$@.elf $(OUTPUT)-$$@.bin
-	$(SIZE) $$^ $(OUTPUT)-$$@.elf
+$(1): $(OUTPUT)-$(1).bin
 
-$$(C_OBJECTS_$(1)): $(OBJ)/$(1)_%.o: %.c Makefile $(OBJ) $(BIN)
-	$(CC) $(CFLAGS) -D$(1) -c -o $$@ $$<
+$(OUTPUT)-$(1).elf: $$(ASM_OBJECTS_$(1)) $$(C_OBJECTS_$(1)) | $(BIN)
+	$(CC) $(LDFLAGS) -T"$(AT91LIB)/boards/$(BOARD)/$(CHIP)/$(1).lds" -o $$@ $$^ -lm
+	$(SIZE) $$^ $$@
 
-$$(ASM_OBJECTS_$(1)): $(OBJ)/$(1)_%.o: %.S Makefile $(OBJ) $(BIN)
+$$(C_OBJECTS_$(1)): $(OBJ)/$(1)_%.o: %.c Makefile | $(OBJ) $(DEPDIR)
+	$(CC) $(CFLAGS) -D$(1) -MD -MP -MF .deps/$$(notdir $$(@:.o=.d)) -c -o $$@ $$<
+
+$$(ASM_OBJECTS_$(1)): $(OBJ)/$(1)_%.o: %.S Makefile | $(OBJ)
 	$(CC) $(ASFLAGS) -D$(1) -c -o $$@ $$<
 
 debug_$(1): $(1)
 	perl ../resources/gdb/debug.pl $(OUTPUT)-$(1).elf
 
+-include $(C_SOURCES:%.c=$(DEPDIR)/$(1)_%.d)
 endef
 
 $(foreach MEMORY, $(MEMORIES), $(eval $(call RULES,$(MEMORY))))
 
 clean:
-	-rm -f $(OBJ)/*.o $(BIN)/*.bin $(BIN)/*.elf
+	-rm -f $(OBJ)/*.o $(BIN)/*.bin $(BIN)/*.elf $(DEPDIR)/*.d
 
+%.bin: %.elf
+	$(OBJCOPY) -O binary $^ $@
+
+.PHONY: all $(MEMORIES)
