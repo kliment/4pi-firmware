@@ -265,8 +265,8 @@ void FLASH_PrintSettings(void)
 	usb_printf("; Heater 1 PWM Enable: \r\nM531 T0 E%d\r\n",pa.heater_pwm_en[0]);
 	usb_printf("; Heater 2 PWM Enable: \r\nM531 T1 E%d\r\n",pa.heater_pwm_en[1]);
 	
-	usb_printf("; Heater 1 Max pwm (range 0-255): \r\nM301 W%d\r\n",pa.heater_max_pwm[0]);
-	usb_printf("; Heater 2 Max pwm (range 0-255): \r\nM301 W%d\r\n",pa.heater_max_pwm[1]);
+	usb_printf("; Heater 1 Max pwm (range 0-255): \r\nM301 T0 W%d\r\n",pa.heater_max_pwm[0]);
+	usb_printf("; Heater 2 Max pwm (range 0-255): \r\nM301 T1 W%d\r\n",pa.heater_max_pwm[1]);
 	
 	usb_printf("; Heater 1 (S)lope, (I)ntercept:\r\nM301 T0 S%d I%d\r\n",pa.heater_slope[0],pa.heater_intercept[0]);
 	usb_printf("; Heater 2 (S)lope, (I)ntercept:\r\nM301 T1 S%d I%d\r\n",pa.heater_slope[1],pa.heater_intercept[1]);
