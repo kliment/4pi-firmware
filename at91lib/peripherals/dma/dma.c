@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- *         ATMEL Microcontroller Software Support 
+ *         ATMEL Microcontroller Software Support
  * ----------------------------------------------------------------------------
  * Copyright (c) 2008, Atmel Corporation
  *
@@ -60,7 +60,7 @@ void DMA_Enable(void)
 //------------------------------------------------------------------------------
 void DMA_Disable(void)
 {
-    AT91C_BASE_HDMA->HDMA_EN = ~(AT91C_HDMA_ENABLE);
+    AT91C_BASE_HDMA->HDMA_EN = ~(unsigned int)AT91C_HDMA_ENABLE;
 }
 
 //-----------------------------------------------------------------------------
@@ -110,7 +110,7 @@ unsigned int DMA_GetMaskedStatus(void)
 }
 
 //------------------------------------------------------------------------------
-/// Enables DMAC channel 
+/// Enables DMAC channel
 /// \param channel Particular channel number.
 //------------------------------------------------------------------------------
 void DMA_EnableChannel(unsigned int channel)
@@ -118,15 +118,23 @@ void DMA_EnableChannel(unsigned int channel)
     ASSERT(channel < DMA_CHANNEL_NUM, "this channel does not exist");
     AT91C_BASE_HDMA->HDMA_CHER |= DMA_ENA << channel;
 }
+void DMA_EnableChannels(unsigned int bmChannels)
+{
+    AT91C_BASE_HDMA->HDMA_CHER = bmChannels;
+}
 
 //------------------------------------------------------------------------------
-/// Disables a DMAC channel 
+/// Disables a DMAC channel
 /// \param channel Particular channel number.
 //------------------------------------------------------------------------------
 void DMA_DisableChannel(unsigned int channel)
 {
     ASSERT(channel < DMA_CHANNEL_NUM, "this channel does not exist");
     AT91C_BASE_HDMA->HDMA_CHDR |= DMA_DIS << channel;
+}
+void DMA_DisableChannels(unsigned int bmChannels)
+{
+    AT91C_BASE_HDMA->HDMA_CHDR = bmChannels;
 }
 
 //------------------------------------------------------------------------------
@@ -150,11 +158,11 @@ void DMA_ClearAutoMode(unsigned int channel)
 }
 
 //------------------------------------------------------------------------------
-/// Return DMAC channel status 
+/// Return DMAC channel status
 //------------------------------------------------------------------------------
 unsigned int DMA_GetChannelStatus(void)
 {
-   return( AT91C_BASE_HDMA->HDMA_CHSR);
+    return( AT91C_BASE_HDMA->HDMA_CHSR);
 }
 
 //-----------------------------------------------------------------------------
@@ -200,8 +208,8 @@ void DMA_SetDescriptorAddr(unsigned char channel, unsigned int address)
 /// \param done Transfer done field.
 //-----------------------------------------------------------------------------
 void DMA_SetSourceBufferSize(unsigned char channel,
-                             unsigned int size, 
-                             unsigned char sourceWidth, 
+                             unsigned int size,
+                             unsigned char sourceWidth,
                              unsigned char destWidth,
                              unsigned char done)
 {
@@ -209,11 +217,11 @@ void DMA_SetSourceBufferSize(unsigned char channel,
     ASSERT(sourceWidth < 4, "width does not support");
     ASSERT(destWidth < 4, "width does not support");
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLA = (size |
-                                                   sourceWidth << 24 |
-                                                   destWidth << 28 |
-                                                   done << 31);
+                                                    sourceWidth << 24 |
+                                                    destWidth << 28 |
+                                                    done << 31);
 }
-                                
+
 //-----------------------------------------------------------------------------
 /// Set DMA transfer mode for source used by a HDMA channel.
 /// \param channel Particular channel number.
@@ -221,7 +229,7 @@ void DMA_SetSourceBufferSize(unsigned char channel,
 /// \param addressingType Type of addrassing mode
 ///                       0 : incrementing, 1: decrementing, 2: fixed.
 //-----------------------------------------------------------------------------
-void DMA_SetSourceBufferMode(unsigned char channel, 
+void DMA_SetSourceBufferMode(unsigned char channel,
                              unsigned char transferMode,
                              unsigned char addressingType)
 {
@@ -233,25 +241,27 @@ void DMA_SetSourceBufferMode(unsigned char channel,
     value &= ~ (AT91C_SRC_DSCR | AT91C_SRC_INCR | 1<<31);
     switch(transferMode){
         case DMA_TRANSFER_SINGLE:
-             value |= AT91C_SRC_DSCR | addressingType << 24;
-             break;
+        value |= AT91C_SRC_DSCR | addressingType << 24;
+        break;
         case DMA_TRANSFER_LLI:
-             value |= addressingType << 24;
-             break;
+        value |= addressingType << 24;
+        break;
         case DMA_TRANSFER_RELOAD:
         case DMA_TRANSFER_CONTIGUOUS:
-             value |= AT91C_SRC_DSCR | addressingType << 24 | 1<<31;
-             break;
-    }             
+        value |= AT91C_SRC_DSCR | addressingType << 24 | 1<<31;
+        break;
+    }
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB = value;
     
     if(transferMode == DMA_TRANSFER_RELOAD || transferMode == DMA_TRANSFER_CONTIGUOUS){
         value = AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CFG;
-        value &= ~ (AT91C_SRC_REP);
+#if defined(AT91C_SRC_REP)
+        value &= ~(unsigned int)AT91C_SRC_REP;
         // When automatic mode is activated, the source address and the control register are reloaded from previous transfer.
         if(transferMode == DMA_TRANSFER_RELOAD) {
             value |= AT91C_SRC_REP;
         }
+#endif
         AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CFG = value;
     }
     else {
@@ -266,35 +276,37 @@ void DMA_SetSourceBufferMode(unsigned char channel,
 /// \param addressingType Type of addrassing mode
 ///                       0 : incrementing, 1: decrementing, 2: fixed.
 //-----------------------------------------------------------------------------
-void DMA_SetDestBufferMode(unsigned char channel, 
-                             unsigned char transferMode,
-                             unsigned char addressingType)
+void DMA_SetDestBufferMode(unsigned char channel,
+                           unsigned char transferMode,
+                           unsigned char addressingType)
 {
     unsigned int value;
     
     ASSERT(channel < DMA_CHANNEL_NUM, "this channel does not exist");
     
     value = AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB;
-    value &= ~ (AT91C_DST_DSCR | AT91C_DST_INCR);
+    value &= ~(unsigned int)(AT91C_DST_DSCR | AT91C_DST_INCR);
     
     switch(transferMode){
         case DMA_TRANSFER_SINGLE:
         case DMA_TRANSFER_RELOAD:
         case DMA_TRANSFER_CONTIGUOUS:
-             value |= AT91C_DST_DSCR | addressingType << 28;
-             break;
+        value |= AT91C_DST_DSCR | addressingType << 28;
+        break;
         case DMA_TRANSFER_LLI:
-             value |= addressingType << 28;
-             break;
-    }             
+        value |= addressingType << 28;
+        break;
+    }
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB = value;
     if(transferMode == DMA_TRANSFER_RELOAD || transferMode == DMA_TRANSFER_CONTIGUOUS){
         value = AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CFG;
-        value &= ~ (AT91C_DST_REP);
+#if defined(AT91C_DST_REP)
+        value &= ~(unsigned int)AT91C_DST_REP;
         // When automatic mode is activated, the source address and the control register are reloaded from previous transfer.
         if(transferMode == DMA_TRANSFER_RELOAD) {
             value |= AT91C_DST_REP;
         }
+#endif
         AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CFG = value;
     }
     else {
@@ -313,45 +325,49 @@ void DMA_SetConfiguration(unsigned char channel, unsigned int value)
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CFG = value;
 }
 
+#if defined(AT91C_SRC_PIP)
 //------------------------------------------------------------------------------
 /// Set DMA source PIP configuration used by a HDMA channel.
 /// \param channel Particular channel number.
 /// \param pipHole stop on done mode.
 /// \param pipBoundary lock mode.
 //------------------------------------------------------------------------------
-void DMA_SPIPconfiguration(unsigned char channel, 
-                           unsigned int pipHole, 
+void DMA_SPIPconfiguration(unsigned char channel,
+                           unsigned int pipHole,
                            unsigned int pipBoundary)
-                     
+
 {
     unsigned int value;
     ASSERT(channel < DMA_CHANNEL_NUM, "this channel does not exist");
     value = AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB;
-    value &= ~ (AT91C_SRC_PIP);
+    value &= ~(unsigned int)AT91C_SRC_PIP;
     value |= AT91C_SRC_PIP;
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB = value;
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_SPIP = (pipHole + 1) | pipBoundary <<16;
 }
+#endif
 
+#if defined(AT91C_DST_PIP)
 //------------------------------------------------------------------------------
 /// Set DMA destination PIP configuration used by a HDMA channel.
 /// \param channel Particular channel number.
 /// \param pipHole stop on done mode.
 /// \param pipBoundary lock mode.
 //------------------------------------------------------------------------------
-void DMA_DPIPconfiguration(unsigned char channel, 
-                           unsigned int pipHole, 
+void DMA_DPIPconfiguration(unsigned char channel,
+                           unsigned int pipHole,
                            unsigned int pipBoundary)
-                     
+
 {
     unsigned int value;
     ASSERT(channel < DMA_CHANNEL_NUM, "this channel does not exist");
     value = AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB;
-    value &= ~ (AT91C_DST_PIP);
+    value &= ~(unsigned int)AT91C_DST_PIP;
     value |= AT91C_DST_PIP;
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB = value;
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_DPIP = (pipHole + 1) | pipBoundary <<16;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 /// Set DMA control B register Flow control bit field.
@@ -362,16 +378,16 @@ void DMA_DPIPconfiguration(unsigned char channel,
 /// \param done Transfer done field.
 //-----------------------------------------------------------------------------
 void DMA_SetFlowControl(unsigned char channel,
-                             unsigned int flow)
+                        unsigned int flow)
 {
     unsigned int value;
-
+    
     ASSERT(channel < DMA_CHANNEL_NUM, "this channel does not exist");
     ASSERT(flow < 4, "flow control does not support");
-
+    
     value = AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB;
-    value &= ~ (AT91C_FC);
-    value |= flow << 21;       
+    value &= ~(unsigned int)AT91C_FC;
+    value |= flow << 21;
     AT91C_BASE_HDMA->HDMA_CH[channel].HDMA_CTRLB = value;
 }
 

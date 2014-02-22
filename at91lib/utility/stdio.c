@@ -247,7 +247,7 @@ signed int PutFloat(
         num+=PutChar(pStr+num, '-');
     num+=PutUnsignedInt(pStr+num,fill,1,(int)(whole));
     num+=PutChar(pStr+num, '.');
-    num+=PutUnsignedInt(pStr+num,fill,1,(int)(fraction));
+    num+=PutUnsignedInt(pStr+num,fill,3,(int)(fraction));
     return num;
 }
 
@@ -385,7 +385,7 @@ signed int vsnprintf(char *pStr, size_t length, const char *pFormat, va_list ap)
             case 'd': 
             case 'i': num = PutSignedInt(pStr, fill, width, va_arg(ap, signed int)); break;
             case 'u': num = PutUnsignedInt(pStr, fill, width, va_arg(ap, unsigned int)); break;
-            case 'f': num = PutFloat(pStr, fill, width, va_arg(ap, double)); break;
+            case 'f': num = PutFloat(pStr, '0', 1, va_arg(ap, double)); break;
             case 'x': num = PutHexa(pStr, fill, width, 0, va_arg(ap, unsigned int)); break;
             case 'X': num = PutHexa(pStr, fill, width, 1, va_arg(ap, unsigned int)); break;
             case 's': num = PutString(pStr, va_arg(ap, char *)); break;

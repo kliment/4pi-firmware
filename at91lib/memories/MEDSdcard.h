@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- *         ATMEL Microcontroller Software Support 
+ *         ATMEL Microcontroller Software Support
  * ----------------------------------------------------------------------------
  * Copyright (c) 2008, Atmel Corporation
  *
@@ -34,7 +34,7 @@
 //         Headers
 //------------------------------------------------------------------------------
 
-#include "Media.h"
+#include <memories/Media.h>
 #include <memories/sdmmc/sdmmc_mci.h>
 
 //------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- *         ATMEL Microcontroller Software Support 
+ *         ATMEL Microcontroller Software Support
  * ----------------------------------------------------------------------------
  * Copyright (c) 2008, Atmel Corporation
  *
@@ -34,18 +34,18 @@
 /// The goal of FLASHD driver is to provide support for ATMEL Embedded Flash
 /// devices. The FLASHD driver provides the unified interface of functions
 /// and operations for all supported Embedded Flash Memory Devices. The driver
-/// accesses the Flash memory by calling the low-level code which provided in 
-/// EFC(EEFC) peripheral,o users do not have to concern themselves with the 
-/// details of the special command sequences.  
+/// accesses the Flash memory by calling the low-level code which provided in
+/// EFC(EEFC) peripheral,o users do not have to concern themselves with the
+/// details of the special command sequences.
 ///
 /// !Usage
 ///
 /// -# Initializes the %flash driver with FLASHD_Initialize().
-/// -# Provide all neccessary operations such as %flash write, erase, lock, 
+/// -# Provide all neccessary operations such as %flash write, erase, lock,
 ///    unlock, and set/clear GPNVM.
 ///    - They are able to check function arguments, address boundary etc.
 ///    - All %flash address argument is the unique address, as the result,
-///      user no need to take care about the address is in which EFC, 
+///      user no need to take care about the address is in which EFC,
 ///      in which page and in which lock region for difference Flash device,
 ///      so that can help develop your uppon appcations with maximum efficiency.
 /// -# Writes data in embedded %flash using FLASHD_Write().
@@ -79,25 +79,25 @@ extern void FLASHD_Initialize(unsigned int mck);
 extern unsigned char FLASHD_Erase(unsigned int address);
 
 extern unsigned char FLASHD_Write(
-    unsigned int address,
-    const void *pBuffer,
-    unsigned int size);
+                                  unsigned int address,
+                                  const void *pBuffer,
+                                  unsigned int size);
 
 extern unsigned char FLASHD_Lock(
-    unsigned int start,
-    unsigned int end,
-    unsigned int *pActualStart,
-    unsigned int *pActualEnd);
+                                 unsigned int start,
+                                 unsigned int end,
+                                 unsigned int *pActualStart,
+                                 unsigned int *pActualEnd);
 
 extern unsigned char FLASHD_Unlock(
-    unsigned int start,
-    unsigned int end,
-    unsigned int *pActualStart,
-    unsigned int *pActualEnd);
+                                   unsigned int start,
+                                   unsigned int end,
+                                   unsigned int *pActualStart,
+                                   unsigned int *pActualEnd);
 
 extern unsigned char FLASHD_IsLocked(
-    unsigned int start,
-    unsigned int end);
+                                     unsigned int start,
+                                     unsigned int end);
 
 extern unsigned char FLASHD_SetGPNVM(unsigned char gpnvm);
 

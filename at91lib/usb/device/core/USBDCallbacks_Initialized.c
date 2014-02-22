@@ -44,20 +44,33 @@
 /// Invoked after the USB driver has been initialized. By default, configures
 /// the UDP/UDPHS interrupt.
 //------------------------------------------------------------------------------
+
+#ifndef UDP_IRQ_PRIORITY
+#define UDP_IRQ_PRIORITY 0
+#endif
+
+#ifndef UDPHS_IRQ_PRIORITY
+#define UDPHS_IRQ_PRIORITY 0
+#endif
+
+#ifndef OTGHS_IRQ_PRIORITY
+#define OTGHS_IRQ_PRIORITY 1
+#endif
+
 void USBDCallbacks_Initialized(void)
 {
 #if defined(BOARD_USB_UDP)
     // Configure and enable the UDP interrupt
-    IRQ_ConfigureIT(AT91C_ID_UDP, 0, UDPD_IrqHandler);//, UDPD_IrqHandler);
+    IRQ_ConfigureIT(AT91C_ID_UDP, UDP_IRQ_PRIORITY, UDPD_IrqHandler);//, UDPD_IrqHandler);
     IRQ_EnableIT(AT91C_ID_UDP);
 
 #elif defined(BOARD_USB_UDPHS)
     // Configure and enable the UDPHS interrupt
-    IRQ_ConfigureIT(AT91C_ID_UDPHS, 0, UDPD_IrqHandler);//, UDPD_IrqHandler);
+    IRQ_ConfigureIT(AT91C_ID_UDPHS, UDPHS_IRQ_PRIORITY, UDPD_IrqHandler);//, UDPD_IrqHandler);
     IRQ_EnableIT(AT91C_ID_UDPHS);
 
 #elif defined(BOARD_USB_OTGHS)
-    IRQ_ConfigureIT(AT91C_ID_OTGHS, 1, UDPD_IrqHandler);
+    IRQ_ConfigureIT(AT91C_ID_OTGHS, OTGHS_IRQ_PRIORITY, UDPD_IrqHandler);
     IRQ_EnableIT(AT91C_ID_OTGHS);
 
 #else

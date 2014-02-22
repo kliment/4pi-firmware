@@ -117,9 +117,15 @@ void DMAD_Handler()
 
 //------------------------------------------------------------------------------
 /// Initializes the DMA controller.
-/// \param channel Particular channel number.
+/// \param channel Particular channel number
+/// \param defaultHandler Using the default dmad interrupt handler.
 //------------------------------------------------------------------------------
-void DMAD_Initialize(unsigned char channel)
+
+#ifndef DMAD_IRQ_PRIORITY
+#define DMAD_IRQ_PRIORITY 0
+#endif
+
+void DMAD_Initialize(unsigned char channel, unsigned char defaultHandler)
 {
     unsigned int status;
     unsigned int flag;
@@ -142,8 +148,11 @@ void DMAD_Initialize(unsigned char channel)
     DMA_DisableIt(flag);
     // Enable DMA.
     DMA_Enable();
-//    IRQ_ConfigureIT(AT91C_ID_HDMA, 0, DMAD_Handler);
-//    IRQ_EnableIT(AT91C_ID_HDMA);
+    if(defaultHandler) 
+    {
+        IRQ_ConfigureIT(AT91C_ID_HDMA, DMAD_IRQ_PRIORITY, DMAD_Handler);
+        IRQ_EnableIT(AT91C_ID_HDMA);
+    }
     // Initialize transfer instance.
     dmad.transfers[channel].transferSize = 0;
 }
@@ -184,14 +193,19 @@ unsigned char DMAD_Configure_Buffer(unsigned char channel,
     }
     
     if(pip){
+        #if defined(AT91C_SRC_PIP)
         // If source picture-in-picture mode is enabled, program the DMAC_SPIP.
         if(pip->pipSourceBoundarySize){
         // If destination picture-in-picture mode is enabled, program the DMAC_DPIP.
             DMA_SPIPconfiguration(channel, pip->pipSourceHoleSize, pip->pipSourceBoundarySize);
         }
+        #endif
+
+        #if defined(AT91C_DST_PIP)
         if(pip->pipDestBoundarySize){
             DMA_DPIPconfiguration(channel, pip->pipDestHoleSize, pip->pipDestBoundarySize);
         }
+        #endif
     }
     return 0;
 }
@@ -264,7 +278,10 @@ unsigned char DMAD_BufferTransfer(unsigned char channel,
     
     if(polling){
         while ((DMA_GetChannelStatus() & (DMA_ENA << channel)) == (DMA_ENA << channel));
-        pTransfer->callback();
+        if (pTransfer->callback) {
+            pTransfer->callback();
+        }
+        pTransfer->transferSize = 0;
         DMA_DisableChannel(channel);
     }
     return 0;

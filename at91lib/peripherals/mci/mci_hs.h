@@ -31,7 +31,7 @@
 /// \page "mci"
 ///
 /// !Purpose
-///  
+///
 /// mci-interface driver
 ///
 /// !Usage
@@ -55,7 +55,7 @@
 #define MCI_DMA_ENABLE          1
 
 /// MCI BUSY Check Fix
-#define MCI_BUSY_CHECK_FIX      1
+#define MCI_BUSY_CHECK_FIX      0
 
 //------------------------------------------------------------------------------
 //         Headers
@@ -119,6 +119,9 @@
 /// The MCI Clock Speed after initialize (400K)
 #define MCI_INITIAL_SPEED       400000
 
+#define MCI_INTERRUPT_MODE 0
+#define MCI_POLLING_MODE   1
+
 //------------------------------------------------------------------------------
 //         Types
 //------------------------------------------------------------------------------
@@ -132,12 +135,13 @@ typedef void (*MciCallback)(unsigned char status, void *pCommand);
 /// the transfer, the callback is invoked by the interrupt handler.
 //------------------------------------------------------------------------------
 typedef struct _MciCmd {
-
+    
     /// Command code.
     unsigned int cmd;
     /// Command argument.
     unsigned int arg;
-    /// Data buffer.
+    /// Data buffer, with MCI_DMA_ENABLE defined 1, the buffer can be
+    /// 1, 2 or 4 bytes aligned. It has to be 4 byte aligned if no DMA.
     unsigned char *pData;
     /// Size of data block in bytes.
     unsigned short blockSize;
@@ -157,7 +161,7 @@ typedef struct _MciCmd {
     unsigned char tranType;
     /// Indicates if the command is a read operation.
     unsigned char isRead;
-
+    
     /// Command status.
     volatile int status;
 } MciCmd;
@@ -167,7 +171,7 @@ typedef struct _MciCmd {
 /// prevents parallel access to a MCI peripheral.
 //------------------------------------------------------------------------------
 typedef struct {
-
+    
 #if MCI_BUSY_CHECK_FIX
     /// MCI DAT0 Pin (Assign it to enable PIO mode DAT0 check)
     /// The pin is configured as peripheral
@@ -183,6 +187,8 @@ typedef struct {
     unsigned char mciMode;
     /// Mutex.
     volatile char semaphore;
+    /// interrupt or polling mode
+    unsigned int bPolling;
 } Mci;
 
 //------------------------------------------------------------------------------
@@ -190,21 +196,24 @@ typedef struct {
 //------------------------------------------------------------------------------
 
 extern void MCI_Init(
-    Mci *pMci,
-    AT91PS_MCI pMciHw,
-    unsigned char mciId,
-    unsigned int mode);
+                     Mci *pMci,
+                     AT91PS_MCI pMciHw,
+                     unsigned char mciId,
+                     unsigned int mode,
+                     unsigned int bPolling);
+
 extern unsigned int MCI_GetSpeed(Mci *pMci, unsigned int *mciDiv);
 
 extern unsigned int MCI_SetSpeed(Mci *pMci,
                                  unsigned int mciSpeed,
-                                 unsigned int mciLimit);
+                                 unsigned int mciLimit,
+                                 unsigned int mck);
 
 extern unsigned char MCI_SendCommand(Mci *pMci, MciCmd *pMciCmd);
 
 extern void MCI_Handler(Mci *pMci);
 
-extern unsigned char MCI_IsTxComplete(MciCmd *pMciCmd);
+extern unsigned char MCI_IsTxComplete(Mci *pMci);
 
 extern unsigned char MCI_CheckBusy(Mci *pMci);
 
