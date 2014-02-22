@@ -36,16 +36,14 @@ OUTPUT_ARCH(arm)
 ENTRY(ResetException)
 
 /* Vector Definition */
-/* vector is put at very begin adress of SRAM0, the preserved size is 0x100 */
-_vect_start = 0x20000000;
+/* vector is put at very begin adress of SRAM, the preserved size is 0x100 */
+_vect_start = 0x20078000;
 
 /* Memory Spaces Definitions */
 MEMORY
 {
-    sram0  (W!RX) : ORIGIN = 0x20000100, LENGTH = 0x00007F00 /* Sram0, 32K */
-    sram1  (W!RX) : ORIGIN = 0x20080000, LENGTH = 0x00004000 /* Sram1, 16K */
-    flash0 (W!RX) : ORIGIN = 0x00080000, LENGTH = 0x00020000 /* Flash0, 128K */
-    flash1 (W!RX) : ORIGIN = 0x00100000, LENGTH = 0x00020000 /* Flash1, 128K */
+    flash   (W!RX) : ORIGIN = 0x000E0000, LENGTH = 0x00040000   /* Flash, 256K  */
+    sram    (W!RX) : ORIGIN = 0x20078100, LENGTH = 0x0000BF00   /* sramm ~48K   */
 }
 
 SECTIONS
@@ -60,8 +58,28 @@ SECTIONS
         *(.glue_7)
         *(.glue_7t)
         . = ALIGN(4);
+    } >flash
+
+    .preinit_array : {
+        PROVIDE_HIDDEN (__preinit_array_start = .);
+        KEEP (*(.preinit_array*))
+        PROVIDE_HIDDEN (__preinit_array_end = .);
+    } >flash
+
+    .init_array : {
+        PROVIDE_HIDDEN (__init_array_start = .);
+        KEEP (*(SORT(.init_array.*)))
+        KEEP (*(.init_array*))
+        PROVIDE_HIDDEN (__init_array_end = .);
+    } >flash
+
+    .fini_array : {
+        PROVIDE_HIDDEN (__fini_array_start = .);
+        KEEP (*(.fini_array*))
+        KEEP (*(SORT(.fini_array.*)))
+        PROVIDE_HIDDEN (__fini_array_end = .);
         _efixed = .;            /* End of text section */
-    } >flash0
+    } >flash
 
     .relocate : AT (_efixed)
     {
@@ -72,7 +90,7 @@ SECTIONS
 		*(.data.*);
         . = ALIGN(4);
         _erelocate = .;
-    } >sram0
+    } >sram
 
     .bss (NOLOAD) : {
         . = ALIGN(4);
@@ -83,9 +101,9 @@ SECTIONS
 	_ebss = .;
         . = ALIGN(8);
         _ezero = .;
-    } >sram0
+    } >sram
 
-    /* Stack in the end of SRAM0, double-word aligned */
+    /* Stack in the end of SRAM, double-word aligned */
     _estack = 0x20007FF8;
 }
 end = .;
