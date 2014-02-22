@@ -60,8 +60,8 @@ extern volatile unsigned long timestamp;
 //===========================================================================
 //=================semi-private variables								 =====
 //===========================================================================
-#define BLOCK_BUFFER_SIZE 16
-#define BLOCK_BUFFER_MASK 0x0f
+#define BLOCK_BUFFER_SIZE 32
+#define BLOCK_BUFFER_MASK 0x1f
 block_t block_buffer[BLOCK_BUFFER_SIZE];            // A ring buffer for motion instructions
 volatile unsigned char block_buffer_head;           // Index of the next block to be pushed
 volatile unsigned char block_buffer_tail;           // Index of the block to process now
@@ -72,7 +72,6 @@ static float previous_speed[4]; // Speed of previous path line segment
 static float previous_nominal_speed; // Nominal speed of previous path line segment
 static unsigned char G92_reset_previous_speed = 0;
 
-
 void get_coordinates()
 {
 	unsigned char i=0;
@@ -81,10 +80,10 @@ void get_coordinates()
 	{
 		if (has_code(axis_codes[i]))
 			destination[i] = get_float(axis_codes[i]) + (axis_relative_modes[i] || relative_mode)*current_position[i];
-		else 
-			destination[i] = current_position[i];
+		else
+        	destination[i] = current_position[i];
 	}
-
+    
 	if(has_code('F'))
 	{
 		next_feedrate = get_int('F');
@@ -151,7 +150,7 @@ void prepare_move()
 		help_feedrate = ((long)feedrate*(long)100);
 	}
 
-	printf("new POS 1:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
+	//printf("new POS 1:%d %d %d %d %d\n\r",(int)destination[0],(int)destination[1],(int)destination[2],(int)destination[3],(int)feedrate);
 	plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], help_feedrate/6000.0,active_extruder);
 
 	for(i=0; i < NUM_AXIS; i++)
@@ -727,7 +726,7 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 	// Calculate the buffer head after we push this byte
 	short next_buffer_head = next_block_index(block_buffer_head);
 
-	printf("next head:%u\n\r",next_buffer_head);
+	//printf("next head:%u\n\r",next_buffer_head);
 
 	// If the buffer is full: good! That means we are well ahead of the robot. 
 	// Rest here until there is room in the buffer.
@@ -736,7 +735,7 @@ void plan_buffer_line(float x, float y, float z, float e, float feed_rate, unsig
 		//manage_heater(); 
 		manage_inactivity(1); 
 	}
-
+    
 		// The target position of the tool in absolute steps
 		// Calculate target position in absolute steps
 		//this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow

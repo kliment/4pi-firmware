@@ -88,7 +88,7 @@ volatile unsigned int advalue[7];
 static unsigned int chns[] = {ADC_NUM_1, ADC_NUM_2, ADC_NUM_3, ADC_NUM_4, ADC_NUM_5, ADC_NUM_6, ADC_NUM_7};
 static volatile int enchan=(1<<ADC_NUM_3)|(1<<ADC_NUM_5)|(1<<ADC_NUM_1)|(1<<ADC_NUM_2);//|(1<<ADC_NUM_4);//|(1<<ADC_NUM_6)|(1<<ADC_NUM_7);
 unsigned int adc_read(unsigned char channel){
-	if(channel>7) return 0;	
+	if(channel>7) return 0;
 	if(channel==0) return 0;
 	return advalue[channel-1];
 }
@@ -151,7 +151,7 @@ void ADCC0_IrqHandler(void)
 	if(autosample)
         adc_sample();
 }
-
+ 
 
 //------------------------------------------------------------------------------
 //         Global functions
@@ -160,6 +160,11 @@ void ADCC0_IrqHandler(void)
 //------------------------------------------------------------------------------
 /// Performs measurements on ADC channel 0 and displays the result on the DBGU.
 //------------------------------------------------------------------------------
+
+#ifndef ADCC0_IRQ_PRIORITY
+#define ADCC0_IRQ_PRIORITY 0
+#endif
+
 void initadc(int autos)
 {
    // printf("-- Basic ADC Project %s --\n\r", SOFTPACK_VERSION);
@@ -196,7 +201,7 @@ void initadc(int autos)
 //	ADC12_EnableChannel(AT91C_BASE_ADC, ADC_NUM_6);
 //	ADC12_EnableChannel(AT91C_BASE_ADC, ADC_NUM_7);
 	
-	IRQ_ConfigureIT(AT91C_ID_ADC, 0, ADCC0_IrqHandler);
+	IRQ_ConfigureIT(AT91C_ID_ADC, ADCC0_IRQ_PRIORITY, ADCC0_IrqHandler);
 	IRQ_EnableIT(AT91C_ID_ADC);
 	
 	ADC12_EnableIt(AT91C_BASE_ADC, 1<<ADC_NUM_1);
@@ -215,6 +220,6 @@ void initadc(int autos)
 	    conversionDone=0;
 	    ADC12_StartConversion(AT91C_BASE_ADC);
 	//printf("adc init done\n");
-	    
+    
 }
 

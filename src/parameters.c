@@ -234,14 +234,14 @@ void FLASH_PrintSettings(void)
 {
 	usb_printf("; Version: %s \r\n",&pa.version[0]);
 	usb_printf("; Homing Feedrate mm/min \r\nM207 X%d Y%d Z%d\r\n",(int)pa.homing_feedrate[0],(int)pa.homing_feedrate[1],(int)pa.homing_feedrate[2]);
-	usb_printf("; Steps per unit:\r\nM92 X%d Y%d Z%d E%d\r\n",(int)pa.axis_steps_per_unit[0],(int)pa.axis_steps_per_unit[1],(int)pa.axis_steps_per_unit[2],(int)pa.axis_steps_per_unit[3]);
+	usb_printf("; Steps per unit:\r\nM92 X%f Y%f Z%f E%f\r\n", pa.axis_steps_per_unit[0], pa.axis_steps_per_unit[1], pa.axis_steps_per_unit[2], pa.axis_steps_per_unit[3]);
 	usb_printf("; Maximum feedrates (mm/s):\r\nM202 X%d Y%d Z%d E%d \r\n",(int)pa.max_feedrate[0],(int)pa.max_feedrate[1],(int)pa.max_feedrate[2],(int)pa.max_feedrate[3]);
 	usb_printf("; Maximum Acceleration (mm/s2):\r\nM201 X%d Y%d Z%d E%d\r\n",(int)pa.max_acceleration_units_per_sq_second[0],(int)pa.max_acceleration_units_per_sq_second[1],(int)pa.max_acceleration_units_per_sq_second[2],(int)pa.max_acceleration_units_per_sq_second[3]);
 	usb_printf("; Acceleration: S=acceleration, T=retract acceleration\r\nM204 S%d T%d\r\n",(int)pa.move_acceleration,(int)pa.retract_acceleration);
 	//max 100 chars ??
 	usb_printf("; Advanced variables (mm/s): S=Min feedrate, T=Min travel feedrate, X=max xY jerk,  Z=max Z jerk,");
 	usb_printf(" E=max E jerk\r\nM205 S%d T%d X%d Z%d E%d\r\n",(int)pa.minimumfeedrate,(int)pa.mintravelfeedrate,(int)pa.max_xy_jerk,(int)pa.max_z_jerk,(int)pa.max_e_jerk);
-	usb_printf("; Home offset\r\nM206 X%d Y%d Z%d\r\n",(int)pa.add_homing[0],(int)pa.add_homing[1],(int)pa.add_homing[2]);
+    usb_printf("; Home offset\r\nM206 X%f Y%f Z%f\r\n", pa.add_homing[0], pa.add_homing[1], pa.add_homing[2]);
 
 	usb_printf("; Maximum Area unit:\r\nM520 X%d Y%d Z%d\r\n",(int)pa.x_max_length,(int)pa.y_max_length,(int)pa.z_max_length);
 	usb_printf("; Disable axis when unused:\r\nM521 X%d Y%d Z%d E%d\r\n",pa.disable_x_en,pa.disable_y_en,pa.disable_z_en,pa.disable_e_en);
@@ -290,8 +290,8 @@ void FLASH_Store_to_SD(void)
 	else
 	{
 		printf("Open config.g to save parameters\r\n");
-		sdcard_selectfile("config.g");
-		sdcard_capturestart();
+		//sdcard_selectfile("config.g");
+		sdcard_capturestart("config.g");
 		
 		if(sdcard_iscapturing() == 0)
 		{
