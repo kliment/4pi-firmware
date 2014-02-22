@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------------
- *         ATMEL Microcontroller Software Support 
+ *         ATMEL Microcontroller Software Support
  * ----------------------------------------------------------------------------
  * Copyright (c) 2009, Atmel Corporation
  *
@@ -39,19 +39,19 @@
 #endif
 
 #include <eefc/eefc.h>
+#include <utility/math.h>
 #include <utility/assert.h>
 #include <utility/trace.h>
 
 #include <string.h>
 
-#define min(a,b) ((a)<(b)?(a):(b))
 
 //------------------------------------------------------------------------------
 //         Local constants
 //------------------------------------------------------------------------------
 
 #if defined(AT91C_BASE_EFC) && !defined(AT91C_BASE_EFC0)
-    #define AT91C_BASE_EFC0     AT91C_BASE_EFC
+#define AT91C_BASE_EFC0     AT91C_BASE_EFC
 #endif
 
 
@@ -67,29 +67,29 @@
 /// \param pActualEnd  Actual end address of lock range.
 //------------------------------------------------------------------------------
 static void ComputeLockRange(
-    unsigned int start,
-    unsigned int end,
-    unsigned int *pActualStart,
-    unsigned int *pActualEnd)
+                             unsigned int start,
+                             unsigned int end,
+                             unsigned int *pActualStart,
+                             unsigned int *pActualEnd)
 {
     AT91S_EFC *pStartEfc, *pEndEfc;
     unsigned short startPage, endPage;
     unsigned short numPagesInRegion;
     unsigned short actualStartPage, actualEndPage;
-
+    
     // Convert start and end address in page numbers
     EFC_TranslateAddress(&pStartEfc, start, &startPage, 0);
     EFC_TranslateAddress(&pEndEfc, end, &endPage, 0);
-
+    
     // Find out the first page of the first region to lock
     numPagesInRegion = AT91C_IFLASH_LOCK_REGION_SIZE / AT91C_IFLASH_PAGE_SIZE;
     actualStartPage = startPage - (startPage % numPagesInRegion);
     actualEndPage = endPage;
     if ((endPage % numPagesInRegion) != 0) {
-
+        
         actualEndPage += numPagesInRegion - (endPage % numPagesInRegion);
     }
-
+    
     // Store actual page numbers
     EFC_ComputeAddress(pStartEfc, actualStartPage, 0, pActualStart);
     EFC_ComputeAddress(pEndEfc, actualEndPage, 0, pActualEnd);
@@ -122,8 +122,10 @@ unsigned char FLASHD_Erase(unsigned int address)
     unsigned short page;
     unsigned short offset;
     unsigned char error;
-
+    
 #ifdef AT91C_BASE_EFC1
+    // Convert wrapped address to physical address.
+    address &= 0x19FFFF;
     SANITY_CHECK((address >=AT91C_IFLASH) || (address >=AT91C_IFLASH1));
     // Check EFC crossover 2 bank
     if (address >=AT91C_IFLASH1) {
@@ -137,13 +139,13 @@ unsigned char FLASHD_Erase(unsigned int address)
 #endif
     // Translate write address
     EFC_TranslateAddress(&pEfc, address, &page, &offset);
-
+    
     error = EFC_PerformCommand(pEfc, AT91C_EFC_FCMD_EA, 0);
-
+    
     return error;
 }
 
-    
+
 static unsigned char pPageBuffer[AT91C_IFLASH_PAGE_SIZE];
 
 //------------------------------------------------------------------------------
@@ -155,9 +157,9 @@ static unsigned char pPageBuffer[AT91C_IFLASH_PAGE_SIZE];
 /// \param size  Size of data buffer in bytes.
 //------------------------------------------------------------------------------
 unsigned char FLASHD_Write(
-    unsigned int address,
-    const void *pBuffer,
-    unsigned int size)
+                           unsigned int address,
+                           const void *pBuffer,
+                           unsigned int size)
 {
     AT91S_EFC *pEfc;
     unsigned short page;
@@ -166,13 +168,15 @@ unsigned char FLASHD_Write(
     unsigned int pageAddress;
     unsigned short padding;
     unsigned char error;
-
+    
     unsigned int sizeTmp;
-    unsigned int *pAlignedDestination; 
+    unsigned int *pAlignedDestination;
     unsigned int *pAlignedSource;
     
     SANITY_CHECK(pBuffer);
 #ifdef AT91C_BASE_EFC1
+    // Convert wrapped address to physical address.
+    address &= 0x19FFFF;
     SANITY_CHECK((address >=AT91C_IFLASH) || (address >=AT91C_IFLASH1));
     // Check EFC crossover 2 bank
     if (address >=AT91C_IFLASH1) {
@@ -187,43 +191,43 @@ unsigned char FLASHD_Write(
 #endif
     // Translate write address
     EFC_TranslateAddress(&pEfc, address, &page, &offset);
-
+    
     // Write all pages
     while (size > 0) {
-
+        
         // Copy data in temporary buffer to avoid alignment problems
         writeSize = min(AT91C_IFLASH_PAGE_SIZE - offset, size);
         EFC_ComputeAddress(pEfc, page, 0, &pageAddress);
         padding = AT91C_IFLASH_PAGE_SIZE - offset - writeSize;
-
+        
         // Pre-buffer data
         memcpy(pPageBuffer, (void *) pageAddress, offset);
-
+        
         // Buffer data
         memcpy(pPageBuffer + offset, pBuffer, writeSize);
-
+        
         // Post-buffer data
         memcpy(pPageBuffer + offset + writeSize, (void *) (pageAddress + offset + writeSize), padding);
-
+        
         // Write page
-        // Writing 8-bit and 16-bit data is not allowed 
+        // Writing 8-bit and 16-bit data is not allowed
         // and may lead to unpredictable data corruption
         pAlignedDestination = (unsigned int*)pageAddress;
-        pAlignedSource = (unsigned int*)pPageBuffer;        
+        pAlignedSource = (unsigned int*)pPageBuffer;
         sizeTmp = AT91C_IFLASH_PAGE_SIZE;
         while (sizeTmp >= 4) {
-
+            
             *pAlignedDestination++ = *pAlignedSource++;
             sizeTmp -= 4;
-        }        
-               
+        }
+        
         // Send writing command
         error = EFC_PerformCommand(pEfc, AT91C_EFC_FCMD_EWP, page);
         if (error) {
-
+            
             return error;
         }
-
+        
         // Progression
         address += AT91C_IFLASH_PAGE_SIZE;
         pBuffer = (void *) ((unsigned int) pBuffer + writeSize);
@@ -231,7 +235,7 @@ unsigned char FLASHD_Write(
         page++;
         offset = 0;
     }
-
+    
     return 0;
 }
 
@@ -245,43 +249,43 @@ unsigned char FLASHD_Write(
 /// \param pActualEnd  End address of the actual lock range (optional).
 //------------------------------------------------------------------------------
 unsigned char FLASHD_Lock(
-    unsigned int start,
-    unsigned int end,
-    unsigned int *pActualStart,
-    unsigned int *pActualEnd)
+                          unsigned int start,
+                          unsigned int end,
+                          unsigned int *pActualStart,
+                          unsigned int *pActualEnd)
 {
     AT91S_EFC *pEfc;
     unsigned int actualStart, actualEnd;
     unsigned short startPage, endPage;
     unsigned char error;
     unsigned short numPagesInRegion = AT91C_IFLASH_LOCK_REGION_SIZE / AT91C_IFLASH_PAGE_SIZE;
-
+    
     // Compute actual lock range and store it
     ComputeLockRange(start, end, &actualStart, &actualEnd);
     if (pActualStart) {
-
+        
         *pActualStart = actualStart;
     }
     if (pActualEnd) {
-
+        
         *pActualEnd = actualEnd;
     }
-
+    
     // Compute page numbers
     EFC_TranslateAddress(&pEfc, actualStart, &startPage, 0);
     EFC_TranslateAddress(0, actualEnd, &endPage, 0);
-
+    
     // Lock all pages
     while (startPage < endPage) {
-
+        
         error = EFC_PerformCommand(pEfc, AT91C_EFC_FCMD_SLB, startPage);
         if (error) {
-
+            
             return error;
         }
         startPage += numPagesInRegion;
     }
-
+    
     return 0;
 }
 
@@ -295,43 +299,43 @@ unsigned char FLASHD_Lock(
 /// \param pActualEnd  End address of the actual unlock range (optional).
 //------------------------------------------------------------------------------
 unsigned char FLASHD_Unlock(
-    unsigned int start,
-    unsigned int end,
-    unsigned int *pActualStart,
-    unsigned int *pActualEnd)
+                            unsigned int start,
+                            unsigned int end,
+                            unsigned int *pActualStart,
+                            unsigned int *pActualEnd)
 {
     AT91S_EFC *pEfc;
     unsigned int actualStart, actualEnd;
     unsigned short startPage, endPage;
     unsigned char error;
     unsigned short numPagesInRegion = AT91C_IFLASH_LOCK_REGION_SIZE / AT91C_IFLASH_PAGE_SIZE;
-
+    
     // Compute actual unlock range and store it
     ComputeLockRange(start, end, &actualStart, &actualEnd);
     if (pActualStart) {
-
+        
         *pActualStart = actualStart;
     }
     if (pActualEnd) {
-
+        
         *pActualEnd = actualEnd;
     }
-
+    
     // Compute page numbers
     EFC_TranslateAddress(&pEfc, actualStart, &startPage, 0);
     EFC_TranslateAddress(0, actualEnd, &endPage, 0);
-
+    
     // Unlock all pages
     while (startPage < endPage) {
-
+        
         error = EFC_PerformCommand(pEfc, AT91C_EFC_FCMD_CLB, startPage);
         if (error) {
-
+            
             return error;
         }
         startPage += numPagesInRegion;
     }
-
+    
     return 0;
 }
 
@@ -349,44 +353,47 @@ unsigned char FLASHD_IsLocked(unsigned int start, unsigned int end)
     unsigned int status;
     unsigned char error;
     unsigned int numLockedRegions = 0;
-
+    
     SANITY_CHECK(end >= start);
-#ifdef AT91C_BASE_EFC1    
+#ifdef AT91C_BASE_EFC1
+    // Convert wrapped address to physical address.
+    start &= 0x19FFFF;
+    end &= 0x19FFFF;
     // Check EFC crossover 2 bank
-    SANITY_CHECK(((start >=AT91C_IFLASH) && (end <= AT91C_IFLASH + AT91C_IFLASH_SIZE)) 
-        || ((start >=AT91C_IFLASH1) && (end <= AT91C_IFLASH1 + AT91C_IFLASH1_SIZE)));
-#else    
-    SANITY_CHECK((start >=AT91C_IFLASH) && (end <= AT91C_IFLASH + AT91C_IFLASH_SIZE)); 
+    SANITY_CHECK(((start >=AT91C_IFLASH) && (end <= AT91C_IFLASH + AT91C_IFLASH_SIZE))
+                 || ((start >=AT91C_IFLASH1) && (end <= AT91C_IFLASH1 + AT91C_IFLASH1_SIZE)));
+#else
+    SANITY_CHECK((start >=AT91C_IFLASH) && (end <= AT91C_IFLASH + AT91C_IFLASH_SIZE));
 #endif
-
+    
     // Compute page numbers
     EFC_TranslateAddress(&pEfc, start, &startPage, 0);
     EFC_TranslateAddress(0, end, &endPage, 0);
-
+    
     // Compute region numbers
     numPagesInRegion = AT91C_IFLASH_LOCK_REGION_SIZE / AT91C_IFLASH_PAGE_SIZE;
     startRegion = startPage / numPagesInRegion;
     endRegion = endPage / numPagesInRegion;
     if ((endPage % numPagesInRegion) != 0) {
-
+        
         endRegion++;
     }
-
+    
     // Retrieve lock status
     error = EFC_PerformCommand(pEfc, AT91C_EFC_FCMD_GLB, 0);
     ASSERT(!error, "-F- Error while trying to fetch lock bits status (0x%02X)\n\r", error);
     status = EFC_GetResult(pEfc);
-
+    
     // Check status of each involved region
     while (startRegion < endRegion) {
-
+        
         if ((status & (1 << startRegion)) != 0) {
-
+            
             numLockedRegions++;
         }
         startRegion++;
     }
-
+    
     return numLockedRegions;
 }
 
@@ -398,21 +405,21 @@ unsigned char FLASHD_IsGPNVMSet(unsigned char gpnvm)
 {
     unsigned char error;
     unsigned int status;
-
+    
     SANITY_CHECK(gpnvm < CHIP_EFC_NUM_GPNVMS);
-
+    
     // Get GPNVMs status
     error = EFC_PerformCommand(AT91C_BASE_EFC, AT91C_EFC_FCMD_GFB, 0);
     ASSERT(!error, "-F- Error while trying to fetch GPNVMs status (0x%02X)\n\r", error);
     status = EFC_GetResult(AT91C_BASE_EFC);
-
+    
     // Check if GPNVM is set
     if ((status & (1 << gpnvm)) != 0) {
-
+        
         return 1;
     }
     else {
-
+        
         return 0;
     }
 }
@@ -425,13 +432,13 @@ unsigned char FLASHD_IsGPNVMSet(unsigned char gpnvm)
 unsigned char FLASHD_SetGPNVM(unsigned char gpnvm)
 {
     SANITY_CHECK(gpnvm < CHIP_EFC_NUM_GPNVMS);
-
+    
     if (!FLASHD_IsGPNVMSet(gpnvm)) {
-
+        
         return EFC_PerformCommand(AT91C_BASE_EFC, AT91C_EFC_FCMD_SFB, gpnvm);
     }
     else {
-
+        
         return 0;
     }
 }
@@ -444,13 +451,13 @@ unsigned char FLASHD_SetGPNVM(unsigned char gpnvm)
 unsigned char FLASHD_ClearGPNVM(unsigned char gpnvm)
 {
     SANITY_CHECK(gpnvm < CHIP_EFC_NUM_GPNVMS);
-
+    
     if (FLASHD_IsGPNVMSet(gpnvm)) {
-
+        
         return EFC_PerformCommand(AT91C_BASE_EFC, AT91C_EFC_FCMD_CFB, gpnvm);
     }
     else {
-
+        
         return 0;
     }
 }
@@ -464,24 +471,24 @@ unsigned char FLASHD_ClearGPNVM(unsigned char gpnvm)
 unsigned char FLASHD_ReadUniqueID (unsigned long * uniqueID)
 {
     unsigned char error;
-
+    
     SANITY_CHECK(uniqueID != NULL);
-
+    
     uniqueID[0] = 0;
     uniqueID[1] = 0;
     uniqueID[2] = 0;
     uniqueID[3] = 0;
-
+    
     EFC_StartCommand(AT91C_BASE_EFC, AT91C_EFC_FCMD_STUI, 0);
-
+    
     uniqueID[0] = *(unsigned int *)AT91C_IFLASH;
     uniqueID[1] = *(unsigned int *)(AT91C_IFLASH + 4);
     uniqueID[2] = *(unsigned int *)(AT91C_IFLASH + 8);
     uniqueID[3] = *(unsigned int *)(AT91C_IFLASH + 12);
-
+    
     error = EFC_PerformCommand(AT91C_BASE_EFC, AT91C_EFC_FCMD_SPUI, 0);
     if (error) return error;
-
+    
     return 0;
 }
 #endif

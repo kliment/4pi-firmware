@@ -87,7 +87,9 @@
 //------------------------------------------------------------------------------
 /// DMA driver is currently busy.
 #define DMAD_ERROR_BUSY              1
-
+/// Using the default interrupt handler of the DMAD
+#define DMAD_USE_DEFAULT_IT          1
+#define DMAD_NO_DEFAULT_IT           0
 
 //------------------------------------------------------------------------------
 //         Types
@@ -130,7 +132,7 @@ typedef struct _PictureInPicture {
 //------------------------------------------------------------------------------
 //         Global functions
 //------------------------------------------------------------------------------
-extern void DMAD_Initialize(unsigned char channel);
+extern void DMAD_Initialize(unsigned char channel, unsigned char defaultHandler);
                      
 extern unsigned char DMAD_Configure_Buffer(unsigned char channel, 
                              unsigned char sourceTransferMode,

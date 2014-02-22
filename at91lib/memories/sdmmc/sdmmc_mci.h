@@ -2,7 +2,7 @@
  *         ATMEL Microcontroller Software Support
  * ----------------------------------------------------------------------------
  * Copyright (c) 2008, Atmel Corporation
-
+ 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 /// \page "sdcard sd mode initialization and identification"
 ///
 /// !Purpose
-/// 
+///
 /// sdcard sd mode initialization and identification sequence
 ///
 /// !Description
@@ -44,31 +44,31 @@
 ///       - refer to "If Cmd8 response fail" branch for the initialize of sdcard 1.x, mmc card, sdcard2.0
 ///          with invalid voltage.
 /// - If Cmd8 response ok
-///       - Host sends ACmd41* with argument "HCS" equal to "1". 
-///       - If the response to ACmd41 failed, it means the card does not match the voltage 
+///       - Host sends ACmd41* with argument "HCS" equal to "1".
+///       - If the response to ACmd41 failed, it means the card does not match the voltage
 ///          desired by the host, the card will be put into inactive state, initialize ends.
-///       - If the response with "CCS" equal to "1", the card is a version 2.0 high capacity sdcard, 
+///       - If the response with "CCS" equal to "1", the card is a version 2.0 high capacity sdcard,
 ///          refer to "Card Initialize" for the succeeding initialize sequence.
 ///       - If the response with "CCS" equal to "0", the card is a version 2.0 standard capacity sdcard.
 ///          refer to "Card Initialize" for the succeeding initialize sequence.
 /// - If Cmd8 response fail
 ///       - Host sends ACmd41* argument "HCS" equal to "0".
-///       - If the response to ACmd41 ok, the card is a version 1.x sdcard, refer to "Card Initialize" for 
+///       - If the response to ACmd41 ok, the card is a version 1.x sdcard, refer to "Card Initialize" for
 ///          the succeeding initialize sequence.
 ///       - If the response to ACmd41 fails
 ///          - Host sends Cmd0 to reset card.
 ///          - Host sends Cmd1 with argument "hdSupport" equal to "1" to card.
-///          - If card has response to Cmd1, the card is a MMC card, refer to "Card Initialize" for the 
-///             succeeding initialize sequence. Furthermore, if the response with bit[30:29] equal to 
+///          - If card has response to Cmd1, the card is a MMC card, refer to "Card Initialize" for the
+///             succeeding initialize sequence. Furthermore, if the response with bit[30:29] equal to
 ///             "00" or "11", the card is a High Density MMC, else the card is a standard MMC.
-///          - If card has no response to Cmd1, the card is either an unknown card or a card does 
+///          - If card has no response to Cmd1, the card is either an unknown card or a card does
 ///             not match host's voltage, the initialize ends.
 /// - Card Initialize
 ///       - Host sends Cmd2 to get the its unique card identification number (CID).
-///       - Host sends Cmd3 to ask the card to publish a new relative card address (RCA), once the 
+///       - Host sends Cmd3 to ask the card to publish a new relative card address (RCA), once the
 ///          RCA is received the card state changes to the "stand-by state".
 ///       - Host sends Cmd9 to get the Card Specific Data (CSD).
-///       - At this stage, the initialization and identification process is over, the following steps are done 
+///       - At this stage, the initialization and identification process is over, the following steps are done
 ///          for the sdcard's succeeding operation.
 ///       - Host sends Cmd13 to obtain the card status, make sure the card is "ready-for-data".
 ///       - Host sends Cmd7 to transit card in "transfer state".
@@ -83,7 +83,7 @@
 /// \page "sdcard sd mode write"
 ///
 /// !Purpose
-/// 
+///
 /// sdcard sd mode write process
 ///
 /// !Description
@@ -96,8 +96,8 @@
 ///
 /// !Write Optimization
 /// - To optimize the write multiple blocks, try to keep the sdcard in the "rcv state" as long as possible.
-///    after send WRITE_MULTIPLE_BLOCK command, set the block number in the MCI_BLKR as 0, each time a 
-///    new write start, do not re-send the WRITE_MULTIPLE_BLOCK command, just re-configure the PDC. In 
+///    after send WRITE_MULTIPLE_BLOCK command, set the block number in the MCI_BLKR as 0, each time a
+///    new write start, do not re-send the WRITE_MULTIPLE_BLOCK command, just re-configure the PDC. In
 ///    this case, host does not have to send STOP_TRANSMISSION to transfer the sdcard's state and the
 ///    performance is optimized.
 /// - MoveToTransferState will check the state of the sdcard, and send STOP_TRANSMISSION if need
@@ -110,7 +110,7 @@
 /// \page "sdcard sd mode read"
 ///
 /// !Purpose
-/// 
+///
 /// sdcard sd mode read process
 ///
 /// !Description
@@ -120,10 +120,10 @@
 /// - Host sends Cmd18 to do multiple blocks read, the address here is different between high capacity
 ///    sdcard and normal sdcard, the address of SDHC is equal to the block number, while normal sdcard's
 ///    address is equal to  block number times 512.
-/// 
+///
 /// !Read Optimization
 /// - To optimize the read multiple blocks, try to keep the sdcard in the "data state" as long as possible.
-///    after send READ_MULTIPLE_BLOCK command, set the block number in the MCI_BLKR as 0, each time a 
+///    after send READ_MULTIPLE_BLOCK command, set the block number in the MCI_BLKR as 0, each time a
 ///    new read start, do not re-send the READ_MULTIPLE_BLOCK command, just re-configure the PDC. In this
 ///    case, host does not have to send STOP_TRANSMISSION to transfer the sdcard's state and the
 ///    performance is optimized.
@@ -137,14 +137,14 @@
 /// \page "sdhc"
 ///
 /// !Purpose
-/// 
+///
 /// highlight of sdhc
 ///
 /// !Sdhc initialization and identification
 ///
 ///   - Refer to page "sdcard sd mode initialization and identification" for the initialization and identification
 ///       sequence of a sdhc.
-/// 
+///
 /// !Functional difference between sdhc and standard capacity sdcard
 ///
 /// - Command argument is different:
@@ -154,7 +154,7 @@
 /// - Partial access and misalign access are disabled in sdhc as the block address is used.
 /// - Sdhc does not support write-protected commands (Cmd28, Cmd29, Cmd30).
 ///
-/// \note Memory access commands means block read commands (CMD17, CMD18), block write commands 
+/// \note Memory access commands means block read commands (CMD17, CMD18), block write commands
 ///   (CMD24, CMD25), and block erase commands (CMD32, CMD33).
 ///
 //------------------------------------------------------------------------------
@@ -163,7 +163,7 @@
 /// \page "sdmmc_mci"
 ///
 /// !Purpose
-/// 
+///
 /// Implementation for sdcard sd mode physical layer driver. Supply a set of sdcard sd mode's
 /// interface.
 ///
@@ -180,7 +180,7 @@
 /// -# Cmd3 : Ask the card to publish a new relative address
 /// -# Cmd7 : Command toggles a card between the stand-by and transfer states or between
 ///                the programming and disconnect states
-/// -# Cmd8 : Sends SD Memory Card interface condition, which includes host supply voltage 
+/// -# Cmd8 : Sends SD Memory Card interface condition, which includes host supply voltage
 ///                information and asks the card whether card supports voltage
 /// -# Cmd9 : Addressed card sends its card-specific data (CSD) on the CMD line
 /// -# Cmd12 : Forces the card to stop transmission
@@ -189,7 +189,7 @@
 /// -# Cmd18 : Read multiple blocks
 /// -# Cmd25 : Write multiple blocks
 /// -# Cmd55 : App command, should be sent before application specific command
-/// -# Acmd6 : Defines the data bus width 
+/// -# Acmd6 : Defines the data bus width
 /// -# Acmd41 : Asks to all cards to send their operations conditions
 /// -# CmdEMMC8 : Sends eMMC EXT_CSD command
 /// -# CmdEMMC6 : Switches the mode of operation of the selected card or modifies the
@@ -312,7 +312,7 @@
 
 // CID register access macros (128 bits, 4 * 32 bits).
 #define SD_CID(pSd, bitfield, bits)   (  (pSd->cid[3-(bitfield)/32] >> ((bitfield)%32)) & ((1 << (bits)) - 1))
-#define SD_CID_MID(pSd)               SD_CID(pSd, 120, 8)      ///< Manufacturer ID  
+#define SD_CID_MID(pSd)               SD_CID(pSd, 120, 8)      ///< Manufacturer ID
 #define SD_CID_BGA(pSd)               SD_CID(pSd, 112, 2)      ///< Card/BGA(eMMC)
 #define SD_CID_CBS(pSd)               SD_CID(pSd, 112, 2)      ///< Card/BGA(eMMC)
 #define SD_CID_OID_BYTE_1(pSd)        SD_CID(pSd, 112, 8)      ///< OEM/Application ID byte 1
@@ -342,11 +342,11 @@
 #define SD_CSD_READ_BLK_MISALIGN(pSd)  SD_CSD(pSd, 77,  1) ///< Read block misalignment
 #define SD_CSD_DSR_IMP(pSd)            SD_CSD(pSd, 76,  1) ///< DSP implemented
 #define SD_CSD_C_SIZE(pSd)             ((SD_CSD(pSd, 72,  2) << 10) + \
-                                        (SD_CSD(pSd, 64,  8) << 2)  + \
-                                        SD_CSD(pSd, 62,  2)) ///< Device size
+(SD_CSD(pSd, 64,  8) << 2)  + \
+SD_CSD(pSd, 62,  2)) ///< Device size
 #define SD_CSD_C_SIZE_HC(pSd)          ((SD_CSD(pSd, 64,  6) << 16) + \
-                                        (SD_CSD(pSd, 56,  8) << 8)  + \
-                                        SD_CSD(pSd, 48,  8)) ///< Device size v2.0 High Capacity
+(SD_CSD(pSd, 56,  8) << 8)  + \
+SD_CSD(pSd, 48,  8)) ///< Device size v2.0 High Capacity
 #define SD_CSD_VDD_R_CURR_MIN(pSd)     SD_CSD(pSd, 59,  3) ///< Max. read current @VDD min
 #define SD_CSD_VDD_R_CURR_MAX(pSd)     SD_CSD(pSd, 56,  3) ///< Max. read current @VDD max
 #define SD_CSD_VDD_W_CURR_MIN(pSd)     SD_CSD(pSd, 53,  3) ///< Max. write current @VDD min
@@ -382,9 +382,9 @@
 // SCR register access macros (64 bits, 2 * 32 bits, 8 * 8 bits).
 #define SD_EXT_OFFSET_SD_SCR                0   // DW
 #define SD_SCR(pSd, bitfield, bits) \
-    ( ((char*)(pSd)->extData)[7 - ((bitfield)/8)] >> ((bitfield)%8) \
-                                                  & ((1 << (bits)) - 1) \
-    )
+( ((char*)(pSd)->extData)[7 - ((bitfield)/8)] >> ((bitfield)%8) \
+ & ((1 << (bits)) - 1) \
+ )
 #define SD_SCR_SCR_STRUCTURE(pSd)           SD_SCR(pSd, 60, 4)
 #define     SD_SCR_SCR_STRUCTURE_1_0        0
 #define SD_SCR_SD_SPEC(pSd)                 SD_SCR(pSd, 56, 4)
@@ -404,9 +404,9 @@
 // SD Status access macros (512 bits, 16 * 32 bits, 64 * 8 bits).
 #define SD_EXT_OFFSET_SD_STAT               2   // DW
 #define SD_STAT(pSd, bitfield, bits) \
-    ( ((char*)&(pSd)->extData[2])[63 - ((bitfield)/8)] >> ((bitfield)%8) \
-                                                  & ((1 << (bits)) - 1) \
-    )
+( ((char*)&(pSd)->extData[2])[63 - ((bitfield)/8)] >> ((bitfield)%8) \
+ & ((1 << (bits)) - 1) \
+ )
 /// Bus width, 00: default, 10:4-bit
 #define SD_STAT_DAT_BUS_WIDTH(pSd)           SD_STAT(pSd, 510, 2)
 #define     SD_STAT_DATA_BUS_WIDTH_1BIT      0x0
@@ -415,16 +415,16 @@
 #define SD_STAT_SECURED_MODE(pSd)            SD_STAT(pSd, 509, 1)
 /// SD Memory Cards as defined in 1.01~2.00
 #define SD_STAT_SD_CARD_TYPE(pSd)           (SD_STAT(pSd, 480, 8) \
-                                           + (SD_STAT(pSd, 488, 8) << 8) )
++ (SD_STAT(pSd, 488, 8) << 8) )
 /// STD: ThisSize*Multi*BlockLen, HC: Size in bytes
 #define SD_STAT_SIZE_OF_PROTECTED_AREA(pSd) (SD_STAT(pSd, 448, 8) \
-                                           + (SD_STAT(pSd, 456, 8) <<  8) \
-                                           + (SD_STAT(pSd, 464, 8) << 16) \
-                                           + (SD_STAT(pSd, 472, 8) << 24) )
++ (SD_STAT(pSd, 456, 8) <<  8) \
++ (SD_STAT(pSd, 464, 8) << 16) \
++ (SD_STAT(pSd, 472, 8) << 24) )
 /// Speed Class, value can be calculated by Pw/2
 #define SD_STAT_SPEED_CLASS(pSd)             SD_STAT(pSd, 440, 8)
 #define     SD_STAT_SPEED_CLASS_0            0
-#define     SD_STAT_SPEED_CLASS_2            1  // >= 2MB/s 
+#define     SD_STAT_SPEED_CLASS_2            1  // >= 2MB/s
 #define     SD_STAT_SPEED_CLASS_4            2  // >= 4MB/s
 #define     SD_STAT_SPEED_CLASS_6            3  // >= 6MB/s
 /// 8-bit, by 1MB/s step.
@@ -442,29 +442,29 @@
 #define     SD_STAT_AU_SIZE_4M               9
 /// 16-bit, number of AUs erased.
 #define SD_STAT_ERASE_SIZE(pSd)             (SD_STAT(pSd, 408, 8) \
-                                          + (SD_STAT(pSd, 416, 8) << 8) )
++ (SD_STAT(pSd, 416, 8) << 8) )
 #define SD_STAT_ERASE_TIMEOUT(pSd)           SD_STAT(pSd, 402, 6)
 #define SD_STAT_ERASE_OFFSET(pSd)            SD_STAT(pSd, 400, 2)
 
 // SD Switch Status access macros (512 bits, 16 * 32 bits, 64 * 8 bits).
 #define SD_SW_STAT(p, bitfield, bits) \
-    ( ((char*)(p))[63 - ((bitfield)/8)] >> ((bitfield)%8) \
-                                                  & ((1 << (bits)) - 1) \
-    )
+( ((char*)(p))[63 - ((bitfield)/8)] >> ((bitfield)%8) \
+ & ((1 << (bits)) - 1) \
+ )
 #define SD_SW_STAT_MAX_CURRENT_CONSUMPTION(p)   ( SD_SW_STAT(p, 496, 8) \
-                                               + (SD_SW_STAT(p, 504, 8) << 8) )
++ (SD_SW_STAT(p, 504, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP6_INFO(p)             ( SD_SW_STAT(p, 480, 8) \
-                                               + (SD_SW_STAT(p, 488, 8) << 8) )
++ (SD_SW_STAT(p, 488, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP5_INFO(p)             ( SD_SW_STAT(p, 464, 8) \
-                                               + (SD_SW_STAT(p, 472, 8) << 8) )
++ (SD_SW_STAT(p, 472, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP4_INFO(p)             ( SD_SW_STAT(p, 448, 8) \
-                                               + (SD_SW_STAT(p, 456, 8) << 8) )
++ (SD_SW_STAT(p, 456, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP3_INFO(p)             ( SD_SW_STAT(p, 432, 8) \
-                                               + (SD_SW_STAT(p, 440, 8) << 8) )
++ (SD_SW_STAT(p, 440, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP2_INFO(p)             ( SD_SW_STAT(p, 416, 8) \
-                                               + (SD_SW_STAT(p, 424, 8) << 8) )
++ (SD_SW_STAT(p, 424, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP1_INFO(p)             ( SD_SW_STAT(p, 400, 8) \
-                                               + (SD_SW_STAT(p, 408, 8) << 8) )
++ (SD_SW_STAT(p, 408, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP6_RC(p)                SD_SW_STAT(p, 396, 4)
 #define SD_SW_STAT_FUN_GRP5_RC(p)                SD_SW_STAT(p, 392, 4)
 #define SD_SW_STAT_FUN_GRP4_RC(p)                SD_SW_STAT(p, 388, 4)
@@ -474,17 +474,17 @@
 #define     SD_SW_STAT_FUN_GRP_RC_ERROR         0xF
 #define SD_SW_STAT_DATA_STRUCT_VER(p)            SD_SW_STAT(p, 368, 8)
 #define SD_SW_STAT_FUN_GRP6_BUSY(p)             ( SD_SW_STAT(p, 352, 8) \
-                                               + (SD_SW_STAT(p, 360, 8) << 8) )
++ (SD_SW_STAT(p, 360, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP5_BUSY(p)             ( SD_SW_STAT(p, 336, 8) \
-                                               + (SD_SW_STAT(p, 344, 8) << 8) )
++ (SD_SW_STAT(p, 344, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP4_BUSY(p)             ( SD_SW_STAT(p, 320, 8) \
-                                               + (SD_SW_STAT(p, 328, 8) << 8) )
++ (SD_SW_STAT(p, 328, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP3_BUSY(p)             ( SD_SW_STAT(p, 304, 8) \
-                                               + (SD_SW_STAT(p, 312, 8) << 8) )
++ (SD_SW_STAT(p, 312, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP2_BUSY(p)             ( SD_SW_STAT(p, 288, 8) \
-                                               + (SD_SW_STAT(p, 296, 8) << 8) )
++ (SD_SW_STAT(p, 296, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP1_BUSY(p)             ( SD_SW_STAT(p, 272, 8) \
-                                               + (SD_SW_STAT(p, 280, 8) << 8) )
++ (SD_SW_STAT(p, 280, 8) << 8) )
 #define SD_SW_STAT_FUN_GRP_FUN_BUSY(funNdx)     (1 << (funNdx))
 
 // EXT_CSD register definition.
@@ -526,15 +526,15 @@
 
 // Ext_CSD register access marco
 #define MMC_EXTCSD_U8(pSd, bytefield) \
-    ( ((unsigned char*)((pSd)->extData))[(bytefield)] )
+( ((unsigned char*)((pSd)->extData))[(bytefield)] )
 #define MMC_EXTCSD_U16(pSd, bytefield) \
-    ( (((unsigned char*)((pSd)->extData))[(bytefield)    ] << 0) + \
-      (((unsigned char*)((pSd)->extData))[(bytefield) + 1] << 8) )
+( (((unsigned char*)((pSd)->extData))[(bytefield)    ] << 0) + \
+ (((unsigned char*)((pSd)->extData))[(bytefield) + 1] << 8) )
 #define MMC_EXTCSD_U32(pSd, bytefield) \
-    ( (((unsigned char*)((pSd)->extData))[(bytefield)     ] <<  0) + \
-      (((unsigned char*)((pSd)->extData))[(bytefield) +  1] <<  8) + \
-      (((unsigned char*)((pSd)->extData))[(bytefield) +  2] << 16) + \
-      (((unsigned char*)((pSd)->extData))[(bytefield) + 24] << 24) )
+( (((unsigned char*)((pSd)->extData))[(bytefield)     ] <<  0) + \
+ (((unsigned char*)((pSd)->extData))[(bytefield) +  1] <<  8) + \
+ (((unsigned char*)((pSd)->extData))[(bytefield) +  2] << 16) + \
+ (((unsigned char*)((pSd)->extData))[(bytefield) + 24] << 24) )
 #define MMC_EXTCSD(pSd) ((unsigned char*)((pSd)->extData))
 #define SD_EXTCSD_S_CMD_SET(pSd)               (MMC_EXTCSD(pSd)[SD_EXTCSD_S_CMD_SET_INDEX]) // Supported Command Sets
 #define SD_EXTCSD_BOOT_INFO(pSd)               (MMC_EXTCSD(pSd)[SD_EXTCSD_BOOT_INFO_INDEX]) // Boot information
@@ -548,9 +548,9 @@
 #define SD_EXTCSD_S_C_VCCQ(pSd)                (MMC_EXTCSD(pSd)[SD_EXTCSD_S_C_VCCQ_INDEX]) // Sleep current(VCCQ)
 #define SD_EXTCSD_S_A_TIMEOUT(pSd)             (MMC_EXTCSD(pSd)[SD_EXTCSD_S_A_TIMEOUT_INDEX]) // Sleep/awake timeout
 #define SD_EXTCSD_SEC_COUNT(pSd)               ((MMC_EXTCSD(pSd)[SD_EXTCSD_SEC_COUNT_INDEX]) + \
-                                                (MMC_EXTCSD(pSd)[SD_EXTCSD_SEC_COUNT_INDEX+1] << 8 ) + \
-                                                (MMC_EXTCSD(pSd)[SD_EXTCSD_SEC_COUNT_INDEX+2] << 16 ) + \
-                                                (MMC_EXTCSD(pSd)[SD_EXTCSD_SEC_COUNT_INDEX+3] << 24 )) //Sector Count
+(MMC_EXTCSD(pSd)[SD_EXTCSD_SEC_COUNT_INDEX+1] << 8 ) + \
+(MMC_EXTCSD(pSd)[SD_EXTCSD_SEC_COUNT_INDEX+2] << 16 ) + \
+(MMC_EXTCSD(pSd)[SD_EXTCSD_SEC_COUNT_INDEX+3] << 24 )) //Sector Count
 #define SD_EXTCSD_MIN_PERF_W_8_52(pSd)         (MMC_EXTCSD(pSd)[SD_EXTCSD_MIN_PERF_W_8_52_INDEX]) // Minimum Write Performance for 8bit at 52MHz
 #define SD_EXTCSD_MIN_PERF_R_8_52(pSd)         (MMC_EXTCSD(pSd)[SD_EXTCSD_MIN_PERF_R_8_52_INDEX]) // Minimum Read Performance for 8bit at 52MHz
 #define SD_EXTCSD_MIN_PERF_W_8_26_4_52(pSd)    (MMC_EXTCSD(pSd)[SD_EXTCSD_MIN_PERF_W_8_26_4_52_INDEX]) // Minimum Write Performance for 8bit at 26MHz, for 4bit at 52MHz
@@ -620,80 +620,23 @@
 //         Types
 //------------------------------------------------------------------------------
 
-#if 1
 typedef MciCallback SdCallback;
 typedef MciCmd      SdCmd;
 typedef Mci         SdDriver;
-#else
-/// SD end-of-transfer callback function.
-typedef void (*SdCallback)(unsigned char status, void *pCommand);
-
-//------------------------------------------------------------------------------
-/// SD Transfer Request prepared by the application upper layer. This structure
-/// is sent to the SD_SendCommand function to start the transfer. At the end of
-/// the transfer, the callback is invoked by the interrupt handler.
-//------------------------------------------------------------------------------
-typedef struct _SdCmd {
-
-    /// Command status.
-    volatile char status;
-    /// Command code.
-    unsigned int cmd;
-    /// Command argument.
-    unsigned int arg;
-    /// Data buffer.
-    unsigned char *pData;
-    /// Size of data buffer in bytes.
-    unsigned short blockSize;
-    /// Number of blocks to be transfered
-    unsigned short nbBlock;
-    /// Indicate if continue to transfer data
-    unsigned char tranType;
-    /// Indicates if the command is a read operation.
-    unsigned char isRead;
-    /// Response buffer.
-    unsigned int  *pResp;
-    /// SD card response type.
-    unsigned char  resType;
-    /// Optional user-provided callback function.
-    SdCallback callback;
-    /// Optional argument to the callback function.
-    void *pArg;
-
-} SdCmd;
-
-//------------------------------------------------------------------------------
-/// SD driver structure. Holds the internal state of the SD driver and
-/// prevents parallel access to a SPI peripheral.
-//------------------------------------------------------------------------------
-typedef struct {
-
-    /// Pointer to a SPI peripheral.
-    AT91S_MCI *pSdHw;
-    /// SPI peripheral identifier.
-    unsigned char mciId;
-    /// MCI HW mode
-    unsigned char mciMode;
-    /// Pointer to currently executing command.
-    SdCmd *pCommand;
-    /// Mutex.
-    volatile char semaphore;
-} SdDriver;
-#endif
 
 //------------------------------------------------------------------------------
 /// Sdcard driver structure. It holds the current command being processed and
 /// the SD card address.
 //------------------------------------------------------------------------------
 typedef struct _SdCard {
-
+    
     /// Pointer to the underlying MCI driver.
     SdDriver *pSdDriver;
     /// Current MCI command being processed.
     SdCmd command;
-    /// Card IDentification (CID register)   
-    unsigned int cid[4];    
-    /// Card-specific data (CSD register)   
+    /// Card IDentification (CID register)
+    unsigned int cid[4];
+    /// Card-specific data (CSD register)
     unsigned int csd[4];
     /// Previous access block number.
     unsigned int preBlock;
@@ -718,7 +661,7 @@ typedef struct _SdCard {
 } SdCard;
 
 typedef struct _MmcCmd6Arg {
-
+    
     /// Access
     unsigned char access;
     /// Index
@@ -731,13 +674,13 @@ typedef struct _MmcCmd6Arg {
 
 typedef struct _SdCmd6Arg {
     unsigned int accessMode:4,  /// [ 3: 0] function group 1, access mode
-                 command:4,     /// [ 7: 4] function group 2, command system
-                 reserveFG3:4,  /// [11: 8] function group 3, 0xF or 0x0
-                 reserveFG4:4,  /// [15:12] function group 4, 0xF or 0x0
-                 reserveFG5:4,  /// [19:16] function group 5, 0xF or 0x0
-                 reserveFG6:4,  /// [23:20] function group 6, 0xF or 0x0
-                 reserved:7,    /// [30:24] reserved 0
-                 mode:1;        /// [31   ] Mode, 0: Check, 1: Switch
+command:4,     /// [ 7: 4] function group 2, command system
+reserveFG3:4,  /// [11: 8] function group 3, 0xF or 0x0
+reserveFG4:4,  /// [15:12] function group 4, 0xF or 0x0
+reserveFG5:4,  /// [19:16] function group 5, 0xF or 0x0
+reserveFG6:4,  /// [23:20] function group 6, 0xF or 0x0
+reserved:7,    /// [30:24] reserved 0
+mode:1;        /// [31   ] Mode, 0: Check, 1: Switch
 } SdCmd6Arg;
 
 //------------------------------------------------------------------------------
@@ -762,16 +705,16 @@ extern unsigned char SD_Write(SdCard        *pSd,
                               void          *pArgs);
 
 extern unsigned char SD_ReadBlock(
-    SdCard *pSd,
-    unsigned int address,
-    unsigned short nbBlocks,
-    unsigned char *pData);
+                                  SdCard *pSd,
+                                  unsigned int address,
+                                  unsigned short nbBlocks,
+                                  unsigned char *pData);
 
 extern unsigned char SD_WriteBlock(
-    SdCard *pSd,
-    unsigned int address,
-    unsigned short nbBlocks,
-    const unsigned char *pData);
+                                   SdCard *pSd,
+                                   unsigned int address,
+                                   unsigned short nbBlocks,
+                                   const unsigned char *pData);
 
 extern unsigned char SD_Stop(SdCard *pSd, SdDriver *pSdDriver);
 
