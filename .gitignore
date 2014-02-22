@@ -5,3 +5,5 @@ src/bin
 src/obj
 src/.settings
 src/flash.sh
+4pi-firmware.xcodeproj
+DerivedData
