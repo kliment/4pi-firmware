@@ -106,7 +106,7 @@
 
 /// Master clock frequency (when using board_lowlevel.c).
 #if !defined(fpgasimulation)
-#define BOARD_MCK               48000000
+#define BOARD_MCK               96000000
 #else
 #define BOARD_MCK               22579200
 #endif
