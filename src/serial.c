@@ -167,26 +167,28 @@ static void UsbDataReceived(unsigned int unused,
 {
     // Check that data has been received successfully
     
-    if (status == USBD_STATUS_SUCCESS) {
-
-	
-	int i=0;
-	if(callback)
-		//printf("calling callback\r\n");
-		for(i=0;i<received;++i){
-			//printf("calling callback with %c\r\n",usbBuffer[i]);
-			callback(usbBuffer[i]);
-		}
-        CDCDSerialDriver_Read(usbBuffer,
-                              DATABUFFERSIZE,
-                              (TransferCallback) UsbDataReceived,
-                              0);
-    
-    
+    if (status == USBD_STATUS_SUCCESS)
+    {
+        int i=0;
+        if (callback)
+        {
+            //printf("calling callback\r\n");
+            for(i=0;i<received;++i)
+            {
+                //printf("calling callback with %c\r\n",usbBuffer[i]);
+                callback(usbBuffer[i]);
+            }
+            CDCDSerialDriver_Read(usbBuffer,
+                                  DATABUFFERSIZE,
+                                  (TransferCallback) UsbDataReceived,
+                                  0);
+        }
     }
-    else {
-
-      //  TRACE_WARNING( "UsbDataReceived: Transfer error\n\r");
+    else
+    {
+        puts("UsbDataReceived: Transfer error\r");
+        
+        //  TRACE_WARNING( "UsbDataReceived: Transfer error\n\r");
     }
 }
 //volatile int busyflag=0;
@@ -211,6 +213,9 @@ void usb_printf(const char * format, ...)
 {
 	if (!isSerialConnected)
 		return;
+    
+    if (USBState == STATE_SUSPEND)
+        return;
 	
 	unsigned int timeout=1000;
 	while(bufferInUse && timeout--)
