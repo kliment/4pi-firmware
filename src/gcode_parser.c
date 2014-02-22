@@ -354,13 +354,13 @@ static int gcode_process_command()
 
 					home_all_axis = !((has_code(axis_codes[0])) || (has_code(axis_codes[1])) || (has_code(axis_codes[2])));
 
-					if((home_all_axis) || (has_code(axis_codes[X_AXIS]))) 
+					if((home_all_axis) || (has_code(axis_codes[X_AXIS])))
 						homing_routine(X_AXIS);
 
-					if((home_all_axis) || (has_code(axis_codes[Y_AXIS]))) 
+					if((home_all_axis) || (has_code(axis_codes[Y_AXIS])))
 						homing_routine(Y_AXIS);
 
-					if((home_all_axis) || (has_code(axis_codes[Z_AXIS]))) 
+					if((home_all_axis) || (has_code(axis_codes[Z_AXIS])))
 						homing_routine(Z_AXIS);
 
 				#ifdef ENDSTOPS_ONLY_FOR_HOMING
@@ -508,10 +508,11 @@ static int gcode_process_command()
 				case 105: // M105
 				{
 					heater_struct* heater = get_heater(GET('T',GET('P',active_extruder)));
-				
+                    
 					if (heater)
 					{
-						sendReply("ok T:%u @%u B:%u \r\n",heater->akt_temp,heater->pwm,bed_heater.akt_temp);
+                        const char* ok = (sdcard_isreplaying()) ? "" : "ok ";
+                        sendReply("%sT:%u @%u B:%u \r\n",ok,heater->akt_temp,heater->pwm,bed_heater.akt_temp);
 					}
 					return NO_REPLY;
 				}
@@ -564,7 +565,7 @@ static int gcode_process_command()
 								residencyStart = -1;
 								if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
 								{
-									sendReply("ok T:%u \r\n",heater->akt_temp);
+									sendReply("T:%u \r\n",heater->akt_temp);
 									codenum = timestamp;
 								}
 							}
@@ -587,7 +588,7 @@ static int gcode_process_command()
 							{
 								if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up/cooling down
 								{
-									sendReply("ok T:%u \r\n",heater->akt_temp);
+									sendReply("T:%u \r\n",heater->akt_temp);
 									codenum = timestamp;
 								}
 							}
@@ -606,8 +607,11 @@ static int gcode_process_command()
 					sendReply("X:%f Y:%f Z:%f E:%f ",current_position[0],current_position[1],current_position[2],current_position[3]);
 					break;			  
 				case 115: // M115
-					sendReply("ok FIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n",MAX_EXTRUDER);
+                {
+                    const char* ok = (sdcard_isreplaying()) ? "" : "ok ";
+					sendReply("%sFIRMWARE_NAME: Sprinter 4pi PROTOCOL_VERSION:1.0 MACHINE_TYPE:Prusa EXTRUDER_COUNT:%d\r\n", ok, MAX_EXTRUDER);
 					return NO_REPLY;
+                }
 				case 119: // M119 show endstop state
 				{
 					char read_endstops[6] = {'X','X','X','X','X','X'};
@@ -658,7 +662,7 @@ static int gcode_process_command()
 					if (has_code('S'))
 						bed_heater.target_temp = get_float('S');
 
-					uint32_t codenum = timestamp; 
+					uint32_t codenum = timestamp;
 					while(bed_heater.akt_temp < bed_heater.target_temp) 
 					{
 						if( (timestamp - codenum) > 1000 ) //Print Temp Reading every 1 second while heating up.
@@ -1121,7 +1125,9 @@ static void gcode_line_received()
 //		DEBUG("gcode line: '%s'\n\r",parserState.parsePos);
 		if (gcode_process_command() == SEND_REPLY)
 		{
-			sendReply("ok\r\n");
+            if (sdcard_isreplaying() == false)
+                sendReply("ok\r\n");
+            
 			previous_millis_cmd = timestamp;
 		}
 	}
