@@ -588,8 +588,8 @@ void manage_heaters(void)
 	{
 		//Call every 500 ms
 		//heater_on_off_control(&heaters[0]);
-    if(!autotune_active)
-		  heater_PID_control(&heaters[0]);
+    		if(!autotune_active)
+			heater_PID_control(&heaters[0]);
 		g_pwm_value[0] = heaters[0].pwm;
 		g_pwm_io_adr[0] = heaters[0].io_adr;
 		g_pwm_aktiv[0] = heaters[0].soft_pwm_aktiv;
@@ -603,9 +603,9 @@ void manage_heaters(void)
 	}
 	else if(hotend_timer == 1)
 	{
-		heater_on_off_control(&heaters[1]);
-    //if(!autotune_active)
-		//  heater_PID_control(&heaters[1]);
+	//	heater_on_off_control(&heaters[1]);
+    		if(!autotune_active)
+			heater_PID_control(&heaters[1]);
 		g_pwm_value[1] = heaters[1].pwm;
 		g_pwm_io_adr[1] = heaters[1].io_adr;
 		g_pwm_aktiv[1] = heaters[1].soft_pwm_aktiv;
